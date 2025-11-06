@@ -1,9 +1,10 @@
 import { useMemo, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import useListPropertyStore from '../../store/useListPropertyStore';
 import { AMENITIES_LIST } from '../../constants/amenities';
-import ProTip from '../shared/ProTip';
+import ProTip from './shared/ProTip';
 
 /**
  * AmenitiesFeatures Component
@@ -65,11 +66,8 @@ export default function AmenitiesFeatures() {
       </div>
 
       {/* Amenities Grid */}
-      <div 
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
-        role="group"
-        aria-labelledby="amenities-heading"
-      >
+      <fieldset className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <legend className="sr-only">Property Amenities</legend>
         {AMENITIES_LIST.map((amenity) => {
           const isSelected = isAmenitySelected(amenity.id);
           
@@ -82,7 +80,7 @@ export default function AmenitiesFeatures() {
             />
           );
         })}
-      </div>
+      </fieldset>
 
       {/* Pro Tip Section */}
       <ProTip title="Make Your Listing Stand Out" tips={listingTips} />
@@ -98,11 +96,13 @@ function AmenityCard({ amenity, isSelected, onToggle }) {
   const handleClick = () => onToggle(amenity.id);
 
   return (
-    <div
+    <button
+      type="button"
       className={`
         flex items-center gap-2 p-3 border rounded-lg 
         transition-all duration-200 cursor-pointer
         hover:border-orange-500 hover:shadow-sm
+        text-left w-full
         ${
           isSelected
             ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-950/20 shadow-sm'
@@ -110,16 +110,8 @@ function AmenityCard({ amenity, isSelected, onToggle }) {
         }
       `}
       onClick={handleClick}
-      role="button"
-      tabIndex={0}
       aria-pressed={isSelected}
       aria-label={`${amenity.label}${isSelected ? ', selected' : ''}`}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleClick();
-        }
-      }}
     >
       <Checkbox
         checked={isSelected}
@@ -133,6 +125,16 @@ function AmenityCard({ amenity, isSelected, onToggle }) {
         </span>
         <span className="text-sm font-medium truncate">{amenity.label}</span>
       </div>
-    </div>
+    </button>
   );
 }
+
+AmenityCard.propTypes = {
+  amenity: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    label: PropTypes.string.isRequired,
+    icon: PropTypes.node.isRequired,
+  }).isRequired,
+  isSelected: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
+};

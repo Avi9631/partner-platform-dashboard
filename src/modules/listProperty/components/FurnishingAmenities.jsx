@@ -3,7 +3,7 @@ import { Sofa } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import useListPropertyStore from '../../store/useListPropertyStore';
+import useListPropertyStore from '../store/useListPropertyStore';
 
 const furnishingOptions = [
   { value: 'unfurnished', label: 'Unfurnished', description: 'No furniture or fittings' },

@@ -3,7 +3,7 @@ import { Maximize } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import useListPropertyStore from '../../store/useListPropertyStore';
+import useListPropertyStore from '../store/useListPropertyStore';
 
 export default function AreaDetails() {
   const { formData, updateFormData, nextStep, previousStep } =
