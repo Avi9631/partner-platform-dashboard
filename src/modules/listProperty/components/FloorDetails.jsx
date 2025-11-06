@@ -1,48 +1,21 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
-import { Layers } from 'lucide-react';
+import { Layers, ArrowUpCircle, Zap } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import useListPropertyStore from '../store/useListPropertyStore';
-import floorDetailsSchema from '../schemas/floorDetailsSchema';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 
 export default function FloorDetails() {
-  const { formData, updateFormData, nextStep, previousStep, updateStepValidation } =
-    useListPropertyStore();
-
-  // Initialize React Hook Form with Zod validation
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors, isValid },
-  } = useForm({
-    resolver: zodResolver(floorDetailsSchema),
-    mode: 'onChange',
-    defaultValues: {
-      towerName: formData.towerName || '',
-      floorNumber: formData.floorNumber || '',
-      totalFloors: formData.totalFloors || '',
-      unitNumber: formData.unitNumber || '',
-      isUnitNumberPrivate: formData.isUnitNumberPrivate || false,
-    },
-  });
+  const { nextStep, previousStep, updateStepValidation } = usePropertyForm();
+  const { register, watch, setValue, formState: { errors, isValid } } = useFormContext();
 
   // Update step validation when form validity changes
   useEffect(() => {
     updateStepValidation(4, isValid);
   }, [isValid, updateStepValidation]);
-
-  // Handle form submission
-  const onSubmit = (data) => {
-    updateFormData(data);
-    nextStep();
-  };
 
   return (
     <div className="w-full px-6 py-6">
@@ -62,7 +35,7 @@ export default function FloorDetails() {
       </motion.div>
 
       <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-6">
           {/* Tower & Floor Information */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Tower Name */}
@@ -165,11 +138,66 @@ export default function FloorDetails() {
             </div>
           </motion.div>
 
+          {/* Lift & EV Charging */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Lift Available */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                  <ArrowUpCircle className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold">Lift/Elevator Available</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Is there a working elevator?
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={watch('liftAvailable')}
+                onCheckedChange={(checked) =>
+                  setValue('liftAvailable', checked, { shouldValidate: true })
+                }
+              />
+            </motion.div>
+
+            {/* EV Charging */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65 }}
+              className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold">EV Charging Point</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Electric vehicle charging facility
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={watch('evCharging')}
+                onCheckedChange={(checked) =>
+                  setValue('evCharging', checked, { shouldValidate: true })
+                }
+              />
+            </motion.div>
+          </div>
+
           {/* Navigation Buttons */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.7 }}
             className="flex justify-between mt-8 pt-6 border-t border-orange-200 dark:border-orange-900"
           >
             <Button
@@ -195,8 +223,8 @@ export default function FloorDetails() {
               Back
             </Button>
             <Button
-              type="submit"
               size="default"
+              onClick={nextStep}
               disabled={!isValid}
               className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
             >
@@ -216,7 +244,7 @@ export default function FloorDetails() {
               </svg>
             </Button>
           </motion.div>
-        </form>
+        </div>
       </div>
     </div>
   );

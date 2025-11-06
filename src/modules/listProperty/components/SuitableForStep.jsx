@@ -1,10 +1,13 @@
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 import SuitableFor from './SuitableFor';
 
 export default function SuitableForStep() {
-  const { formData, nextStep, previousStep } = useListPropertyStore();
+  const { watch } = useFormContext();
+  const { nextStep, previousStep } = usePropertyForm();
+  const listingType = watch('listingType');
 
   // This step is optional, so always allow continue
   const canContinue = true;
@@ -28,7 +31,7 @@ export default function SuitableForStep() {
 
       <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
         <div className="space-y-6">
-          {formData.listingType === 'sale' ? (
+          {listingType === 'sale' ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
                 This section is only applicable for rental and lease properties.

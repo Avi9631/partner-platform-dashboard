@@ -1,41 +1,54 @@
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Maximize } from 'lucide-react';
+import { Maximize, Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import useListPropertyStore from '../store/useListPropertyStore';
-import areaDetailsSchema from '../schemas/areaDetailsSchema';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 
 export default function AreaDetails() {
-  const { formData, updateFormData, nextStep, previousStep, updateStepValidation } =
-    useListPropertyStore();
+  const { nextStep, previousStep, updateStepValidation } = usePropertyForm();
+  const { register, watch, setValue, formState: { errors, isValid } } = useFormContext();
 
-  // Initialize React Hook Form with Zod validation
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm({
-    resolver: zodResolver(areaDetailsSchema),
-    mode: 'onChange',
-    defaultValues: {
-      carpetArea: formData.carpetArea || '',
-      superArea: formData.superArea || '',
-    },
-  });
+  // Area configuration state (for repeater)
+  const [areaConfig, setAreaConfig] = useState(watch('areaConfig') || [
+    { type: 'carpet', value: '' },
+    { type: 'super', value: '' },
+    { type: 'built_up', value: '' },
+  ]);
+
+  // Update form when area config changes
+  useEffect(() => {
+    setValue('areaConfig', areaConfig);
+  }, [areaConfig, setValue]);
 
   // Update step validation when form validity changes
   useEffect(() => {
     updateStepValidation(2, isValid);
   }, [isValid, updateStepValidation]);
 
-  // Handle form submission
-  const onSubmit = (data) => {
-    updateFormData(data);
-    nextStep();
+  const updateAreaConfig = (index, field, value) => {
+    const updated = [...areaConfig];
+    updated[index][field] = value;
+    setAreaConfig(updated);
+  };
+
+  const addAreaConfig = () => {
+    setAreaConfig([...areaConfig, { type: 'carpet', value: '' }]);
+  };
+
+  const removeAreaConfig = (index) => {
+    if (areaConfig.length > 1) {
+      setAreaConfig(areaConfig.filter((_, i) => i !== index));
+    }
   };
 
   return (
@@ -56,7 +69,79 @@ export default function AreaDetails() {
       </motion.div>
 
       <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-6">
+          {/* Area Configuration (Repeater) */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-semibold">Area Configuration</Label>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={addAreaConfig}
+                className="h-8 text-xs"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                Add Area Type
+              </Button>
+            </div>
+
+            {areaConfig.map((config, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-12 gap-3 items-end"
+              >
+                <div className="col-span-5 space-y-2">
+                  <Label className="text-xs">Area Type</Label>
+                  <Select
+                    value={config.type}
+                    onValueChange={(value) => updateAreaConfig(index, 'type', value)}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="carpet">Carpet Area</SelectItem>
+                      <SelectItem value="super">Super Area</SelectItem>
+                      <SelectItem value="built_up">Built-up Area</SelectItem>
+                      <SelectItem value="plot">Plot Area</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-5 space-y-2">
+                  <Label className="text-xs">Value (sq.ft)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="e.g., 1200"
+                    value={config.value}
+                    onChange={(e) => updateAreaConfig(index, 'value', e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeAreaConfig(index)}
+                    disabled={areaConfig.length === 1}
+                    className="h-9 w-full text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
+
+            <p className="text-xs text-muted-foreground">
+              Add multiple area measurements for better clarity (Carpet, Super, Built-up, Plot)
+            </p>
+          </div>
+
+          {/* Legacy Single Fields (for backward compatibility) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Carpet Area */}
             <motion.div
@@ -163,8 +248,8 @@ export default function AreaDetails() {
               Back
             </Button>
             <Button
-              type="submit"
               size="default"
+              onClick={nextStep}
               disabled={!isValid}
               className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
             >
@@ -184,7 +269,7 @@ export default function AreaDetails() {
               </svg>
             </Button>
           </motion.div>
-        </form>
+        </div>
       </div>
     </div>
   );

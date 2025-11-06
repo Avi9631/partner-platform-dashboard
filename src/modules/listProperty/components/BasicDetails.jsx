@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
-import { MapPin, Building2, Calendar, Home } from 'lucide-react';
+import { MapPin, Building2, Calendar, Home, FileText, Map } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -13,12 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 import basicDetailsSchema from '../schemas/basicDetailsSchema';
 
 export default function BasicDetails() {
-  const { formData, updateFormData, nextStep, previousStep, updateStepValidation } =
-    useListPropertyStore();
+  const formMethods = useFormContext();
+  const { nextStep, previousStep, updateStepValidation } = usePropertyForm();
 
   // Initialize React Hook Form with Zod validation
   const {
@@ -31,12 +34,17 @@ export default function BasicDetails() {
     resolver: zodResolver(basicDetailsSchema),
     mode: 'onChange',
     defaultValues: {
-      projectName: formData.projectName || '',
-      city: formData.city || '',
-      addressText: formData.addressText || '',
-      ageOfProperty: formData.ageOfProperty || '',
-      possessionStatus: formData.possessionStatus || 'ready',
-      possessionDate: formData.possessionDate || '',
+      ownershipType: formMethods.watch('ownershipType') || 'freehold',
+      projectName: formMethods.watch('projectName') || '',
+      reraId: formMethods.watch('reraId') || '',
+      city: formMethods.watch('city') || '',
+      locality: formMethods.watch('locality') || '',
+      addressText: formMethods.watch('addressText') || '',
+      landmark: formMethods.watch('landmark') || '',
+      showMapExact: formMethods.watch('showMapExact') || false,
+      ageOfProperty: formMethods.watch('ageOfProperty') || '',
+      possessionStatus: formMethods.watch('possessionStatus') || 'ready',
+      possessionDate: formMethods.watch('possessionDate') || '',
     },
   });
 
@@ -47,7 +55,10 @@ export default function BasicDetails() {
 
   // Handle form submission
   const onSubmit = (data) => {
-    updateFormData(data);
+    // Update the main form context
+    Object.keys(data).forEach((key) => {
+      formMethods.setValue(key, data[key]);
+    });
     nextStep();
   };
 
@@ -76,50 +87,129 @@ export default function BasicDetails() {
       >
         <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Project Name (Optional) */}
+              {/* Ownership Type */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.2 }}
                 className="space-y-2"
               >
-                <Label htmlFor="projectName" className="text-sm flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-orange-600" />
-                  Project Name <span className="text-xs text-muted-foreground">(Optional)</span>
+                <Label className="text-sm">
+                  Ownership Type <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="projectName"
-                  placeholder="e.g., Green Valley Apartments, Palm Springs Villa"
-                  {...register('projectName')}
-                  className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
-                />
-              </motion.div>
-
-              {/* City */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="space-y-2"
-              >
-                <Label htmlFor="city" className="text-sm flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-orange-600" />
-                  City <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="city"
-                  placeholder="Enter city name"
-                  {...register('city')}
-                  className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
-                    errors.city ? 'border-red-500' : ''
-                  }`}
-                />
-                {errors.city && (
-                  <p className="text-sm text-red-500 mt-1">{errors.city.message}</p>
+                <Select
+                  value={watch('ownershipType')}
+                  onValueChange={(value) => setValue('ownershipType', value)}
+                >
+                  <SelectTrigger className={`h-10 text-sm border-2 ${
+                    errors.ownershipType ? 'border-red-500' : ''
+                  }`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="freehold">Freehold</SelectItem>
+                    <SelectItem value="leasehold">Leasehold</SelectItem>
+                    <SelectItem value="poa">Power of Attorney (POA)</SelectItem>
+                    <SelectItem value="co_operative">Co-operative Society</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.ownershipType && (
+                  <p className="text-sm text-red-500 mt-1">{errors.ownershipType.message}</p>
                 )}
               </motion.div>
 
-              {/* Address */}
+              {/* Project Name & RERA ID */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Project Name (Optional) */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="projectName" className="text-sm flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-orange-600" />
+                    Project Name <span className="text-xs text-muted-foreground">(Optional)</span>
+                  </Label>
+                  <Input
+                    id="projectName"
+                    placeholder="e.g., Green Valley Apartments"
+                    {...register('projectName')}
+                    className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                  />
+                </motion.div>
+
+                {/* RERA ID */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.35 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="reraId" className="text-sm flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-orange-600" />
+                    RERA Registration No. <span className="text-xs text-muted-foreground">(If applicable)</span>
+                  </Label>
+                  <Input
+                    id="reraId"
+                    placeholder="e.g., RERA123456"
+                    {...register('reraId')}
+                    className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                  />
+                </motion.div>
+              </div>
+
+              {/* City & Locality */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* City */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="city" className="text-sm flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-orange-600" />
+                    City <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="city"
+                    placeholder="Enter city name"
+                    {...register('city')}
+                    className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                      errors.city ? 'border-red-500' : ''
+                    }`}
+                  />
+                  {errors.city && (
+                    <p className="text-sm text-red-500 mt-1">{errors.city.message}</p>
+                  )}
+                </motion.div>
+
+                {/* Locality / Sector */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.45 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="locality" className="text-sm">
+                    Locality / Sector <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="locality"
+                    placeholder="e.g., Sector 62, Jubilee Hills"
+                    {...register('locality')}
+                    className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                      errors.locality ? 'border-red-500' : ''
+                    }`}
+                  />
+                  {errors.locality && (
+                    <p className="text-sm text-red-500 mt-1">{errors.locality.message}</p>
+                  )}
+                </motion.div>
+              </div>
+
+              {/* Full Address */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -130,17 +220,58 @@ export default function BasicDetails() {
                   <Home className="w-4 h-4 text-orange-600" />
                   Full Address <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <Textarea
                   id="addressText"
                   placeholder="House/Flat No., Street, Locality, Landmark"
                   {...register('addressText')}
-                  className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                  className={`min-h-[60px] text-sm border-2 focus:border-orange-500 transition-all ${
                     errors.addressText ? 'border-red-500' : ''
                   }`}
                 />
                 {errors.addressText && (
                   <p className="text-sm text-red-500 mt-1">{errors.addressText.message}</p>
                 )}
+              </motion.div>
+
+              {/* Landmark */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.55 }}
+                className="space-y-2"
+              >
+                <Label htmlFor="landmark" className="text-sm flex items-center gap-2">
+                  <Map className="w-4 h-4 text-orange-600" />
+                  Nearby Landmark
+                </Label>
+                <Input
+                  id="landmark"
+                  placeholder="e.g., Near City Mall, Opposite Metro Station"
+                  {...register('landmark')}
+                  className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Helps buyers locate your property easily
+                </p>
+              </motion.div>
+
+              {/* Show Exact Location Toggle */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border-2 border-muted"
+              >
+                <div>
+                  <Label className="text-sm font-semibold">Show Exact Location on Map</Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Display precise property location to interested buyers
+                  </p>
+                </div>
+                <Switch
+                  checked={watch('showMapExact')}
+                  onCheckedChange={(checked) => setValue('showMapExact', checked)}
+                />
               </motion.div>
 
               {/* Age of Property & Possession Status */}

@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { DollarSign, Calendar } from 'lucide-react';
+import { DollarSign, Calendar, Percent } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -11,11 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 import pricingInformationSchema from '../schemas/pricingInformationSchema';
 
 export default function PricingInformation() {
-  const { formData, updateFormData, updateStepValidation } = useListPropertyStore();
+  const mainForm = useFormContext();
+  const { updateStepValidation, currentStep } = usePropertyForm();
 
   // Initialize React Hook Form with Zod validation
   const {
@@ -28,26 +31,31 @@ export default function PricingInformation() {
     resolver: zodResolver(pricingInformationSchema),
     mode: 'onChange',
     defaultValues: {
-      listingType: formData.listingType || 'sale',
-      price: formData.price || '',
-      priceUnit: formData.priceUnit || 'total',
-      maintenanceCharges: formData.maintenanceCharges || '',
-      availableFrom: formData.availableFrom || '',
+      listingType: mainForm.watch('listingType') || 'sale',
+      price: mainForm.watch('price') || '',
+      priceUnit: mainForm.watch('priceUnit') || 'total',
+      isPriceNegotiable: mainForm.watch('isPriceNegotiable') || false,
+      securityDeposit: mainForm.watch('securityDeposit') || '',
+      brokerageFee: mainForm.watch('brokerageFee') || '',
+      maintenanceCharges: mainForm.watch('maintenanceCharges') || '',
+      availableFrom: mainForm.watch('availableFrom') || '',
     },
   });
 
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(5, isValid);
-  }, [isValid, updateStepValidation]);
+    updateStepValidation(currentStep, isValid);
+  }, [isValid, currentStep, updateStepValidation]);
 
-  // Sync form data with store on field changes
+  // Sync form data with main form on field changes
   useEffect(() => {
     const subscription = watch((value) => {
-      updateFormData(value);
+      Object.keys(value).forEach((key) => {
+        mainForm.setValue(key, value[key]);
+      });
     });
     return () => subscription.unsubscribe();
-  }, [watch, updateFormData]);
+  }, [watch, mainForm]);
 
   return (
     <div className="space-y-4">
@@ -134,27 +142,93 @@ export default function PricingInformation() {
         </div>
       </div>
 
-      {/* Maintenance Charges (for rent) */}
+      {/* Price Negotiable Toggle */}
+      <div className="flex items-center justify-between p-3 border rounded hover:border-orange-500 transition-colors">
+        <div>
+          <Label className="text-sm font-semibold">Price Negotiable</Label>
+          <p className="text-xs text-muted-foreground">
+            Allow buyers to negotiate the price
+          </p>
+        </div>
+        <Switch
+          checked={watch('isPriceNegotiable')}
+          onCheckedChange={(checked) => setValue('isPriceNegotiable', checked)}
+        />
+      </div>
+
+      {/* Security Deposit & Brokerage (for rent/lease) */}
       {watch('listingType') !== 'sale' && (
-        <div className="space-y-1.5">
-          <Label className="text-sm">
-            Maintenance Charges (Monthly)
-          </Label>
-          <div className="relative">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-              ₹
-            </span>
-            <Input
-              type="number"
-              min="0"
-              placeholder="e.g., 2,000"
-              {...register('maintenanceCharges')}
-              className={`h-9 pl-6 text-sm ${errors.maintenanceCharges ? 'border-red-500' : ''}`}
-            />
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Security Deposit */}
+            <div className="space-y-1.5">
+              <Label className="text-sm">Security Deposit</Label>
+              <div className="relative">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                  ₹
+                </span>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 50,000"
+                  {...register('securityDeposit')}
+                  className="h-9 pl-6 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Brokerage Fee */}
+            <div className="space-y-1.5">
+              <Label className="text-sm flex items-center gap-1.5">
+                <Percent className="w-3.5 h-3.5 text-primary" />
+                Brokerage Fee
+              </Label>
+              <Input
+                type="text"
+                placeholder="e.g., 1 month rent or 2%"
+                {...register('brokerageFee')}
+                className="h-9 text-sm"
+              />
+            </div>
           </div>
-          {errors.maintenanceCharges && (
-            <p className="text-sm text-red-500 mt-1">{errors.maintenanceCharges.message}</p>
-          )}
+
+          {/* Maintenance Charges */}
+          <div className="space-y-1.5">
+            <Label className="text-sm">
+              Maintenance Charges (Monthly)
+            </Label>
+            <div className="relative">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                ₹
+              </span>
+              <Input
+                type="number"
+                min="0"
+                placeholder="e.g., 2,000"
+                {...register('maintenanceCharges')}
+                className={`h-9 pl-6 text-sm ${errors.maintenanceCharges ? 'border-red-500' : ''}`}
+              />
+            </div>
+            {errors.maintenanceCharges && (
+              <p className="text-sm text-red-500 mt-1">{errors.maintenanceCharges.message}</p>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Brokerage for Sale */}
+      {watch('listingType') === 'sale' && (
+        <div className="space-y-1.5">
+          <Label className="text-sm flex items-center gap-1.5">
+            <Percent className="w-3.5 h-3.5 text-primary" />
+            Brokerage Fee (Optional)
+          </Label>
+          <Input
+            type="text"
+            placeholder="e.g., 1% or ₹50,000"
+            {...register('brokerageFee')}
+            className="h-9 text-sm"
+          />
         </div>
       )}
 

@@ -1,32 +1,26 @@
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 import PricingInformation from './PricingInformation';
 
 export default function PricingInfoStep() {
-  const { formData, nextStep, previousStep, updateStepValidation } =
-    useListPropertyStore();
+  const { watch } = useFormContext();
+  const { nextStep, previousStep, updateStepValidation, propertyType, currentStep } = usePropertyForm();
+  
+  const listingType = watch('listingType');
+  const price = watch('price');
 
   // Validate this step
   const checkIsValid = () => {
-    return !!(formData.listingType && formData.price);
+    return !!(listingType && price);
   };
 
   useEffect(() => {
-    const isValid = !!(formData.listingType && formData.price);
-    // Get current step index dynamically based on property type
-    const isBuildingType = ['apartment', 'villa', 'duplex', 'independent_house', 
-                            'penthouse', 'studio', 'independent_floor'].includes(formData.propertyType);
-    const isApartmentOrPenthouse = ['apartment', 'penthouse'].includes(formData.propertyType);
-    
-    let stepIndex = 3; // Default for land types
-    if (isBuildingType) {
-      stepIndex = isApartmentOrPenthouse ? 8 : 7;
-    }
-    
-    updateStepValidation(stepIndex, isValid);
-  }, [formData.listingType, formData.price, formData.propertyType, updateStepValidation]);
+    const isValid = !!(listingType && price);
+    updateStepValidation(currentStep, isValid);
+  }, [listingType, price, currentStep, updateStepValidation]);
 
   return (
     <div className="w-full px-6 py-6">

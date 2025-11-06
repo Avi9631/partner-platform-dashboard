@@ -15,18 +15,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 
 export default function ReviewAndSubmit() {
-  const { formData, previousStep, setCurrentStep } = useListPropertyStore();
+  const { watch } = useFormContext();
+  const { previousStep, goToStep, propertyType } = usePropertyForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // Watch all form values
+  const formData = watch();
+
   const isBuildingType = ['apartment', 'villa', 'duplex', 'independent_house', 
-                          'penthouse', 'studio', 'independent_floor'].includes(formData.propertyType);
+                          'penthouse', 'studio', 'independent_floor'].includes(propertyType);
 
   const handleEdit = (step) => {
-    setCurrentStep(step);
+    goToStep(step);
   };
 
   const handleSubmit = async () => {
@@ -116,7 +121,7 @@ export default function ReviewAndSubmit() {
                 <div>
                   <p className="text-sm text-muted-foreground">Property Type</p>
                   <p className="font-semibold capitalize">
-                    {formData.propertyType?.replace('_', ' ')}
+                    {propertyType?.replace('_', ' ')}
                   </p>
                 </div>
                 {formData.projectName && (

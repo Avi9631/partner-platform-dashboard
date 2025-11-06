@@ -1,15 +1,35 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FileText, Tag } from 'lucide-react';
+import { FileText, Tag, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 import listingInformationSchema from '../schemas/listingInformationSchema';
 
+const suggestedTags = [
+  'Corner Unit',
+  'Park Facing',
+  'Road Facing',
+  'Premium Location',
+  'Newly Renovated',
+  'Ready to Move',
+  'Vastu Compliant',
+  'Corner Plot',
+  'Main Road',
+  'Gated Community',
+];
+
 export default function ListingInformation() {
-  const { formData, updateFormData, updateStepValidation } = useListPropertyStore();
+  const mainForm = useFormContext();
+  const { updateStepValidation, currentStep } = usePropertyForm();
+
+  const [tags, setTags] = useState(mainForm.watch('tags') || []);
+  const [tagInput, setTagInput] = useState('');
 
   // Initialize React Hook Form with Zod validation
   const {
@@ -20,23 +40,48 @@ export default function ListingInformation() {
     resolver: zodResolver(listingInformationSchema),
     mode: 'onChange',
     defaultValues: {
-      title: formData.title || '',
-      description: formData.description || '',
+      title: mainForm.watch('title') || '',
+      description: mainForm.watch('description') || '',
     },
   });
 
+  // Update form with tags
+  useEffect(() => {
+    mainForm.setValue('tags', tags);
+  }, [tags, mainForm]);
+
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(6, isValid);
-  }, [isValid, updateStepValidation]);
+    updateStepValidation(currentStep, isValid);
+  }, [isValid, currentStep, updateStepValidation]);
 
-  // Sync form data with store on field changes
+  // Sync form data with main form on field changes
   useEffect(() => {
     const subscription = watch((value) => {
-      updateFormData(value);
+      Object.keys(value).forEach((key) => {
+        mainForm.setValue(key, value[key]);
+      });
     });
     return () => subscription.unsubscribe();
-  }, [watch, updateFormData]);
+  }, [watch, mainForm]);
+
+  const addTag = (tag) => {
+    if (tag && !tags.includes(tag) && tags.length < 10) {
+      setTags([...tags, tag]);
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setTags(tags.filter(t => t !== tagToRemove));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && tagInput.trim()) {
+      e.preventDefault();
+      addTag(tagInput.trim());
+    }
+  };
 
   return (
     <div className="space-y-4">

@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useFormContext } from 'react-hook-form';
 import { motion } from 'motion/react';
 import { Ruler, Fence, Droplets, Map } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -14,8 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import useListPropertyStore from '../store/useListPropertyStore';
-import landAttributesSchema from '../schemas/landAttributesSchema';
+import { usePropertyForm } from '../context/PropertyFormContext';
 
 const areaUnits = [
   { value: 'sqft', label: 'Square Feet' },
@@ -42,42 +40,28 @@ const irrigationSources = [
   'No Irrigation',
 ];
 
-export default function LandAttributes() {
-  const { formData, updateFormData, nextStep, previousStep, updateStepValidation } =
-    useListPropertyStore();
+const terrainLevels = [
+  { value: 'flat', label: 'Flat', icon: '📏' },
+  { value: 'elevated', label: 'Elevated', icon: '⛰️' },
+  { value: 'sloped', label: 'Sloped', icon: '📐' },
+];
 
-  // Initialize React Hook Form with Zod validation
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    setValue,
-    formState: { errors, isValid },
-  } = useForm({
-    resolver: zodResolver(landAttributesSchema),
-    mode: 'onChange',
-    defaultValues: {
-      plotArea: formData.plotArea || '',
-      areaUnit: formData.areaUnit || 'sqft',
-      plotDimension: formData.plotDimension || '',
-      landUse: formData.landUse || '',
-      roadWidth: formData.roadWidth || '',
-      fencing: formData.fencing || false,
-      irrigationSource: formData.irrigationSource || '',
-    },
-  });
+const soilTypes = [
+  { value: 'black', label: 'Black Soil', icon: '⚫' },
+  { value: 'red', label: 'Red Soil', icon: '🔴' },
+  { value: 'sandy', label: 'Sandy Soil', icon: '🟡' },
+  { value: 'clay', label: 'Clay Soil', icon: '🟤' },
+  { value: 'loamy', label: 'Loamy Soil', icon: '🟢' },
+];
+
+export default function LandAttributes() {
+  const { nextStep, previousStep, updateStepValidation, propertyType } = usePropertyForm();
+  const { register, control, watch, setValue, formState: { errors, isValid } } = useFormContext();
 
   // Update step validation when form validity changes
   useEffect(() => {
     updateStepValidation(2, isValid);
   }, [isValid, updateStepValidation]);
-
-  // Handle form submission
-  const onSubmit = (data) => {
-    updateFormData(data);
-    nextStep();
-  };
 
   return (
     <div className="w-full px-6 py-6">
@@ -97,7 +81,7 @@ export default function LandAttributes() {
       </motion.div>
 
       <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-6">
         {/* Plot Area & Dimensions */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
@@ -230,6 +214,52 @@ export default function LandAttributes() {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-orange-700 dark:text-orange-400">Additional Features</h3>
           
+          {/* Terrain Level */}
+          <div className="space-y-2">
+            <Label className="text-sm">Terrain Level</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {terrainLevels.map((terrain) => (
+                <button
+                  key={terrain.value}
+                  type="button"
+                  onClick={() => setValue('terrainLevel', terrain.value, { shouldValidate: true })}
+                  className={`p-3 border rounded text-xs font-medium transition-all flex flex-col items-center gap-1.5 ${
+                    watch('terrainLevel') === terrain.value
+                      ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400 scale-105'
+                      : 'border-muted hover:border-orange-500/50 hover:scale-105'
+                  }`}
+                >
+                  <span className="text-2xl">{terrain.icon}</span>
+                  <span>{terrain.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Soil Type (for agricultural) */}
+          {['agricultural', 'farmhouse'].includes(propertyType) && (
+            <div className="space-y-2">
+              <Label className="text-sm">Soil Type</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {soilTypes.map((soil) => (
+                  <button
+                    key={soil.value}
+                    type="button"
+                    onClick={() => setValue('soilType', soil.value, { shouldValidate: true })}
+                    className={`p-3 border rounded text-xs font-medium transition-all flex items-center gap-2 ${
+                      watch('soilType') === soil.value
+                        ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400 scale-105'
+                        : 'border-muted hover:border-orange-500/50 hover:scale-105'
+                    }`}
+                  >
+                    <span className="text-xl">{soil.icon}</span>
+                    <span>{soil.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
           {/* Fencing */}
           <div className="flex items-center justify-between p-3 border rounded hover:border-orange-500 transition-colors">
             <div className="flex items-center gap-2">
@@ -251,7 +281,7 @@ export default function LandAttributes() {
           </div>
 
           {/* Irrigation Source (for agricultural land) */}
-          {['agricultural', 'farmhouse'].includes(formData.propertyType) && (
+          {['agricultural', 'farmhouse'].includes(propertyType) && (
             <div className="space-y-1.5">
               <Label className="text-sm flex items-center gap-1.5">
                 <Droplets className="w-3.5 h-3.5 text-primary" />
@@ -337,8 +367,8 @@ export default function LandAttributes() {
             Back
           </Button>
           <Button
-            type="submit"
             size="default"
+            onClick={nextStep}
             disabled={!isValid}
             className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
           >
@@ -358,7 +388,7 @@ export default function LandAttributes() {
             </svg>
           </Button>
         </div>
-        </form>
+        </div>
       </div>
     </div>
   );

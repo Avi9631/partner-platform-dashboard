@@ -2,9 +2,12 @@ import { useEffect, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import PropTypes from 'prop-types';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Shield, Dog, Lock } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 import { AMENITIES_LIST } from '../constants/amenities';
 import amenitiesSchema from '../schemas/amenitiesSchema';
 import ProTip from './shared/ProTip';
@@ -15,7 +18,8 @@ import ProTip from './shared/ProTip';
  * Displays amenities in a responsive grid with visual feedback
  */
 export default function AmenitiesFeatures() {
-  const { formData, updateFormData, updateStepValidation } = useListPropertyStore();
+  const mainForm = useFormContext();
+  const { updateStepValidation, currentStep } = usePropertyForm();
 
   // Initialize React Hook Form with Zod validation
   const {
@@ -26,22 +30,28 @@ export default function AmenitiesFeatures() {
     resolver: zodResolver(amenitiesSchema),
     mode: 'onChange',
     defaultValues: {
-      amenities: formData.amenities || [],
+      amenities: mainForm.watch('amenities') || [],
+      isGated: mainForm.watch('isGated') || false,
+      fireSafety: mainForm.watch('fireSafety') || false,
+      petFriendly: mainForm.watch('petFriendly') || false,
     },
   });
 
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(7, isValid);
-  }, [isValid, updateStepValidation]);
+    updateStepValidation(currentStep, isValid);
+  }, [isValid, currentStep, updateStepValidation]);
 
-  // Sync form data with store on field changes
+  // Sync form data with main form on field changes
   useEffect(() => {
     const subscription = watch((value) => {
-      updateFormData(value);
+      mainForm.setValue('amenities', value.amenities);
+      mainForm.setValue('isGated', value.isGated);
+      mainForm.setValue('fireSafety', value.fireSafety);
+      mainForm.setValue('petFriendly', value.petFriendly);
     });
     return () => subscription.unsubscribe();
-  }, [watch, updateFormData]);
+  }, [watch, mainForm]);
 
   // Memoize selected amenities array to prevent unnecessary re-renders
   const selectedAmenities = useMemo(
@@ -92,6 +102,60 @@ export default function AmenitiesFeatures() {
           Select all amenities available at your property{' '}
           <span className="text-xs">({selectedAmenities.length} selected)</span>
         </p>
+      </div>
+
+      {/* Community Features Toggles */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Gated Society */}
+        <div className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+              <Lock className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Gated Society</Label>
+              <p className="text-xs text-muted-foreground">Secured compound</p>
+            </div>
+          </div>
+          <Switch
+            checked={watch('isGated')}
+            onCheckedChange={(checked) => setValue('isGated', checked, { shouldValidate: true })}
+          />
+        </div>
+
+        {/* Fire Safety */}
+        <div className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Fire Safety</Label>
+              <p className="text-xs text-muted-foreground">Compliant systems</p>
+            </div>
+          </div>
+          <Switch
+            checked={watch('fireSafety')}
+            onCheckedChange={(checked) => setValue('fireSafety', checked, { shouldValidate: true })}
+          />
+        </div>
+
+        {/* Pet Friendly */}
+        <div className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+              <Dog className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Pet Friendly</Label>
+              <p className="text-xs text-muted-foreground">Pets allowed</p>
+            </div>
+          </div>
+          <Switch
+            checked={watch('petFriendly')}
+            onCheckedChange={(checked) => setValue('petFriendly', checked, { shouldValidate: true })}
+          />
+        </div>
       </div>
 
       {/* Amenities Grid */}

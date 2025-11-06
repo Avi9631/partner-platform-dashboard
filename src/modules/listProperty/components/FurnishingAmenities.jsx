@@ -1,14 +1,31 @@
+import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Sofa } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 
 const furnishingOptions = [
   { value: 'unfurnished', label: 'Unfurnished', description: 'No furniture or fittings' },
   { value: 'semi', label: 'Semi-Furnished', description: 'Basic furniture & fittings' },
   { value: 'fully', label: 'Fully Furnished', description: 'Complete furniture & appliances' },
+];
+
+const furnishingDetailOptions = [
+  { value: 'wardrobe', label: 'Wardrobes', icon: '🚪' },
+  { value: 'ac', label: 'Air Conditioner', icon: '❄️' },
+  { value: 'modular_kitchen', label: 'Modular Kitchen', icon: '🍳' },
+  { value: 'beds', label: 'Beds', icon: '🛏️' },
+  { value: 'sofa', label: 'Sofa', icon: '🛋️' },
+  { value: 'dining_table', label: 'Dining Table', icon: '🍽️' },
+  { value: 'tv', label: 'Television', icon: '📺' },
+  { value: 'refrigerator', label: 'Refrigerator', icon: '🧊' },
+  { value: 'washing_machine', label: 'Washing Machine', icon: '🧺' },
+  { value: 'geyser', label: 'Geyser', icon: '🔥' },
+  { value: 'chimney', label: 'Chimney', icon: '🌫️' },
+  { value: 'stove', label: 'Stove/Cooktop', icon: '🔥' },
 ];
 
 const flooringOptions = [
@@ -21,15 +38,38 @@ const flooringOptions = [
 ];
 
 export default function FurnishingAmenities() {
-  const { formData, updateFormData, nextStep, previousStep } =
-    useListPropertyStore();
+  const { watch, setValue } = useFormContext();
+  const { nextStep, previousStep, updateStepValidation } = usePropertyForm();
+
+  // Watch form values
+  const furnishingStatus = watch('furnishingStatus');
+  const furnishingDetails = watch('furnishingDetails');
+  const flooringTypes = watch('flooringTypes');
+
+  // Update validation (simple check - furnishing status must be selected)
+  useEffect(() => {
+    const isValid = !!furnishingStatus;
+    updateStepValidation(4, isValid);
+  }, [furnishingStatus, updateStepValidation]);
 
   const toggleFlooringType = (type) => {
-    const current = formData.flooringTypes || [];
+    const current = flooringTypes || [];
     const updated = current.includes(type)
       ? current.filter((t) => t !== type)
       : [...current, type];
-    updateFormData({ flooringTypes: updated });
+    setValue('flooringTypes', updated);
+  };
+
+  const toggleFurnishingDetail = (detail) => {
+    const current = furnishingDetails || [];
+    const updated = current.includes(detail)
+      ? current.filter((d) => d !== detail)
+      : [...current, detail];
+    setValue('furnishingDetails', updated);
+  };
+
+  const handleContinue = () => {
+    nextStep();
   };
 
   return (
@@ -66,11 +106,10 @@ export default function FurnishingAmenities() {
               {furnishingOptions.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() =>
-                    updateFormData({ furnishingStatus: option.value })
-                  }
+                  type="button"
+                  onClick={() => setValue('furnishingStatus', option.value)}
                   className={`p-4 border-2 rounded-lg text-left transition-all ${
-                    formData.furnishingStatus === option.value
+                    furnishingStatus === option.value
                       ? 'border-orange-500 bg-orange-500/10 shadow-md scale-105'
                       : 'border-muted hover:border-orange-300 hover:shadow'
                   }`}
@@ -83,6 +122,38 @@ export default function FurnishingAmenities() {
               ))}
             </div>
           </motion.div>
+
+          {/* Furnishing Details (if semi or fully furnished) */}
+          {(furnishingStatus === 'semi' || furnishingStatus === 'fully') && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="space-y-3"
+            >
+              <Label className="text-sm font-semibold">Included Furniture & Appliances</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {furnishingDetailOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => toggleFurnishingDetail(option.value)}
+                    className={`p-3 border-2 rounded-lg text-left transition-all flex items-center gap-2 ${
+                      (furnishingDetails || []).includes(option.value)
+                        ? 'border-orange-500 bg-orange-500/10 shadow-md scale-105'
+                        : 'border-muted hover:border-orange-300 hover:shadow'
+                    }`}
+                  >
+                    <span className="text-xl">{option.icon}</span>
+                    <span className="text-xs font-medium">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Select all items included in the property
+              </p>
+            </motion.div>
+          )}
 
           {/* Flooring Types */}
           <motion.div
@@ -100,7 +171,7 @@ export default function FurnishingAmenities() {
                   onClick={() => toggleFlooringType(type)}
                 >
                   <Checkbox
-                    checked={(formData.flooringTypes || []).includes(type)}
+                    checked={(flooringTypes || []).includes(type)}
                     onCheckedChange={() => toggleFlooringType(type)}
                   />
                   <label className="text-sm font-medium cursor-pointer">
@@ -142,7 +213,8 @@ export default function FurnishingAmenities() {
           </Button>
           <Button
             size="default"
-            onClick={nextStep}
+            onClick={handleContinue}
+            disabled={!furnishingStatus}
             className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
           >
             Continue

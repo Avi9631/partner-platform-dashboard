@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Car, Wind } from 'lucide-react';
+import { Car, Wind, Droplets, Zap, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -10,11 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 
 export default function ParkingUtilities() {
-  const { formData, updateFormData, nextStep, previousStep } =
-    useListPropertyStore();
+  const { watch, setValue, register } = useFormContext();
+  const { nextStep, previousStep } = usePropertyForm();
 
   return (
     <div className="w-full px-6 py-6">
@@ -57,10 +58,7 @@ export default function ParkingUtilities() {
                   type="number"
                   min="0"
                   placeholder="Number of spaces"
-                  value={formData.coveredParking}
-                  onChange={(e) =>
-                    updateFormData({ coveredParking: e.target.value })
-                  }
+                  {...register('coveredParking')}
                   className="h-11 text-sm border-2 focus:border-orange-500 transition-all"
                 />
               </motion.div>
@@ -80,8 +78,7 @@ export default function ParkingUtilities() {
                   type="number"
                   min="0"
                   placeholder="Number of spaces"
-                  value={formData.openParking}
-                  onChange={(e) => updateFormData({ openParking: e.target.value })}
+                  {...register('openParking')}
                   className="h-11 text-sm border-2 focus:border-orange-500 transition-all"
                 />
               </motion.div>
@@ -100,8 +97,8 @@ export default function ParkingUtilities() {
               Power Backup
             </Label>
             <Select
-              value={formData.powerBackup}
-              onValueChange={(value) => updateFormData({ powerBackup: value })}
+              value={watch('powerBackup')}
+              onValueChange={(value) => setValue('powerBackup', value)}
             >
               <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
                 <SelectValue />

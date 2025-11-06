@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 
 const facingOptions = [
   'East',
@@ -33,8 +34,8 @@ const viewOptions = [
 ];
 
 export default function LocationAttributes() {
-  const { formData, updateFormData, nextStep, previousStep } =
-    useListPropertyStore();
+  const { watch, setValue } = useFormContext();
+  const { nextStep, previousStep } = usePropertyForm();
 
   return (
     <div className="w-full px-6 py-6">
@@ -68,8 +69,8 @@ export default function LocationAttributes() {
                 Facing Direction
               </Label>
               <Select
-                value={formData.facing}
-                onValueChange={(value) => updateFormData({ facing: value })}
+                value={watch('facing')}
+                onValueChange={(value) => setValue('facing', value)}
               >
                 <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
                   <SelectValue placeholder="Select direction" />
@@ -99,8 +100,8 @@ export default function LocationAttributes() {
                 View
               </Label>
               <Select
-                value={formData.view}
-                onValueChange={(value) => updateFormData({ view: value })}
+                value={watch('view')}
+                onValueChange={(value) => setValue('view', value)}
               >
                 <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
                   <SelectValue placeholder="Select view" />

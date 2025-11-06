@@ -16,36 +16,36 @@ import {
   Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { usePropertyForm } from '../context/PropertyFormContext';
 
 export default function PropertyFormSidebar() {
   const { 
     currentStep, 
-    setCurrentStep, 
     stepValidation, 
-    formData,
-    updateFormData,
-  } = useListPropertyStore();
+    propertyType,
+    resetForm,
+    setCurrentStep
+  } = usePropertyForm();
 
   const handleChangePropertyType = () => {
     if (window.confirm('Changing property type will reset all your progress. Continue?')) {
-      updateFormData({ propertyType: null });
+      resetForm();
       setCurrentStep(0);
     }
   };
 
   // Define navigation items based on property type
   const getNavigationItems = () => {
-    const isBuildingProp = formData.propertyType && [
+    const isBuildingProp = propertyType && [
       'apartment', 'villa', 'duplex', 'independent_house', 
       'penthouse', 'studio', 'independent_floor'
-    ].includes(formData.propertyType);
+    ].includes(propertyType);
     
-    const isLandProp = formData.propertyType && [
+    const isLandProp = propertyType && [
       'plot', 'farmhouse', 'agricultural_land'
-    ].includes(formData.propertyType);
+    ].includes(propertyType);
     
-    const isApartmentOrPenthouse = ['apartment', 'penthouse'].includes(formData.propertyType);
+    const isApartmentOrPenthouse = ['apartment', 'penthouse'].includes(propertyType);
 
     const baseItems = [
       {
@@ -263,7 +263,7 @@ export default function PropertyFormSidebar() {
     <div className="w-72 border-r bg-muted/30 overflow-y-auto">
       <div className="p-4">
         {/* Property Type Badge */}
-        {formData.propertyType && (
+        {propertyType && (
           <div className="mb-6 p-3 rounded-lg bg-orange-100 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800">
             <div className="flex items-center justify-between mb-1">
               <p className="text-xs font-medium text-orange-600 dark:text-orange-400">
@@ -277,7 +277,7 @@ export default function PropertyFormSidebar() {
               </button>
             </div>
             <p className="text-sm font-semibold text-orange-900 dark:text-orange-100 capitalize">
-              {formData.propertyType.replace('_', ' ')}
+              {propertyType.replace('_', ' ')}
             </p>
           </div>
         )}

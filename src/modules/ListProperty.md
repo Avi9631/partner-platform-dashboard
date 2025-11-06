@@ -1,224 +1,97 @@
-We’ll design a comprehensive & future-proof attribute schema that works across:
-Apartment
+# Comprehensive Property Listing Form Structure
 
+## 1) Basic Property Details
+| Field Label | Field Name | Type | Notes |
+|---|---|---|---|
+| Property Type | property_type | Dropdown | Apartment / Villa / Plot etc |
+| Listing For | listing_type | Dropdown | Sale / Rent / Lease |
+| Ownership Type | ownership_type | Dropdown | Freehold / Leasehold / POA etc |
+| Project Name | project_name | Autocomplete | Optional for standalone houses |
+| RERA Registration No. | rera_id | Text | If applicable |
+| City | city | Dropdown | |
+| Locality / Sector | locality | Text | |
+| Address Line | address_text | Textarea | |
+| Landmark | landmark | Text | Nearby reference |
+| Map Location | geo_location | Map Picker | lat/long |
+| Show Exact Location | show_map_exact | Toggle | Yes/No |
 
-Independent House / Villa / Duplex / Independent Floor
+## 2) Area & Pricing
+| Field Label | Field Name | Type | Notes |
+|---|---|---|---|
+| Price | price | Number | |
+| Price Type | price_unit | Dropdown | Total / Per Sqft / Per Acre |
+| Negotiable | is_price_negotiable | Toggle | Yes/No |
+| Monthly Rent | rent_amount | Number | Shown if Rent |
+| Security Deposit | security_deposit | Number | |
+| Brokerage Fee | brokerage_fee | Number / % | Optional |
+| Maintenance Charges | maintenance | Number | Monthly |
+| Area Config | area_config | Repeater (type + value) | Carpet/Super/Built-up |
+| Plot Area | plot_area | Number | For land types |
+| Area Unit | area_unit | Dropdown | Sqft / Acre / Bigha etc |
+| Age of Property | age_of_property | Number | Years |
+| Possession Status | possession_status | Dropdown | Ready / UC / Resale |
+| Possession Date | possession_date | Date | |
 
+## 3) Room & Interior Configuration
+| Field Label | Field Name | Type | Notes |
+|---|---|---|---|
+| Bedrooms | bedrooms | Number | |
+| Additional Rooms | additional_rooms | Multi-select | Study/Store/Servant |
+| Bathrooms | bathrooms | Number | |
+| Balconies | balconies | Number | |
+| Balcony Type | balcony_type | Dropdown | Standard / Terrace |
+| Furnishing Status | furnishing_status | Dropdown | Unfurnished / Semi / Fully |
+| Furnishing Details | furnishing_details | Repeater | Wardrobes, AC, Modular Kitchen |
+| Kitchen Type | kitchen_type | Dropdown | Modular / Basic / Open |
+| Ceiling Height | ceiling_height | Number | Optional |
+| Flooring Types | flooring_types | Multi-select | Marble / Vitrified / Wooden |
 
-Penthouse / Studio
+## 4) Floor / Unit / Parking Details
+| Field Label | Field Name | Type | Notes |
+|---|---|---|---|
+| Tower / Block | tower_name | Text | Apartments only |
+| Unit Number | unit_number | Text | |
+| Hide Unit Number | is_unit_number_private | Toggle | |
+| Floor Number | floor_number | Number | |
+| Total Floors | total_floors | Number | |
+| Lift Available | lift_available | Toggle | |
+| Covered Parking | covered_parking | Number | |
+| Open Parking | open_parking | Number | |
+| EV Charging | ev_charging | Toggle | |
 
+## 5) Orientation & Utilities
+| Field Label | Field Name | Type | Notes |
+|---|---|---|---|
+| Facing | facing | Dropdown | East / West / North / South |
+| View | view | Dropdown | Garden / Road / Park / Pool |
+| Power Backup | power_backup | Dropdown | None / Partial / Full |
+| Water Supply | water_supply | Dropdown | Municipal / Borewell / Both |
+| Electricity Phase | meter_type | Dropdown | Single / Three Phase |
+| Waste Disposal | waste_disposal | Dropdown | Municipal / Society Managed |
 
-Plot
+## 6) Amenities & Community
+| Field Label | Field Name | Type | Notes |
+|---|---|---|---|
+| Amenities | amenities | Multi-select | Pool, Gym, CCTV, Clubhouse etc |
+| Gated Society | is_gated | Toggle | Yes/No |
+| Fire Safety Compliant | fire_safety | Toggle | Yes/No |
+| Pet Friendly | pet_friendly | Toggle | Yes/No |
 
+## 7) Land-Specific Fields
+| Field Label | Field Name | Type | Notes |
+|---|---|---|---|
+| Land Use | land_use | Dropdown | Residential / Commercial / Agricultural |
+| Plot Dimensions | plot_dimension | Text | Example: 30x50 |
+| Road Width | road_width | Number | In feet/meters |
+| Terrain Level | terrain_level | Dropdown | Flat / Elevated / Sloped |
+| Soil Type | soil_type | Dropdown | Black / Red / Sandy / Clay |
+| Irrigation Source | irrigation_source | Dropdown | Borewell / Canal / None |
+| Fencing Available | fencing | Toggle | Yes/No |
 
-Farm House / Agricultural Land
-
-
-
-Core Design Principle
-Some data points apply only to built structures, others only to land-based properties.
-So we structure like this:
-Table
-Purpose
-PropertyAsset
-Permanent characteristics of the property
-Listing
-The listing that represents sale/rent
-PropertyAttributes_Building
-Fields relevant to homes/apartments
-PropertyAttributes_Land
-Fields relevant to plots/farms
-Common Additional Attributes
-JSONB (flexible future-proof area)
-
-
-✅ Standardized Field Set (Final Refined List)
-PropertyAsset (Common for all types)
-Field
-Type
-Description
-id
-UUID
-Unique ID
-property_type
-Enum
-Apartment / Villa / Plot / Farm House etc.
-project_name
-Text / FK optional
-For apartments & township properties
-city
-Text
-City name
-geo_location
-Point (lat, long)
-Map coordinate
-address_text
-Text
-Textual address
-age_of_property
-Integer (years)
-Approx property age
-possession_status
-Enum
-Ready / Under Construction / Resale
-possession_date
-Date (nullable)
-If not ready yet
-attributes
-JSONB
-Custom attributes not in schema
-
-
-For Building / Residential Unit Types
-(Apartment / Independent House / Duplex / Independent Floor / Villa / Penthouse / Studio)
-Store in property_attributes_building
-Field
-Type
-Examples / Notes
-bedrooms
-Integer
-1,2,3,4+
-additional_rooms
-JSONB
-Servant Room, Study, Store etc.
-carpet_area
-Number
-Sqft/Sqm
-super_area
-Number
-
-
-furnishing_status
-Enum
-Unfurnished / Semi / Fully
-furnishing_details
-JSONB
-{"wardrobes":2,"modular_kitchen":true}
-bathrooms
-Integer
-1..5
-balconies
-Integer
-0..5
-balcony_type
-Enum
-Standard / Juliet / Terrace
-covered_parking
-Integer
-Count
-open_parking
-Integer
-Count
-power_backup
-Enum
-None / Partial / Full
-facing
-Enum
-East/West/North/South/Northeast etc.
-view
-Enum
-Garden / Road / Park / Club / City etc.
-flooring_types
-JSONB Array
-["Vitrified","Wooden"]
-tower_name
-Text
-For apartments
-floor_number
-Integer
-1-40
-total_floors
-Integer
-Tower height
-unit_number
-Text
-Can be hidden
-is_unit_number_private
-Boolean
-Yes/No
-
-
-For Land Types
-(Plot / Farm House Land / Agricultural Land)
-Store in property_attributes_land
-Field
-Type
-Description
-plot_area
-Number
-Units in sqft/acre/bigha
-area_unit
-Enum
-Sqft / Acre / Bigha / Kanal / Gaj etc
-plot_dimension
-Text
-Example: 30x40
-land_use
-Enum
-Residential / Commercial / Agricultural
-road_width
-Number
-Adjacent road width in feet/meters
-fencing
-Boolean
-Yes/No
-irrigation_source
-Text / Enum
-Canal / Borewell / No irrigation
-
-
-Listing Fields
-(What agent/owner posts)
-Field
-Type
-Description
-id
-UUID
-
-
-property_asset_id
-FK
-Links to property
-listed_by_user_id
-FK
-Agent or owner
-listing_type
-Enum
-Sale / Rent / Lease
-price
-Decimal
-Asking price
-price_unit
-Enum
-Total / Per Sqft / Per Acre etc.
-maintenance_charges
-Decimal (optional)
-Monthly
-available_from
-Date
-Move-in date
-suitable_for
-JSONB Array
-Family / Bachelor / Company Lease
-title
-Text
-Listing headline
-description
-Text
-Marketing description
-amenities
-JSONB Array
-Club, Gym, CCTV, Pool etc.
-status
-Enum
-Active / Sold / Withdrawn / Expired
-created_at
-Timestamp
-
-
-updated_at
-Timestamp
-
-
-
-
+## 8) Listing Presentation
+| Field Label | Field Name | Type | Notes |
+|---|---|---|---|
+| Title | title | Text | Short headline |
+| Description | description | Textarea | Marketing copy |
+| Tags | tags | Multi-select | Corner Unit, Park Facing etc |
+| Photos / Videos | listing_media | Media Upload | Supports ordering |

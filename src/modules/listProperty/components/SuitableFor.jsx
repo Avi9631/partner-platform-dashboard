@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Users } from 'lucide-react';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 import suitableForSchema from '../schemas/suitableForSchema';
 
 const suitableForOptions = [
@@ -13,7 +14,8 @@ const suitableForOptions = [
 ];
 
 export default function SuitableFor() {
-  const { formData, updateFormData, updateStepValidation } = useListPropertyStore();
+  const mainForm = useFormContext();
+  const { updateStepValidation, currentStep } = usePropertyForm();
 
   // Initialize React Hook Form with Zod validation
   const {
@@ -24,22 +26,22 @@ export default function SuitableFor() {
     resolver: zodResolver(suitableForSchema),
     mode: 'onChange',
     defaultValues: {
-      suitableFor: formData.suitableFor || [],
+      suitableFor: mainForm.watch('suitableFor') || [],
     },
   });
 
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(8, isValid);
-  }, [isValid, updateStepValidation]);
+    updateStepValidation(currentStep, isValid);
+  }, [isValid, currentStep, updateStepValidation]);
 
-  // Sync form data with store on field changes
+  // Sync form data with main form on field changes
   useEffect(() => {
     const subscription = watch((value) => {
-      updateFormData(value);
+      mainForm.setValue('suitableFor', value.suitableFor);
     });
     return () => subscription.unsubscribe();
-  }, [watch, updateFormData]);
+  }, [watch, mainForm]);
 
   const toggleSuitableFor = (value) => {
     const current = watch('suitableFor') || [];
@@ -50,7 +52,8 @@ export default function SuitableFor() {
   };
 
   // Only show for rent/lease
-  if (formData.listingType === 'sale') {
+  const listingType = mainForm.watch('listingType');
+  if (listingType === 'sale') {
     return null;
   }
 

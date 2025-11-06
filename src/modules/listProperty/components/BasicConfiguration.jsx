@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useFormContext } from 'react-hook-form';
 import { motion } from 'motion/react';
-import { Bed, Bath } from 'lucide-react';
+import { Bed, Bath, ChefHat, ArrowUpDown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,8 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import useListPropertyStore from '../store/useListPropertyStore';
-import basicConfigurationSchema from '../schemas/basicConfigurationSchema';
+import { usePropertyForm } from '../context/PropertyFormContext';
 
 const additionalRoomOptions = [
   'Servant Room',
@@ -25,37 +24,13 @@ const additionalRoomOptions = [
 ];
 
 export default function BasicConfiguration() {
-  const { formData, updateFormData, nextStep, previousStep, updateStepValidation } =
-    useListPropertyStore();
-
-  // Initialize React Hook Form with Zod validation
-  const {
-    control,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors, isValid },
-  } = useForm({
-    resolver: zodResolver(basicConfigurationSchema),
-    mode: 'onChange',
-    defaultValues: {
-      bedrooms: formData.bedrooms || '',
-      bathrooms: formData.bathrooms || '',
-      balconies: formData.balconies || '',
-      additionalRooms: formData.additionalRooms || [],
-    },
-  });
+  const { nextStep, previousStep, updateStepValidation } = usePropertyForm();
+  const { control, watch, setValue, register, formState: { errors, isValid } } = useFormContext();
 
   // Update step validation when form validity changes
   useEffect(() => {
     updateStepValidation(2, isValid);
   }, [isValid, updateStepValidation]);
-
-  // Handle form submission
-  const onSubmit = (data) => {
-    updateFormData(data);
-    nextStep();
-  };
 
   const toggleAdditionalRoom = (room) => {
     const current = watch('additionalRooms') || [];
@@ -83,7 +58,7 @@ export default function BasicConfiguration() {
       </motion.div>
 
       <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-6">
           {/* Bedrooms, Bathrooms, Balconies */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Bedrooms */}
@@ -196,11 +171,102 @@ export default function BasicConfiguration() {
             </motion.div>
           </div>
 
+          {/* Balcony Type & Kitchen Type */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Balcony Type */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.45 }}
+              className="space-y-2"
+            >
+              <Label className="text-sm">Balcony Type</Label>
+              <Controller
+                name="balconyType"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">Standard Balcony</SelectItem>
+                      <SelectItem value="terrace">Terrace / Rooftop</SelectItem>
+                      <SelectItem value="french">French Balcony</SelectItem>
+                      <SelectItem value="juliet">Juliet Balcony</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </motion.div>
+
+            {/* Kitchen Type */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+              className="space-y-2"
+            >
+              <Label className="text-sm flex items-center gap-2">
+                <ChefHat className="w-4 h-4 text-orange-600" />
+                Kitchen Type
+              </Label>
+              <Controller
+                name="kitchenType"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="modular">Modular Kitchen</SelectItem>
+                      <SelectItem value="basic">Basic Kitchen</SelectItem>
+                      <SelectItem value="open">Open Kitchen</SelectItem>
+                      <SelectItem value="semi_open">Semi-Open Kitchen</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </motion.div>
+          </div>
+
+          {/* Ceiling Height */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+            className="space-y-2"
+          >
+            <Label htmlFor="ceilingHeight" className="text-sm flex items-center gap-2">
+              <ArrowUpDown className="w-4 h-4 text-orange-600" />
+              Ceiling Height (in feet)
+            </Label>
+            <Input
+              id="ceilingHeight"
+              type="number"
+              step="0.1"
+              min="8"
+              placeholder="e.g., 10"
+              {...register('ceilingHeight')}
+              className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+            />
+            <p className="text-xs text-muted-foreground">
+              Standard height is usually 10 feet
+            </p>
+          </motion.div>
+
           {/* Additional Rooms */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.6 }}
             className="space-y-3"
           >
             <Label className="text-sm font-semibold">Additional Rooms</Label>
@@ -227,7 +293,7 @@ export default function BasicConfiguration() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.7 }}
             className="flex justify-between mt-8 pt-6 border-t border-orange-200 dark:border-orange-900"
           >
             <Button
@@ -253,8 +319,8 @@ export default function BasicConfiguration() {
               Back
             </Button>
             <Button
-              type="submit"
               size="default"
+              onClick={nextStep}
               disabled={!isValid}
               className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
             >
@@ -274,7 +340,7 @@ export default function BasicConfiguration() {
               </svg>
             </Button>
           </motion.div>
-        </form>
+        </div>
       </div>
     </div>
   );

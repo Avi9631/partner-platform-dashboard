@@ -1,10 +1,10 @@
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { usePropertyForm } from '../context/PropertyFormContext';
 import AmenitiesFeatures from './AmenitiesFeatures';
 
 export default function AmenitiesStep() {
-  const { nextStep, previousStep } = useListPropertyStore();
+  const { nextStep, previousStep } = usePropertyForm();
 
   // This step is optional, so always allow continue
   const canContinue = true;

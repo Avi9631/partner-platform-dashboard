@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { PropertyFormProvider, usePropertyForm } from '../context/PropertyFormContext';
 import PropertyFormSidebar from './PropertyFormSidebar';
 import PropertyTypeSelector from './PropertyTypeSelector';
 import BasicDetails from './BasicDetails';
@@ -24,27 +24,27 @@ import SuitableForStep from './SuitableForStep';
 import ListingInfoStep from './ListingInfoStep';
 import AmenitiesStep from './AmenitiesStep';
 
-export default function PropertyFormSheet({ open, onOpenChange }) {
-  const { currentStep, formData, resetForm } = useListPropertyStore();
+function PropertyFormContent({ open }) {
+  const { currentStep, resetForm, propertyType, onClose } = usePropertyForm();
 
   const handleClose = () => {
     if (window.confirm('Are you sure you want to close? All progress will be lost.')) {
       resetForm();
-      onOpenChange(false);
+      onClose(false);
     }
   };
 
   const renderStepContent = () => {
-    const isBuildingType = formData.propertyType && [
+    const isBuildingType = propertyType && [
       'apartment', 'villa', 'duplex', 'independent_house', 
       'penthouse', 'studio', 'independent_floor'
-    ].includes(formData.propertyType);
+    ].includes(propertyType);
     
-    const isLandType = formData.propertyType && [
+    const isLandType = propertyType && [
       'plot', 'farmhouse', 'agricultural_land'
-    ].includes(formData.propertyType);
+    ].includes(propertyType);
     
-    const isApartmentOrPenthouse = ['apartment', 'penthouse'].includes(formData.propertyType);
+    const isApartmentOrPenthouse = ['apartment', 'penthouse'].includes(propertyType);
     
     // Building type flow: 1-BasicDetails, 2-BasicConfig, 3-AreaDetails, 
     // 4-Furnishing, 5-Parking, 6-Location, 7-FloorDetails(if apt/penthouse), 
@@ -103,7 +103,7 @@ export default function PropertyFormSheet({ open, onOpenChange }) {
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={onClose}>
       <SheetContent 
         side="right" 
         className="w-full sm:max-w-full p-0 overflow-hidden flex flex-col"
@@ -124,7 +124,7 @@ export default function PropertyFormSheet({ open, onOpenChange }) {
               <X className="h-5 w-5" />
             </Button>
           </div>
-          {formData.propertyType && (
+          {propertyType && (
             <p className="text-sm text-muted-foreground">
               Complete all sections to publish your listing
             </p>
@@ -133,12 +133,12 @@ export default function PropertyFormSheet({ open, onOpenChange }) {
 
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar Navigation */}
-          {formData.propertyType && (
+          {propertyType && (
             <PropertyFormSidebar />
           )}
 
           {/* Property Type Selector Overlay - shown when no property type selected */}
-          {!formData.propertyType && (
+          {!propertyType && (
             <div className="flex-1 overflow-y-auto">
               <ScrollArea className="h-full">
                 <div className="min-h-full">
@@ -149,7 +149,7 @@ export default function PropertyFormSheet({ open, onOpenChange }) {
           )}
 
           {/* Main Content Area - shown after property type selected */}
-          {formData.propertyType && (
+          {propertyType && (
             <div className="flex-1 overflow-y-auto">
               <ScrollArea className="h-full">
                 <div className="min-h-full">
@@ -161,5 +161,13 @@ export default function PropertyFormSheet({ open, onOpenChange }) {
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+export default function PropertyFormSheet({ open, onOpenChange }) {
+  return (
+    <PropertyFormProvider onClose={onOpenChange}>
+      <PropertyFormContent open={open} onOpenChange={onOpenChange} />
+    </PropertyFormProvider>
   );
 }

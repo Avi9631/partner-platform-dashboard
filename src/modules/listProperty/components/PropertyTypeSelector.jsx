@@ -3,7 +3,8 @@ import { motion } from 'motion/react';
 import { Building2, Home, LandPlot, Trees, Building } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import useListPropertyStore from '../store/useListPropertyStore';
+import { useFormContext } from 'react-hook-form';
+import { usePropertyForm } from '../context/PropertyFormContext';
 
 const propertyTypes = [
   {
@@ -57,18 +58,19 @@ const propertyTypes = [
 ];
 
 export default function PropertyTypeSelector() {
-  const { formData, updateFormData, setCurrentStep, updateStepValidation } = useListPropertyStore();
-  const [selectedType, setSelectedType] = useState(formData.propertyType);
+  const { setValue, watch } = useFormContext();
+  const { setPropertyType, nextStep } = usePropertyForm();
+  const [selectedType, setSelectedType] = useState(watch('propertyType'));
 
   const handleSelect = (typeId) => {
     setSelectedType(typeId);
-    updateFormData({ propertyType: typeId });
-    updateStepValidation(0, true);
+    setValue('propertyType', typeId, { shouldValidate: true });
   };
 
   const handleContinue = () => {
     if (selectedType) {
-      setCurrentStep(1); // Start from Basic Details (step 1)
+      setPropertyType(selectedType); // Update property type in context
+      nextStep(); // Move to next step (Basic Details)
     }
   };
 
