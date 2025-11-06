@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap');
+
+.completed-stamp {
+    text-align: center;
+    text-transform: uppercase;
+    font-family: 'Bangers', cursive;
+    font-size: 1.5rem;
+    color: blue; /* Deep red */
+    transform: rotate(0deg);
+    opacity: 0.9;
+}
+
