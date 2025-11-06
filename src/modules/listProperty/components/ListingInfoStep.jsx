@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
-import useListPropertyStore from '../../store/useListPropertyStore';
+import useListPropertyStore from '../store/useListPropertyStore';
 import ListingInformation from './ListingInformation';
 
 export default function ListingInfoStep() {

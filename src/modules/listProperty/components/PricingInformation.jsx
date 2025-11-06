@@ -1,3 +1,6 @@
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { DollarSign, Calendar } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,10 +11,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import useListPropertyStore from '../../store/useListPropertyStore';
+import useListPropertyStore from '../store/useListPropertyStore';
+import pricingInformationSchema from '../schemas/pricingInformationSchema';
 
 export default function PricingInformation() {
-  const { formData, updateFormData } = useListPropertyStore();
+  const { formData, updateFormData, updateStepValidation } = useListPropertyStore();
+
+  // Initialize React Hook Form with Zod validation
+  const {
+    register,
+    control,
+    watch,
+    setValue,
+    formState: { errors, isValid },
+  } = useForm({
+    resolver: zodResolver(pricingInformationSchema),
+    mode: 'onChange',
+    defaultValues: {
+      listingType: formData.listingType || 'sale',
+      price: formData.price || '',
+      priceUnit: formData.priceUnit || 'total',
+      maintenanceCharges: formData.maintenanceCharges || '',
+      availableFrom: formData.availableFrom || '',
+    },
+  });
+
+  // Update step validation when form validity changes
+  useEffect(() => {
+    updateStepValidation(5, isValid);
+  }, [isValid, updateStepValidation]);
+
+  // Sync form data with store on field changes
+  useEffect(() => {
+    const subscription = watch((value) => {
+      updateFormData(value);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
 
   return (
     <div className="space-y-4">
@@ -29,9 +65,10 @@ export default function PricingInformation() {
           {['sale', 'rent', 'lease'].map((type) => (
             <button
               key={type}
-              onClick={() => updateFormData({ listingType: type })}
+              type="button"
+              onClick={() => setValue('listingType', type, { shouldValidate: true })}
               className={`p-2 border rounded text-xs font-medium capitalize transition-all ${
-                formData.listingType === type
+                watch('listingType') === type
                   ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400 scale-105'
                   : 'border-muted hover:border-orange-500/50 hover:scale-105'
               }`}
@@ -40,13 +77,16 @@ export default function PricingInformation() {
             </button>
           ))}
         </div>
+        {errors.listingType && (
+          <p className="text-sm text-red-500 mt-1">{errors.listingType.message}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Price */}
         <div className="space-y-1.5">
           <Label className="text-sm">
-            {formData.listingType === 'sale' ? 'Asking Price' : 'Monthly Rent'}{' '}
+            {watch('listingType') === 'sale' ? 'Asking Price' : 'Monthly Rent'}{' '}
             <span className="text-red-500">*</span>
           </Label>
           <div className="relative">
@@ -57,38 +97,45 @@ export default function PricingInformation() {
               type="number"
               min="0"
               placeholder={
-                formData.listingType === 'sale' ? '50,00,000' : '25,000'
+                watch('listingType') === 'sale' ? '50,00,000' : '25,000'
               }
-              value={formData.price}
-              onChange={(e) => updateFormData({ price: e.target.value })}
-              className="h-9 pl-6 text-sm"
-              required
+              {...register('price')}
+              className={`h-9 pl-6 text-sm ${errors.price ? 'border-red-500' : ''}`}
             />
           </div>
+          {errors.price && (
+            <p className="text-sm text-red-500 mt-1">{errors.price.message}</p>
+          )}
         </div>
 
         {/* Price Unit */}
         <div className="space-y-1.5">
           <Label className="text-sm">Price Per</Label>
-          <Select
-            value={formData.priceUnit}
-            onValueChange={(value) => updateFormData({ priceUnit: value })}
-          >
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="total">Total Price</SelectItem>
-              <SelectItem value="per_sqft">Per Sq.ft</SelectItem>
-              <SelectItem value="per_sqm">Per Sq.m</SelectItem>
-              <SelectItem value="per_acre">Per Acre</SelectItem>
-            </SelectContent>
-          </Select>
+          <Controller
+            name="priceUnit"
+            control={control}
+            render={({ field }) => (
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="total">Total Price</SelectItem>
+                  <SelectItem value="per_sqft">Per Sq.ft</SelectItem>
+                  <SelectItem value="per_sqm">Per Sq.m</SelectItem>
+                  <SelectItem value="per_acre">Per Acre</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
         </div>
       </div>
 
       {/* Maintenance Charges (for rent) */}
-      {formData.listingType !== 'sale' && (
+      {watch('listingType') !== 'sale' && (
         <div className="space-y-1.5">
           <Label className="text-sm">
             Maintenance Charges (Monthly)
@@ -101,13 +148,13 @@ export default function PricingInformation() {
               type="number"
               min="0"
               placeholder="e.g., 2,000"
-              value={formData.maintenanceCharges}
-              onChange={(e) =>
-                updateFormData({ maintenanceCharges: e.target.value })
-              }
-              className="h-9 pl-6 text-sm"
+              {...register('maintenanceCharges')}
+              className={`h-9 pl-6 text-sm ${errors.maintenanceCharges ? 'border-red-500' : ''}`}
             />
           </div>
+          {errors.maintenanceCharges && (
+            <p className="text-sm text-red-500 mt-1">{errors.maintenanceCharges.message}</p>
+          )}
         </div>
       )}
 
@@ -120,8 +167,7 @@ export default function PricingInformation() {
         <Input
           id="availableFrom"
           type="date"
-          value={formData.availableFrom || ''}
-          onChange={(e) => updateFormData({ availableFrom: e.target.value })}
+          {...register('availableFrom')}
           className="h-9 text-sm"
         />
       </div>

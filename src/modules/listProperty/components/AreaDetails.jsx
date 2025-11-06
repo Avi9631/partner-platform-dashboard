@@ -1,15 +1,42 @@
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { Maximize } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import useListPropertyStore from '../store/useListPropertyStore';
+import areaDetailsSchema from '../schemas/areaDetailsSchema';
 
 export default function AreaDetails() {
-  const { formData, updateFormData, nextStep, previousStep } =
+  const { formData, updateFormData, nextStep, previousStep, updateStepValidation } =
     useListPropertyStore();
 
-  const isValid = !!(formData.carpetArea && formData.superArea);
+  // Initialize React Hook Form with Zod validation
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm({
+    resolver: zodResolver(areaDetailsSchema),
+    mode: 'onChange',
+    defaultValues: {
+      carpetArea: formData.carpetArea || '',
+      superArea: formData.superArea || '',
+    },
+  });
+
+  // Update step validation when form validity changes
+  useEffect(() => {
+    updateStepValidation(2, isValid);
+  }, [isValid, updateStepValidation]);
+
+  // Handle form submission
+  const onSubmit = (data) => {
+    updateFormData(data);
+    nextStep();
+  };
 
   return (
     <div className="w-full px-6 py-6">
@@ -29,7 +56,7 @@ export default function AreaDetails() {
       </motion.div>
 
       <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
-        <div className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Carpet Area */}
             <motion.div
@@ -47,13 +74,19 @@ export default function AreaDetails() {
                 type="number"
                 min="1"
                 placeholder="e.g., 1200"
-                value={formData.carpetArea}
-                onChange={(e) => updateFormData({ carpetArea: e.target.value })}
-                className="h-11 text-sm border-2 focus:border-orange-500 transition-all"
+                {...register('carpetArea')}
+                className={`h-11 text-sm border-2 focus:border-orange-500 transition-all ${
+                  errors.carpetArea ? 'border-red-500' : ''
+                }`}
               />
-              <p className="text-xs text-muted-foreground">
-                Usable floor area excluding walls and common areas
-              </p>
+              {errors.carpetArea && (
+                <p className="text-sm text-red-500 mt-1">{errors.carpetArea.message}</p>
+              )}
+              {!errors.carpetArea && (
+                <p className="text-xs text-muted-foreground">
+                  Usable floor area excluding walls and common areas
+                </p>
+              )}
             </motion.div>
 
             {/* Super Area */}
@@ -72,13 +105,19 @@ export default function AreaDetails() {
                 type="number"
                 min="1"
                 placeholder="e.g., 1500"
-                value={formData.superArea}
-                onChange={(e) => updateFormData({ superArea: e.target.value })}
-                className="h-11 text-sm border-2 focus:border-orange-500 transition-all"
+                {...register('superArea')}
+                className={`h-11 text-sm border-2 focus:border-orange-500 transition-all ${
+                  errors.superArea ? 'border-red-500' : ''
+                }`}
               />
-              <p className="text-xs text-muted-foreground">
-                Total area including walls and common areas
-              </p>
+              {errors.superArea && (
+                <p className="text-sm text-red-500 mt-1">{errors.superArea.message}</p>
+              )}
+              {!errors.superArea && (
+                <p className="text-xs text-muted-foreground">
+                  Total area including walls and common areas
+                </p>
+              )}
             </motion.div>
           </div>
 
@@ -93,58 +132,59 @@ export default function AreaDetails() {
               <span className="font-semibold">💡 Tip:</span> Super area is typically 20-30% more than carpet area due to common spaces and walls.
             </p>
           </motion.div>
-        </div>
 
-        {/* Navigation Buttons */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex justify-between mt-8 pt-6 border-t border-orange-200 dark:border-orange-900"
-        >
-          <Button
-            variant="outline"
-            size="default"
-            onClick={previousStep}
-            className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
+          {/* Navigation Buttons */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="flex justify-between mt-8 pt-6 border-t border-orange-200 dark:border-orange-900"
           >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              onClick={previousStep}
+              className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 17l-5-5m0 0l5-5m-5 5h12"
-              />
-            </svg>
-            Back
-          </Button>
-          <Button
-            size="default"
-            onClick={nextStep}
-            disabled={!isValid}
-            className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
-          >
-            Continue
-            <svg
-              className="w-4 h-4 ml-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 17l-5-5m0 0l5-5m-5 5h12"
+                />
+              </svg>
+              Back
+            </Button>
+            <Button
+              type="submit"
+              size="default"
+              disabled={!isValid}
+              className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
-            </svg>
-          </Button>
-        </motion.div>
+              Continue
+              <svg
+                className="w-4 h-4 ml-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+            </Button>
+          </motion.div>
+        </form>
       </div>
     </div>
   );

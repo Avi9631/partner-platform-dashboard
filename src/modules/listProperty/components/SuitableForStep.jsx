@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
-import useListPropertyStore from '../../store/useListPropertyStore';
+import useListPropertyStore from '../store/useListPropertyStore';
 import SuitableFor from './SuitableFor';
 
 export default function SuitableForStep() {

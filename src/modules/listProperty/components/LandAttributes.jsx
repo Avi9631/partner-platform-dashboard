@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { Ruler, Fence, Droplets, Map } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -13,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import useListPropertyStore from '../store/useListPropertyStore';
+import landAttributesSchema from '../schemas/landAttributesSchema';
 
 const areaUnits = [
   { value: 'sqft', label: 'Square Feet' },
@@ -43,21 +46,37 @@ export default function LandAttributes() {
   const { formData, updateFormData, nextStep, previousStep, updateStepValidation } =
     useListPropertyStore();
 
-  // Separate validation logic from state update
-  const checkIsValid = () => {
-    return !!(formData.plotArea && formData.areaUnit && formData.landUse);
-  };
+  // Initialize React Hook Form with Zod validation
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setValue,
+    formState: { errors, isValid },
+  } = useForm({
+    resolver: zodResolver(landAttributesSchema),
+    mode: 'onChange',
+    defaultValues: {
+      plotArea: formData.plotArea || '',
+      areaUnit: formData.areaUnit || 'sqft',
+      plotDimension: formData.plotDimension || '',
+      landUse: formData.landUse || '',
+      roadWidth: formData.roadWidth || '',
+      fencing: formData.fencing || false,
+      irrigationSource: formData.irrigationSource || '',
+    },
+  });
 
-  // Only update validation state in useEffect
+  // Update step validation when form validity changes
   useEffect(() => {
-    const isValid = !!(formData.plotArea && formData.areaUnit && formData.landUse);
     updateStepValidation(2, isValid);
-  }, [formData.plotArea, formData.areaUnit, formData.landUse, updateStepValidation]);
+  }, [isValid, updateStepValidation]);
 
-  const handleContinue = () => {
-    if (checkIsValid()) {
-      nextStep();
-    }
+  // Handle form submission
+  const onSubmit = (data) => {
+    updateFormData(data);
+    nextStep();
   };
 
   return (
@@ -78,7 +97,7 @@ export default function LandAttributes() {
       </motion.div>
 
       <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
-        <div className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Plot Area & Dimensions */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
@@ -95,11 +114,14 @@ export default function LandAttributes() {
                 type="number"
                 min="0"
                 placeholder="Enter area"
-                value={formData.plotArea}
-                onChange={(e) => updateFormData({ plotArea: e.target.value })}
-                className="h-9 text-sm focus:border-primary transition-all"
-                required
+                {...register('plotArea')}
+                className={`h-9 text-sm focus:border-primary transition-all ${
+                  errors.plotArea ? 'border-red-500' : ''
+                }`}
               />
+              {errors.plotArea && (
+                <p className="text-sm text-red-500 mt-1">{errors.plotArea.message}</p>
+              )}
             </div>
 
             {/* Area Unit */}
@@ -107,21 +129,32 @@ export default function LandAttributes() {
               <Label className="text-sm">
                 Unit <span className="text-red-500">*</span>
               </Label>
-              <Select
-                value={formData.areaUnit}
-                onValueChange={(value) => updateFormData({ areaUnit: value })}
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {areaUnits.map((unit) => (
-                    <SelectItem key={unit.value} value={unit.value}>
-                      {unit.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="areaUnit"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger className={`h-9 text-sm ${
+                      errors.areaUnit ? 'border-red-500' : ''
+                    }`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {areaUnits.map((unit) => (
+                        <SelectItem key={unit.value} value={unit.value}>
+                          {unit.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.areaUnit && (
+                <p className="text-sm text-red-500 mt-1">{errors.areaUnit.message}</p>
+              )}
             </div>
           </div>
 
@@ -133,8 +166,7 @@ export default function LandAttributes() {
             <Input
               id="plotDimension"
               placeholder="e.g., 30 x 40 ft or 50 x 80 m"
-              value={formData.plotDimension}
-              onChange={(e) => updateFormData({ plotDimension: e.target.value })}
+              {...register('plotDimension')}
               className="h-9 text-sm focus:border-primary transition-all"
             />
             <p className="text-xs text-muted-foreground mt-1">
@@ -153,10 +185,14 @@ export default function LandAttributes() {
               type="number"
               min="0"
               placeholder="e.g., 20"
-              value={formData.roadWidth}
-              onChange={(e) => updateFormData({ roadWidth: e.target.value })}
-              className="h-9 text-sm focus:border-primary transition-all"
+              {...register('roadWidth')}
+              className={`h-9 text-sm focus:border-primary transition-all ${
+                errors.roadWidth ? 'border-red-500' : ''
+              }`}
             />
+            {errors.roadWidth && (
+              <p className="text-sm text-red-500 mt-1">{errors.roadWidth.message}</p>
+            )}
           </div>
         </div>
 
@@ -171,9 +207,10 @@ export default function LandAttributes() {
               {landUseOptions.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => updateFormData({ landUse: option.value })}
+                  type="button"
+                  onClick={() => setValue('landUse', option.value, { shouldValidate: true })}
                   className={`p-3 border rounded text-xs font-medium transition-all flex flex-col items-center gap-1.5 ${
-                    formData.landUse === option.value
+                    watch('landUse') === option.value
                       ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400 scale-105'
                       : 'border-muted hover:border-orange-500/50 hover:scale-105'
                   }`}
@@ -183,6 +220,9 @@ export default function LandAttributes() {
                 </button>
               ))}
             </div>
+            {errors.landUse && (
+              <p className="text-sm text-red-500 mt-1">{errors.landUse.message}</p>
+            )}
           </div>
         </div>
 
@@ -204,8 +244,8 @@ export default function LandAttributes() {
               </div>
             </div>
             <Switch
-              checked={formData.fencing}
-              onCheckedChange={(checked) => updateFormData({ fencing: checked })}
+              checked={watch('fencing')}
+              onCheckedChange={(checked) => setValue('fencing', checked, { shouldValidate: true })}
               className="data-[state=checked]:bg-primary"
             />
           </div>
@@ -217,23 +257,27 @@ export default function LandAttributes() {
                 <Droplets className="w-3.5 h-3.5 text-primary" />
                 Irrigation Source
               </Label>
-              <Select
-                value={formData.irrigationSource}
-                onValueChange={(value) =>
-                  updateFormData({ irrigationSource: value })
-                }
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Select irrigation source" />
-                </SelectTrigger>
-                <SelectContent>
-                  {irrigationSources.map((source) => (
-                    <SelectItem key={source} value={source.toLowerCase().replace(' ', '_')}>
-                      {source}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="irrigationSource"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Select irrigation source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {irrigationSources.map((source) => (
+                        <SelectItem key={source} value={source.toLowerCase().replace(' ', '_')}>
+                          {source}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
           )}
         </div>
@@ -267,11 +311,11 @@ export default function LandAttributes() {
             </div>
           </div>
         </div>
-        </div>
 
         {/* Navigation Buttons */}
         <div className="flex justify-between mt-6 pt-6 border-t border-orange-200 dark:border-orange-900">
           <Button
+            type="button"
             variant="outline"
             size="default"
             onClick={previousStep}
@@ -293,9 +337,9 @@ export default function LandAttributes() {
             Back
           </Button>
           <Button
+            type="submit"
             size="default"
-            onClick={handleContinue}
-            disabled={!checkIsValid()}
+            disabled={!isValid}
             className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
           >
             Continue
@@ -314,6 +358,7 @@ export default function LandAttributes() {
             </svg>
           </Button>
         </div>
+        </form>
       </div>
     </div>
   );

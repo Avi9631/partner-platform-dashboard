@@ -13,20 +13,16 @@ import PropertyTypeSelector from './PropertyTypeSelector';
 import BasicDetails from './BasicDetails';
 import LandAttributes from './LandAttributes';
 import ReviewAndSubmit from './ReviewAndSubmit';
-import {
-  BasicConfiguration,
-  AreaDetails,
-  FurnishingAmenities,
-  ParkingUtilities,
-  LocationAttributes,
-  FloorDetails,
-} from './buildingSubSteps';
-import {
-  PricingInfoStep,
-  SuitableForStep,
-  ListingInfoStep,
-  AmenitiesStep,
-} from './listingSubSteps';
+import BasicConfiguration from './BasicConfiguration';
+import AreaDetails from './AreaDetails';
+import FurnishingAmenities from './FurnishingAmenities';
+import ParkingUtilities from './ParkingUtilities';
+import LocationAttributes from './LocationAttributes';
+import FloorDetails from './FloorDetails';
+import PricingInfoStep from './PricingInfoStep';
+import SuitableForStep from './SuitableForStep';
+import ListingInfoStep from './ListingInfoStep';
+import AmenitiesStep from './AmenitiesStep';
 
 export default function PropertyFormSheet({ open, onOpenChange }) {
   const { currentStep, formData, resetForm } = useListPropertyStore();
@@ -114,7 +110,7 @@ export default function PropertyFormSheet({ open, onOpenChange }) {
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <SheetHeader className="px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20">
+        <SheetHeader className="px-6 py-4 mb-0 border-b bg-gradient-to-r from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20">
           <div className="flex items-center justify-between">
             <SheetTitle className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
               List Your Property

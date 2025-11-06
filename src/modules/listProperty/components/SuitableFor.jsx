@@ -1,5 +1,9 @@
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Users } from 'lucide-react';
-import useListPropertyStore from '../../store/useListPropertyStore';
+import useListPropertyStore from '../store/useListPropertyStore';
+import suitableForSchema from '../schemas/suitableForSchema';
 
 const suitableForOptions = [
   { value: 'family', label: 'Family', icon: '👨‍👩‍👧‍👦' },
@@ -9,14 +13,40 @@ const suitableForOptions = [
 ];
 
 export default function SuitableFor() {
-  const { formData, updateFormData } = useListPropertyStore();
+  const { formData, updateFormData, updateStepValidation } = useListPropertyStore();
+
+  // Initialize React Hook Form with Zod validation
+  const {
+    watch,
+    setValue,
+    formState: { isValid },
+  } = useForm({
+    resolver: zodResolver(suitableForSchema),
+    mode: 'onChange',
+    defaultValues: {
+      suitableFor: formData.suitableFor || [],
+    },
+  });
+
+  // Update step validation when form validity changes
+  useEffect(() => {
+    updateStepValidation(8, isValid);
+  }, [isValid, updateStepValidation]);
+
+  // Sync form data with store on field changes
+  useEffect(() => {
+    const subscription = watch((value) => {
+      updateFormData(value);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
 
   const toggleSuitableFor = (value) => {
-    const current = formData.suitableFor || [];
+    const current = watch('suitableFor') || [];
     const updated = current.includes(value)
       ? current.filter((s) => s !== value)
       : [...current, value];
-    updateFormData({ suitableFor: updated });
+    setValue('suitableFor', updated, { shouldValidate: true });
   };
 
   // Only show for rent/lease
@@ -34,9 +64,10 @@ export default function SuitableFor() {
         {suitableForOptions.map((option) => (
           <button
             key={option.value}
+            type="button"
             onClick={() => toggleSuitableFor(option.value)}
             className={`p-2 border rounded transition-all flex flex-col items-center gap-1 ${
-              (formData.suitableFor || []).includes(option.value)
+              (watch('suitableFor') || []).includes(option.value)
                 ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400 scale-105'
                 : 'border-muted hover:border-orange-500/50 hover:scale-105'
             }`}

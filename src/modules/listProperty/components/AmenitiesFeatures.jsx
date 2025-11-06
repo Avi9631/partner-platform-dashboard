@@ -1,9 +1,12 @@
-import { useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import PropTypes from 'prop-types';
 import { Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import useListPropertyStore from '../../store/useListPropertyStore';
-import { AMENITIES_LIST } from '../../constants/amenities';
+import useListPropertyStore from '../store/useListPropertyStore';
+import { AMENITIES_LIST } from '../constants/amenities';
+import amenitiesSchema from '../schemas/amenitiesSchema';
 import ProTip from './shared/ProTip';
 
 /**
@@ -12,12 +15,38 @@ import ProTip from './shared/ProTip';
  * Displays amenities in a responsive grid with visual feedback
  */
 export default function AmenitiesFeatures() {
-  const { formData, updateFormData } = useListPropertyStore();
+  const { formData, updateFormData, updateStepValidation } = useListPropertyStore();
+
+  // Initialize React Hook Form with Zod validation
+  const {
+    watch,
+    setValue,
+    formState: { isValid },
+  } = useForm({
+    resolver: zodResolver(amenitiesSchema),
+    mode: 'onChange',
+    defaultValues: {
+      amenities: formData.amenities || [],
+    },
+  });
+
+  // Update step validation when form validity changes
+  useEffect(() => {
+    updateStepValidation(7, isValid);
+  }, [isValid, updateStepValidation]);
+
+  // Sync form data with store on field changes
+  useEffect(() => {
+    const subscription = watch((value) => {
+      updateFormData(value);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
 
   // Memoize selected amenities array to prevent unnecessary re-renders
   const selectedAmenities = useMemo(
-    () => formData.amenities || [],
-    [formData.amenities]
+    () => watch('amenities') || [],
+    [watch]
   );
 
   /**
@@ -30,9 +59,9 @@ export default function AmenitiesFeatures() {
         ? selectedAmenities.filter((id) => id !== amenityId)
         : [...selectedAmenities, amenityId];
       
-      updateFormData({ amenities: updated });
+      setValue('amenities', updated, { shouldValidate: true });
     },
-    [selectedAmenities, updateFormData]
+    [selectedAmenities, setValue]
   );
 
   /**
