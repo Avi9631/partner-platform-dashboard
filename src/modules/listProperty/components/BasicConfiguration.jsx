@@ -3,8 +3,14 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { motion } from 'motion/react';
 import { Bed, Bath, ChefHat, ArrowUpDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
 import {
   Select,
   SelectContent,
@@ -25,7 +31,7 @@ const additionalRoomOptions = [
 
 export default function BasicConfiguration() {
   const { nextStep, previousStep, updateStepValidation } = usePropertyForm();
-  const { control, watch, setValue, register, formState: { errors, isValid } } = useFormContext();
+  const { control, watch, setValue, formState: { isValid } } = useFormContext();
 
   // Update step validation when form validity changes
   useEffect(() => {
@@ -58,7 +64,7 @@ export default function BasicConfiguration() {
       </motion.div>
 
       <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
-        <div className="space-y-6">
+        <FieldGroup>
           {/* Bedrooms, Bathrooms, Balconies */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Bedrooms */}
@@ -66,38 +72,39 @@ export default function BasicConfiguration() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="space-y-2"
             >
-              <Label className="text-sm flex items-center gap-2">
-                <Bed className="w-4 h-4 text-orange-600" />
-                Bedrooms <span className="text-red-500">*</span>
-              </Label>
               <Controller
                 name="bedrooms"
                 control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger className={`h-10 text-sm border-2 focus:border-orange-500 ${
-                      errors.bedrooms ? 'border-red-500' : ''
-                    }`}>
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[1, 2, 3, 4, 5, '6+'].map((num) => (
-                        <SelectItem key={num} value={String(num)}>
-                          {num} {num === '6+' ? '' : num === 1 ? 'Bedroom' : 'Bedrooms'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel className="flex items-center gap-2">
+                      <Bed className="w-4 h-4 text-orange-600" />
+                      Bedrooms <span className="text-red-500">*</span>
+                    </FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className={`h-10 text-sm border-2 focus:border-orange-500 ${
+                        fieldState.invalid ? 'border-red-500' : ''
+                      }`}>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, '6+'].map((num) => (
+                          <SelectItem key={num} value={String(num)}>
+                            {num} {num === '6+' ? '' : num === 1 ? 'Bedroom' : 'Bedrooms'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
                 )}
               />
-              {errors.bedrooms && (
-                <p className="text-sm text-red-500 mt-1">{errors.bedrooms.message}</p>
-              )}
             </motion.div>
 
             {/* Bathrooms */}
@@ -105,38 +112,39 @@ export default function BasicConfiguration() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="space-y-2"
             >
-              <Label className="text-sm flex items-center gap-2">
-                <Bath className="w-4 h-4 text-orange-600" />
-                Bathrooms <span className="text-red-500">*</span>
-              </Label>
               <Controller
                 name="bathrooms"
                 control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger className={`h-10 text-sm border-2 focus:border-orange-500 ${
-                      errors.bathrooms ? 'border-red-500' : ''
-                    }`}>
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[1, 2, 3, 4, 5, '6+'].map((num) => (
-                        <SelectItem key={num} value={String(num)}>
-                          {num} {num === '6+' ? '' : num === 1 ? 'Bathroom' : 'Bathrooms'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel className="flex items-center gap-2">
+                      <Bath className="w-4 h-4 text-orange-600" />
+                      Bathrooms <span className="text-red-500">*</span>
+                    </FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className={`h-10 text-sm border-2 focus:border-orange-500 ${
+                        fieldState.invalid ? 'border-red-500' : ''
+                      }`}>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, '6+'].map((num) => (
+                          <SelectItem key={num} value={String(num)}>
+                            {num} {num === '6+' ? '' : num === 1 ? 'Bathroom' : 'Bathrooms'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
                 )}
               />
-              {errors.bathrooms && (
-                <p className="text-sm text-red-500 mt-1">{errors.bathrooms.message}</p>
-              )}
             </motion.div>
 
             {/* Balconies */}
@@ -144,28 +152,29 @@ export default function BasicConfiguration() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="space-y-2"
             >
-              <Label className="text-sm">Balconies</Label>
               <Controller
                 name="balconies"
                 control={control}
                 render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[0, 1, 2, 3, 4, '5+'].map((num) => (
-                        <SelectItem key={num} value={String(num)}>
-                          {num} {num === '5+' ? '' : num === 1 ? 'Balcony' : 'Balconies'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Field>
+                    <FieldLabel>Balconies</FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[0, 1, 2, 3, 4, '5+'].map((num) => (
+                          <SelectItem key={num} value={String(num)}>
+                            {num} {num === '5+' ? '' : num === 1 ? 'Balcony' : 'Balconies'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
                 )}
               />
             </motion.div>
@@ -178,27 +187,28 @@ export default function BasicConfiguration() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.45 }}
-              className="space-y-2"
             >
-              <Label className="text-sm">Balcony Type</Label>
               <Controller
                 name="balconyType"
                 control={control}
                 render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="standard">Standard Balcony</SelectItem>
-                      <SelectItem value="terrace">Terrace / Rooftop</SelectItem>
-                      <SelectItem value="french">French Balcony</SelectItem>
-                      <SelectItem value="juliet">Juliet Balcony</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Field>
+                    <FieldLabel>Balcony Type</FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">Standard Balcony</SelectItem>
+                        <SelectItem value="terrace">Terrace / Rooftop</SelectItem>
+                        <SelectItem value="french">French Balcony</SelectItem>
+                        <SelectItem value="juliet">Juliet Balcony</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
                 )}
               />
             </motion.div>
@@ -208,30 +218,31 @@ export default function BasicConfiguration() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
-              className="space-y-2"
             >
-              <Label className="text-sm flex items-center gap-2">
-                <ChefHat className="w-4 h-4 text-orange-600" />
-                Kitchen Type
-              </Label>
               <Controller
                 name="kitchenType"
                 control={control}
                 render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="modular">Modular Kitchen</SelectItem>
-                      <SelectItem value="basic">Basic Kitchen</SelectItem>
-                      <SelectItem value="open">Open Kitchen</SelectItem>
-                      <SelectItem value="semi_open">Semi-Open Kitchen</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Field>
+                    <FieldLabel className="flex items-center gap-2">
+                      <ChefHat className="w-4 h-4 text-orange-600" />
+                      Kitchen Type
+                    </FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="modular">Modular Kitchen</SelectItem>
+                        <SelectItem value="basic">Basic Kitchen</SelectItem>
+                        <SelectItem value="open">Open Kitchen</SelectItem>
+                        <SelectItem value="semi_open">Semi-Open Kitchen</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
                 )}
               />
             </motion.div>
@@ -242,24 +253,30 @@ export default function BasicConfiguration() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 }}
-            className="space-y-2"
           >
-            <Label htmlFor="ceilingHeight" className="text-sm flex items-center gap-2">
-              <ArrowUpDown className="w-4 h-4 text-orange-600" />
-              Ceiling Height (in feet)
-            </Label>
-            <Input
-              id="ceilingHeight"
-              type="number"
-              step="0.1"
-              min="8"
-              placeholder="e.g., 10"
-              {...register('ceilingHeight')}
-              className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+            <Controller
+              name="ceilingHeight"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel className="flex items-center gap-2">
+                    <ArrowUpDown className="w-4 h-4 text-orange-600" />
+                    Ceiling Height (in feet)
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    type="number"
+                    step="0.1"
+                    min="8"
+                    placeholder="e.g., 10"
+                    className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                  />
+                  <FieldDescription>
+                    Standard height is usually 10 feet
+                  </FieldDescription>
+                </Field>
+              )}
             />
-            <p className="text-xs text-muted-foreground">
-              Standard height is usually 10 feet
-            </p>
           </motion.div>
 
           {/* Additional Rooms */}
@@ -267,80 +284,81 @@ export default function BasicConfiguration() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="space-y-3"
           >
-            <Label className="text-sm font-semibold">Additional Rooms</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {additionalRoomOptions.map((room) => (
-                <div
-                  key={room}
-                  className="flex items-center space-x-2 p-3 border-2 rounded-lg hover:border-orange-500 transition-colors cursor-pointer"
-                  onClick={() => toggleAdditionalRoom(room)}
-                >
-                  <Checkbox
-                    checked={(watch('additionalRooms') || []).includes(room)}
-                    onCheckedChange={() => toggleAdditionalRoom(room)}
-                  />
-                  <label className="text-sm font-medium cursor-pointer">
-                    {room}
-                  </label>
-                </div>
-              ))}
-            </div>
+            <Field>
+              <FieldLabel className="font-semibold">Additional Rooms</FieldLabel>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {additionalRoomOptions.map((room) => (
+                  <div
+                    key={room}
+                    className="flex items-center space-x-2 p-3 border-2 rounded-lg hover:border-orange-500 transition-colors cursor-pointer"
+                    onClick={() => toggleAdditionalRoom(room)}
+                  >
+                    <Checkbox
+                      checked={(watch('additionalRooms') || []).includes(room)}
+                      onCheckedChange={() => toggleAdditionalRoom(room)}
+                    />
+                    <label className="text-sm font-medium cursor-pointer">
+                      {room}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </Field>
           </motion.div>
+        </FieldGroup>
 
-          {/* Navigation Buttons */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="flex justify-between mt-8 pt-6 border-t border-orange-200 dark:border-orange-900"
+        {/* Navigation Buttons */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="flex justify-between mt-8 pt-6 border-t border-orange-200 dark:border-orange-900"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            size="default"
+            onClick={previousStep}
+            className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
           >
-            <Button
-              type="button"
-              variant="outline"
-              size="default"
-              onClick={previousStep}
-              className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 17l-5-5m0 0l5-5m-5 5h12"
-                />
-              </svg>
-              Back
-            </Button>
-            <Button
-              size="default"
-              onClick={nextStep}
-              disabled={!isValid}
-              className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 17l-5-5m0 0l5-5m-5 5h12"
+              />
+            </svg>
+            Back
+          </Button>
+          <Button
+            size="default"
+            onClick={nextStep}
+            disabled={!isValid}
+            className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
+          >
+            Continue
+            <svg
+              className="w-4 h-4 ml-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              Continue
-              <svg
-                className="w-4 h-4 ml-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </Button>
-          </motion.div>
-        </div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
+            </svg>
+          </Button>
+        </motion.div>
       </div>
     </div>
   );

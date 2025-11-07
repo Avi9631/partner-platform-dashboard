@@ -1,13 +1,19 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { MapPin, Building2, Calendar, Home, FileText, Map } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
 import {
   Select,
   SelectContent,
@@ -24,13 +30,7 @@ export default function BasicDetails() {
   const { nextStep, previousStep, updateStepValidation } = usePropertyForm();
 
   // Initialize React Hook Form with Zod validation
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors, isValid },
-  } = useForm({
+  const form = useForm({
     resolver: zodResolver(basicDetailsSchema),
     mode: 'onChange',
     defaultValues: {
@@ -50,8 +50,8 @@ export default function BasicDetails() {
 
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(1, isValid);
-  }, [isValid, updateStepValidation]);
+    updateStepValidation(1, form.formState.isValid);
+  }, [form.formState.isValid, updateStepValidation]);
 
   // Handle form submission
   const onSubmit = (data) => {
@@ -86,36 +86,44 @@ export default function BasicDetails() {
         transition={{ duration: 0.5, delay: 0.2 }}
       >
         <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FieldGroup>
               {/* Ownership Type */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
-                className="space-y-2"
               >
-                <Label className="text-sm">
-                  Ownership Type <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={watch('ownershipType')}
-                  onValueChange={(value) => setValue('ownershipType', value)}
-                >
-                  <SelectTrigger className={`h-10 text-sm border-2 ${
-                    errors.ownershipType ? 'border-red-500' : ''
-                  }`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="freehold">Freehold</SelectItem>
-                    <SelectItem value="leasehold">Leasehold</SelectItem>
-                    <SelectItem value="poa">Power of Attorney (POA)</SelectItem>
-                    <SelectItem value="co_operative">Co-operative Society</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.ownershipType && (
-                  <p className="text-sm text-red-500 mt-1">{errors.ownershipType.message}</p>
-                )}
+                <Controller
+                  name="ownershipType"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>
+                        Ownership Type <span className="text-red-500">*</span>
+                      </FieldLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className={`h-10 text-sm border-2 ${
+                          fieldState.invalid ? 'border-red-500' : ''
+                        }`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="freehold">Freehold</SelectItem>
+                          <SelectItem value="leasehold">Leasehold</SelectItem>
+                          <SelectItem value="poa">Power of Attorney (POA)</SelectItem>
+                          <SelectItem value="co_operative">Co-operative Society</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
               </motion.div>
 
               {/* Project Name & RERA ID */}
@@ -125,17 +133,26 @@ export default function BasicDetails() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="space-y-2"
                 >
-                  <Label htmlFor="projectName" className="text-sm flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-orange-600" />
-                    Project Name <span className="text-xs text-muted-foreground">(Optional)</span>
-                  </Label>
-                  <Input
-                    id="projectName"
-                    placeholder="e.g., Green Valley Apartments"
-                    {...register('projectName')}
-                    className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                  <Controller
+                    name="projectName"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-orange-600" />
+                          Project Name <span className="text-xs text-muted-foreground">(Optional)</span>
+                        </FieldLabel>
+                        <Input
+                          {...field}
+                          placeholder="e.g., Green Valley Apartments"
+                          className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
                   />
                 </motion.div>
 
@@ -144,17 +161,26 @@ export default function BasicDetails() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.35 }}
-                  className="space-y-2"
                 >
-                  <Label htmlFor="reraId" className="text-sm flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-orange-600" />
-                    RERA Registration No. <span className="text-xs text-muted-foreground">(If applicable)</span>
-                  </Label>
-                  <Input
-                    id="reraId"
-                    placeholder="e.g., RERA123456"
-                    {...register('reraId')}
-                    className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                  <Controller
+                    name="reraId"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-orange-600" />
+                          RERA Registration No. <span className="text-xs text-muted-foreground">(If applicable)</span>
+                        </FieldLabel>
+                        <Input
+                          {...field}
+                          placeholder="e.g., RERA123456"
+                          className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
                   />
                 </motion.div>
               </div>
@@ -166,23 +192,29 @@ export default function BasicDetails() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="space-y-2"
                 >
-                  <Label htmlFor="city" className="text-sm flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-orange-600" />
-                    City <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="city"
-                    placeholder="Enter city name"
-                    {...register('city')}
-                    className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
-                      errors.city ? 'border-red-500' : ''
-                    }`}
+                  <Controller
+                    name="city"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-orange-600" />
+                          City <span className="text-red-500">*</span>
+                        </FieldLabel>
+                        <Input
+                          {...field}
+                          placeholder="Enter city name"
+                          className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                            fieldState.invalid ? 'border-red-500' : ''
+                          }`}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
                   />
-                  {errors.city && (
-                    <p className="text-sm text-red-500 mt-1">{errors.city.message}</p>
-                  )}
                 </motion.div>
 
                 {/* Locality / Sector */}
@@ -190,22 +222,28 @@ export default function BasicDetails() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.45 }}
-                  className="space-y-2"
                 >
-                  <Label htmlFor="locality" className="text-sm">
-                    Locality / Sector <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="locality"
-                    placeholder="e.g., Sector 62, Jubilee Hills"
-                    {...register('locality')}
-                    className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
-                      errors.locality ? 'border-red-500' : ''
-                    }`}
+                  <Controller
+                    name="locality"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>
+                          Locality / Sector <span className="text-red-500">*</span>
+                        </FieldLabel>
+                        <Input
+                          {...field}
+                          placeholder="e.g., Sector 62, Jubilee Hills"
+                          className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                            fieldState.invalid ? 'border-red-500' : ''
+                          }`}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
                   />
-                  {errors.locality && (
-                    <p className="text-sm text-red-500 mt-1">{errors.locality.message}</p>
-                  )}
                 </motion.div>
               </div>
 
@@ -214,23 +252,29 @@ export default function BasicDetails() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 }}
-                className="space-y-2"
               >
-                <Label htmlFor="addressText" className="text-sm flex items-center gap-2">
-                  <Home className="w-4 h-4 text-orange-600" />
-                  Full Address <span className="text-red-500">*</span>
-                </Label>
-                <Textarea
-                  id="addressText"
-                  placeholder="House/Flat No., Street, Locality, Landmark"
-                  {...register('addressText')}
-                  className={`min-h-[60px] text-sm border-2 focus:border-orange-500 transition-all ${
-                    errors.addressText ? 'border-red-500' : ''
-                  }`}
+                <Controller
+                  name="addressText"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel className="flex items-center gap-2">
+                        <Home className="w-4 h-4 text-orange-600" />
+                        Full Address <span className="text-red-500">*</span>
+                      </FieldLabel>
+                      <Textarea
+                        {...field}
+                        placeholder="House/Flat No., Street, Locality, Landmark"
+                        className={`min-h-[60px] text-sm border-2 focus:border-orange-500 transition-all ${
+                          fieldState.invalid ? 'border-red-500' : ''
+                        }`}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
                 />
-                {errors.addressText && (
-                  <p className="text-sm text-red-500 mt-1">{errors.addressText.message}</p>
-                )}
               </motion.div>
 
               {/* Landmark */}
@@ -238,21 +282,30 @@ export default function BasicDetails() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.55 }}
-                className="space-y-2"
               >
-                <Label htmlFor="landmark" className="text-sm flex items-center gap-2">
-                  <Map className="w-4 h-4 text-orange-600" />
-                  Nearby Landmark
-                </Label>
-                <Input
-                  id="landmark"
-                  placeholder="e.g., Near City Mall, Opposite Metro Station"
-                  {...register('landmark')}
-                  className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                <Controller
+                  name="landmark"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel className="flex items-center gap-2">
+                        <Map className="w-4 h-4 text-orange-600" />
+                        Nearby Landmark
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        placeholder="e.g., Near City Mall, Opposite Metro Station"
+                        className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                      />
+                      <FieldDescription>
+                        Helps buyers locate your property easily
+                      </FieldDescription>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Helps buyers locate your property easily
-                </p>
               </motion.div>
 
               {/* Show Exact Location Toggle */}
@@ -260,17 +313,24 @@ export default function BasicDetails() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border-2 border-muted"
               >
-                <div>
-                  <Label className="text-sm font-semibold">Show Exact Location on Map</Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Display precise property location to interested buyers
-                  </p>
-                </div>
-                <Switch
-                  checked={watch('showMapExact')}
-                  onCheckedChange={(checked) => setValue('showMapExact', checked)}
+                <Controller
+                  name="showMapExact"
+                  control={form.control}
+                  render={({ field }) => (
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border-2 border-muted">
+                      <div>
+                        <FieldLabel className="font-semibold">Show Exact Location on Map</FieldLabel>
+                        <FieldDescription className="text-xs mt-1">
+                          Display precise property location to interested buyers
+                        </FieldDescription>
+                      </div>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </div>
+                  )}
                 />
               </motion.div>
 
@@ -281,25 +341,31 @@ export default function BasicDetails() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="space-y-2"
                 >
-                  <Label htmlFor="ageOfProperty" className="text-sm flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-orange-600" />
-                    Age of Property (years) <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="ageOfProperty"
-                    type="number"
-                    min="0"
-                    placeholder="e.g., 2"
-                    {...register('ageOfProperty')}
-                    className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
-                      errors.ageOfProperty ? 'border-red-500' : ''
-                    }`}
+                  <Controller
+                    name="ageOfProperty"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-orange-600" />
+                          Age of Property (years) <span className="text-red-500">*</span>
+                        </FieldLabel>
+                        <Input
+                          {...field}
+                          type="number"
+                          min="0"
+                          placeholder="e.g., 2"
+                          className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                            fieldState.invalid ? 'border-red-500' : ''
+                          }`}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
                   />
-                  {errors.ageOfProperty && (
-                    <p className="text-sm text-red-500 mt-1">{errors.ageOfProperty.message}</p>
-                  )}
                 </motion.div>
 
                 {/* Possession Status */}
@@ -307,108 +373,122 @@ export default function BasicDetails() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.7 }}
-                  className="space-y-2"
                 >
-                  <Label className="text-sm">
-                    Possession Status <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={watch('possessionStatus')}
-                    onValueChange={(value) => setValue('possessionStatus', value)}
-                  >
-                    <SelectTrigger className={`h-10 text-sm border-2 ${
-                      errors.possessionStatus ? 'border-red-500' : ''
-                    }`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ready">Ready to Move</SelectItem>
-                      <SelectItem value="under_construction">Under Construction</SelectItem>
-                      <SelectItem value="resale">Resale</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.possessionStatus && (
-                    <p className="text-sm text-red-500 mt-1">{errors.possessionStatus.message}</p>
-                  )}
+                  <Controller
+                    name="possessionStatus"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>
+                          Possession Status <span className="text-red-500">*</span>
+                        </FieldLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className={`h-10 text-sm border-2 ${
+                            fieldState.invalid ? 'border-red-500' : ''
+                          }`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="ready">Ready to Move</SelectItem>
+                            <SelectItem value="under_construction">Under Construction</SelectItem>
+                            <SelectItem value="resale">Resale</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
                 </motion.div>
               </div>
 
               {/* Possession Date (if under construction) */}
-              {watch('possessionStatus') === 'under_construction' && (
+              {form.watch('possessionStatus') === 'under_construction' && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="space-y-2"
                 >
-                  <Label htmlFor="possessionDate" className="text-sm">
-                    Expected Possession Date <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="possessionDate"
-                    type="date"
-                    {...register('possessionDate')}
-                    className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
-                      errors.possessionDate ? 'border-red-500' : ''
-                    }`}
+                  <Controller
+                    name="possessionDate"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>
+                          Expected Possession Date <span className="text-red-500">*</span>
+                        </FieldLabel>
+                        <Input
+                          {...field}
+                          type="date"
+                          className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                            fieldState.invalid ? 'border-red-500' : ''
+                          }`}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
                   />
-                  {errors.possessionDate && (
-                    <p className="text-sm text-red-500 mt-1">{errors.possessionDate.message}</p>
-                  )}
                 </motion.div>
               )}
+            </FieldGroup>
 
-              {/* Navigation Buttons */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="flex justify-between pt-4"
+            {/* Navigation Buttons */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="flex justify-between pt-4"
+            >
+              <Button
+                type="button"
+                variant="outline"
+                size="default"
+                onClick={previousStep}
+                className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
               >
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="default"
-                  onClick={previousStep}
-                  className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 17l-5-5m0 0l5-5m-5 5h12"
-                    />
-                  </svg>
-                  Back
-                </Button>
-                <Button
-                  size="default"
-                  type="submit"
-                  disabled={!isValid}
-                  className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 17l-5-5m0 0l5-5m-5 5h12"
+                  />
+                </svg>
+                Back
+              </Button>
+              <Button
+                size="default"
+                type="submit"
+                disabled={!form.formState.isValid}
+                className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
+              >
+                Continue
+                <svg
+                  className="w-4 h-4 ml-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  Continue
-                  <svg
-                    className="w-4 h-4 ml-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </Button>
-              </motion.div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </Button>
+            </motion.div>
             </form>
           </div>
         </motion.div>

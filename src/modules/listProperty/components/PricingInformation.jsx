@@ -3,8 +3,14 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DollarSign, Calendar, Percent } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
 import {
   Select,
   SelectContent,
@@ -21,13 +27,7 @@ export default function PricingInformation() {
   const { updateStepValidation, currentStep } = usePropertyForm();
 
   // Initialize React Hook Form with Zod validation
-  const {
-    register,
-    control,
-    watch,
-    setValue,
-    formState: { errors, isValid },
-  } = useForm({
+  const form = useForm({
     resolver: zodResolver(pricingInformationSchema),
     mode: 'onChange',
     defaultValues: {
@@ -44,18 +44,18 @@ export default function PricingInformation() {
 
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(currentStep, isValid);
-  }, [isValid, currentStep, updateStepValidation]);
+    updateStepValidation(currentStep, form.formState.isValid);
+  }, [form.formState.isValid, currentStep, updateStepValidation]);
 
   // Sync form data with main form on field changes
   useEffect(() => {
-    const subscription = watch((value) => {
+    const subscription = form.watch((value) => {
       Object.keys(value).forEach((key) => {
         mainForm.setValue(key, value[key]);
       });
     });
     return () => subscription.unsubscribe();
-  }, [watch, mainForm]);
+  }, [form, mainForm]);
 
   return (
     <div className="space-y-4">
@@ -64,187 +64,236 @@ export default function PricingInformation() {
         Pricing Information
       </h3>
       
-      {/* Listing Type */}
-      <div className="space-y-2">
-        <Label className="text-sm">
-          Listing Type <span className="text-red-500">*</span>
-        </Label>
-        <div className="grid grid-cols-3 gap-2">
-          {['sale', 'rent', 'lease'].map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => setValue('listingType', type, { shouldValidate: true })}
-              className={`p-2 border rounded text-xs font-medium capitalize transition-all ${
-                watch('listingType') === type
-                  ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400 scale-105'
-                  : 'border-muted hover:border-orange-500/50 hover:scale-105'
-              }`}
-            >
-              For {type}
-            </button>
-          ))}
-        </div>
-        {errors.listingType && (
-          <p className="text-sm text-red-500 mt-1">{errors.listingType.message}</p>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {/* Price */}
-        <div className="space-y-1.5">
-          <Label className="text-sm">
-            {watch('listingType') === 'sale' ? 'Asking Price' : 'Monthly Rent'}{' '}
-            <span className="text-red-500">*</span>
-          </Label>
-          <div className="relative">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-              ₹
-            </span>
-            <Input
-              type="number"
-              min="0"
-              placeholder={
-                watch('listingType') === 'sale' ? '50,00,000' : '25,000'
-              }
-              {...register('price')}
-              className={`h-9 pl-6 text-sm ${errors.price ? 'border-red-500' : ''}`}
-            />
-          </div>
-          {errors.price && (
-            <p className="text-sm text-red-500 mt-1">{errors.price.message}</p>
+      <FieldGroup>
+        {/* Listing Type */}
+        <Controller
+          name="listingType"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>
+                Listing Type <span className="text-red-500">*</span>
+              </FieldLabel>
+              <div className="grid grid-cols-3 gap-2">
+                {['sale', 'rent', 'lease'].map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => field.onChange(type)}
+                    className={`p-2 border rounded text-xs font-medium capitalize transition-all ${
+                      field.value === type
+                        ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400 scale-105'
+                        : 'border-muted hover:border-orange-500/50 hover:scale-105'
+                    }`}
+                  >
+                    For {type}
+                  </button>
+                ))}
+              </div>
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
           )}
-        </div>
+        />
 
-        {/* Price Unit */}
-        <div className="space-y-1.5">
-          <Label className="text-sm">Price Per</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Price */}
+          <Controller
+            name="price"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel>
+                  {form.watch('listingType') === 'sale' ? 'Asking Price' : 'Monthly Rent'}{' '}
+                  <span className="text-red-500">*</span>
+                </FieldLabel>
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                    ₹
+                  </span>
+                  <Input
+                    {...field}
+                    type="number"
+                    min="0"
+                    placeholder={
+                      form.watch('listingType') === 'sale' ? '50,00,000' : '25,000'
+                    }
+                    className={`h-9 pl-6 text-sm ${fieldState.invalid ? 'border-red-500' : ''}`}
+                  />
+                </div>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
+          {/* Price Unit */}
           <Controller
             name="priceUnit"
-            control={control}
+            control={form.control}
             render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="total">Total Price</SelectItem>
-                  <SelectItem value="per_sqft">Per Sq.ft</SelectItem>
-                  <SelectItem value="per_sqm">Per Sq.m</SelectItem>
-                  <SelectItem value="per_acre">Per Acre</SelectItem>
-                </SelectContent>
-              </Select>
+              <Field>
+                <FieldLabel>Price Per</FieldLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="total">Total Price</SelectItem>
+                    <SelectItem value="per_sqft">Per Sq.ft</SelectItem>
+                    <SelectItem value="per_sqm">Per Sq.m</SelectItem>
+                    <SelectItem value="per_acre">Per Acre</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
             )}
           />
         </div>
-      </div>
 
-      {/* Price Negotiable Toggle */}
-      <div className="flex items-center justify-between p-3 border rounded hover:border-orange-500 transition-colors">
-        <div>
-          <Label className="text-sm font-semibold">Price Negotiable</Label>
-          <p className="text-xs text-muted-foreground">
-            Allow buyers to negotiate the price
-          </p>
-        </div>
-        <Switch
-          checked={watch('isPriceNegotiable')}
-          onCheckedChange={(checked) => setValue('isPriceNegotiable', checked)}
-        />
-      </div>
-
-      {/* Security Deposit & Brokerage (for rent/lease) */}
-      {watch('listingType') !== 'sale' && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Security Deposit */}
-            <div className="space-y-1.5">
-              <Label className="text-sm">Security Deposit</Label>
-              <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                  ₹
-                </span>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="e.g., 50,000"
-                  {...register('securityDeposit')}
-                  className="h-9 pl-6 text-sm"
-                />
+        {/* Price Negotiable Toggle */}
+        <Controller
+          name="isPriceNegotiable"
+          control={form.control}
+          render={({ field }) => (
+            <div className="flex items-center justify-between p-3 border rounded hover:border-orange-500 transition-colors">
+              <div>
+                <FieldLabel className="font-semibold">Price Negotiable</FieldLabel>
+                <FieldDescription className="text-xs">
+                  Allow buyers to negotiate the price
+                </FieldDescription>
               </div>
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </div>
+          )}
+        />
+
+        {/* Security Deposit & Brokerage (for rent/lease) */}
+        {form.watch('listingType') !== 'sale' && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Security Deposit */}
+              <Controller
+                name="securityDeposit"
+                control={form.control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel>Security Deposit</FieldLabel>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                        ₹
+                      </span>
+                      <Input
+                        {...field}
+                        type="number"
+                        min="0"
+                        placeholder="e.g., 50,000"
+                        className="h-9 pl-6 text-sm"
+                      />
+                    </div>
+                  </Field>
+                )}
+              />
+
+              {/* Brokerage Fee */}
+              <Controller
+                name="brokerageFee"
+                control={form.control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel className="flex items-center gap-1.5">
+                      <Percent className="w-3.5 h-3.5 text-primary" />
+                      Brokerage Fee
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      type="text"
+                      placeholder="e.g., 1 month rent or 2%"
+                      className="h-9 text-sm"
+                    />
+                  </Field>
+                )}
+              />
             </div>
 
-            {/* Brokerage Fee */}
-            <div className="space-y-1.5">
-              <Label className="text-sm flex items-center gap-1.5">
-                <Percent className="w-3.5 h-3.5 text-primary" />
-                Brokerage Fee
-              </Label>
+            {/* Maintenance Charges */}
+            <Controller
+              name="maintenanceCharges"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>
+                    Maintenance Charges (Monthly)
+                  </FieldLabel>
+                  <div className="relative">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                      ₹
+                    </span>
+                    <Input
+                      {...field}
+                      type="number"
+                      min="0"
+                      placeholder="e.g., 2,000"
+                      className={`h-9 pl-6 text-sm ${fieldState.invalid ? 'border-red-500' : ''}`}
+                    />
+                  </div>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </>
+        )}
+
+        {/* Brokerage for Sale */}
+        {form.watch('listingType') === 'sale' && (
+          <Controller
+            name="brokerageFee"
+            control={form.control}
+            render={({ field }) => (
+              <Field>
+                <FieldLabel className="flex items-center gap-1.5">
+                  <Percent className="w-3.5 h-3.5 text-primary" />
+                  Brokerage Fee (Optional)
+                </FieldLabel>
+                <Input
+                  {...field}
+                  type="text"
+                  placeholder="e.g., 1% or ₹50,000"
+                  className="h-9 text-sm"
+                />
+              </Field>
+            )}
+          />
+        )}
+
+        {/* Available From */}
+        <Controller
+          name="availableFrom"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-primary" />
+                Available From
+              </FieldLabel>
               <Input
-                type="text"
-                placeholder="e.g., 1 month rent or 2%"
-                {...register('brokerageFee')}
+                {...field}
+                type="date"
                 className="h-9 text-sm"
               />
-            </div>
-          </div>
-
-          {/* Maintenance Charges */}
-          <div className="space-y-1.5">
-            <Label className="text-sm">
-              Maintenance Charges (Monthly)
-            </Label>
-            <div className="relative">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                ₹
-              </span>
-              <Input
-                type="number"
-                min="0"
-                placeholder="e.g., 2,000"
-                {...register('maintenanceCharges')}
-                className={`h-9 pl-6 text-sm ${errors.maintenanceCharges ? 'border-red-500' : ''}`}
-              />
-            </div>
-            {errors.maintenanceCharges && (
-              <p className="text-sm text-red-500 mt-1">{errors.maintenanceCharges.message}</p>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Brokerage for Sale */}
-      {watch('listingType') === 'sale' && (
-        <div className="space-y-1.5">
-          <Label className="text-sm flex items-center gap-1.5">
-            <Percent className="w-3.5 h-3.5 text-primary" />
-            Brokerage Fee (Optional)
-          </Label>
-          <Input
-            type="text"
-            placeholder="e.g., 1% or ₹50,000"
-            {...register('brokerageFee')}
-            className="h-9 text-sm"
-          />
-        </div>
-      )}
-
-      {/* Available From */}
-      <div className="space-y-1.5">
-        <Label htmlFor="availableFrom" className="text-sm flex items-center gap-1.5">
-          <Calendar className="w-3.5 h-3.5 text-primary" />
-          Available From
-        </Label>
-        <Input
-          id="availableFrom"
-          type="date"
-          {...register('availableFrom')}
-          className="h-9 text-sm"
+            </Field>
+          )}
         />
-      </div>
+      </FieldGroup>
     </div>
   );
 }
