@@ -49,6 +49,12 @@ export default function PropertyFormSidebar() {
 
     const baseItems = [
       {
+        step: 0,
+        label: 'Property Select',
+        icon: Building2,
+        description: 'Choose property type',
+      },
+      {
         step: 1,
         label: 'Basic Details',
         icon: MapPin,
@@ -389,19 +395,19 @@ export default function PropertyFormSidebar() {
               Progress
             </span>
             <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
-              {Math.round(((currentStep - 1) / (navigationItems.length - 1)) * 100)}%
+              {Math.round((currentStep / (navigationItems.length - 1)) * 100)}%
             </span>
           </div>
           <div className="w-full bg-orange-200 dark:bg-orange-900/50 rounded-full h-2 overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500 ease-out rounded-full"
               style={{
-                width: `${((currentStep - 1) / (navigationItems.length - 1)) * 100}%`,
+                width: `${(currentStep / (navigationItems.length - 1)) * 100}%`,
               }}
             />
           </div>
           <p className="text-xs text-orange-700 dark:text-orange-300 mt-2">
-            Step {currentStep} of {navigationItems.length}
+            Step {currentStep + 1} of {navigationItems.length}
           </p>
         </div>
 

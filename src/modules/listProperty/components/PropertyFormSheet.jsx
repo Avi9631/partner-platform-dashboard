@@ -35,6 +35,11 @@ function PropertyFormContent({ open }) {
   };
 
   const renderStepContent = () => {
+    // Step 0: Property Type Selection
+    if (currentStep === 0) {
+      return <PropertyTypeSelector />;
+    }
+    
     const isBuildingType = propertyType && [
       'apartment', 'villa', 'duplex', 'independent_house', 
       'penthouse', 'studio', 'independent_floor'
@@ -132,32 +137,17 @@ function PropertyFormContent({ open }) {
         </SheetHeader>
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar Navigation */}
-          {propertyType && (
-            <PropertyFormSidebar />
-          )}
+          {/* Sidebar Navigation - Always visible */}
+          <PropertyFormSidebar />
 
-          {/* Property Type Selector Overlay - shown when no property type selected */}
-          {!propertyType && (
-            <div className="flex-1 overflow-y-auto">
-              <ScrollArea className="h-full">
-                <div className="min-h-full">
-                  <PropertyTypeSelector />
-                </div>
-              </ScrollArea>
-            </div>
-          )}
-
-          {/* Main Content Area - shown after property type selected */}
-          {propertyType && (
-            <div className="flex-1 overflow-y-auto">
-              <ScrollArea className="h-full">
-                <div className="min-h-full">
-                  {renderStepContent()}
-                </div>
-              </ScrollArea>
-            </div>
-          )}
+          {/* Main Content Area */}
+          <div className="flex-1 overflow-y-auto">
+            <ScrollArea className="h-full">
+              <div className="min-h-full">
+                {renderStepContent()}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
