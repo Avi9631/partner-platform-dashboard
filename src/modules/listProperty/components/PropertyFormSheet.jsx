@@ -111,13 +111,13 @@ function PropertyFormContent({ open }) {
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent 
         side="right" 
-        className="w-full sm:max-w-full p-0 overflow-hidden flex flex-col"
+        className="w-full sm:max-w-full p-0 overflow-hidden flex flex-col "
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <SheetHeader className="px-6 py-4 mb-0 border-b bg-gradient-to-r from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20">
+        <SheetHeader className="px-6 py-4 mb-0 border-b ">
           <div className="flex items-center justify-between">
-            <SheetTitle className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+            <SheetTitle className="text-2xl font-bold  text-black bg-clip-text">
               List Your Property
             </SheetTitle>
             <Button 
@@ -136,14 +136,14 @@ function PropertyFormContent({ open }) {
           )}
         </SheetHeader>
 
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden ">
           {/* Sidebar Navigation - Always visible */}
           <PropertyFormSidebar />
 
           {/* Main Content Area */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto ">
             <ScrollArea className="h-full">
-              <div className="min-h-full">
+              <div className="min-h-full p-8 bg-orange-50">
                 {renderStepContent()}
               </div>
             </ScrollArea>

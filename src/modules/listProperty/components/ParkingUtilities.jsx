@@ -18,7 +18,7 @@ export default function ParkingUtilities() {
   const { nextStep, previousStep } = usePropertyForm();
 
   return (
-    <div className="w-full px-6 py-6">
+    <div className="w-full  ">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -34,7 +34,7 @@ export default function ParkingUtilities() {
         </p>
       </motion.div>
 
-      <div className="bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30 dark:from-orange-950/10 dark:via-background dark:to-orange-900/5 rounded-xl p-6">
+      <div className=" ">
         <div className="space-y-6">
           {/* Parking */}
           <div className="space-y-4">
