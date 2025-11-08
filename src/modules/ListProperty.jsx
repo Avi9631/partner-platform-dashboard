@@ -5,7 +5,7 @@ import {
   Layers, Users, Tag, Sparkles, AlertCircle 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PropertyFormProvider, usePropertyForm } from './listProperty/context/PropertyFormContext';
 import SectionEditSheet from './listProperty/components/SectionEditSheet';
@@ -172,61 +172,7 @@ function ListPropertyContent() {
 
   const hasLocation = formData.city && formData.addressText && formData.ageOfProperty;
 
-  if (!propertyType) {
-    return (
-      <div className="bg-background relative min-h-screen">
-        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-orange-50 via-background to-orange-50/30 dark:from-orange-950/20 dark:via-background dark:to-orange-900/10" />
-        
-        <div className="relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="pt-8 pb-8"
-          >
-            <div className="container mx-auto px-4">
-              <div className="text-center mb-8">
-                <h1 className="text-4xl md:text-5xl font-bold mb-3">
-                  <span className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 bg-clip-text text-transparent">
-                    List Your Property
-                  </span>
-                </h1>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Click below to get started
-                </p>
-              </div>
-
-              <div className="max-w-2xl mx-auto">
-                <Card className="p-12 text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-950/50 dark:to-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Building2 className="w-12 h-12 text-orange-600 dark:text-orange-400" />
-                  </div>
-                  <h2 className="text-2xl font-bold mb-3">
-                    Ready to list your property?
-                  </h2>
-                  <p className="text-muted-foreground mb-6">
-                    Start by selecting the type of property you want to list
-                  </p>
-                  <Button
-                    size="lg"
-                    onClick={() => setOpenSection('property-type')}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Select Property Type
-                  </Button>
-                </Card>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-        
-        {/* Property Type Selection Sheet */}
-        <SectionEditSheet sections={[{ id: 'property-type', title: 'Select Property Type', description: 'Choose the type of property you want to list', icon: Building2, color: 'from-orange-500 to-orange-600', component: 'PropertyTypeSelector' }]} />
-      </div>
-    );
-  }
-
+ 
   return (
     <div className="bg-background relative min-h-screen">
       {/* Orange Gradient Background */}
@@ -241,19 +187,22 @@ function ListPropertyContent() {
           transition={{ duration: 0.8 }}
           className="pt-8 pb-6"
         >
+ 
           <div className="container mx-auto px-4">
             <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold mb-3">
+              <h1 className="text-2xl md:text-3xl font-bold mb-3">
                 <span className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 bg-clip-text text-transparent">
                   List Your Property
                 </span>
               </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-md text-muted-foreground max-w-2xl mx-auto">
                 Complete all sections to publish your listing
               </p>
             </div>
           </div>
         </motion.div>
+
+
 
         {/* Top Cards: Property Type & Location */}
         <div className="container mx-auto px-4 mb-6">

@@ -6,7 +6,6 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { PropertyFormProvider, usePropertyForm } from '../context/PropertyFormContext';
 import PropertyFormSidebar from './PropertyFormSidebar';
 import PropertyTypeSelector from './PropertyTypeSelector';
@@ -142,11 +141,9 @@ function PropertyFormContent({ open }) {
 
           {/* Main Content Area */}
           <div className="flex-1 overflow-y-auto ">
-            <ScrollArea className="h-full">
-              <div className="min-h-full p-8 bg-orange-50">
-                {renderStepContent()}
-              </div>
-            </ScrollArea>
+            <div className="min-h-full p-8 pb-24 bg-orange-50">
+              {renderStepContent()}
+            </div>
           </div>
         </div>
       </SheetContent>

@@ -1,10 +1,10 @@
 import { motion } from 'motion/react';
-import { Button } from '@/components/ui/button';
 import { usePropertyForm } from '../context/PropertyFormContext';
 import AmenitiesFeatures from './AmenitiesFeatures';
+import FormButtonFooter from './shared/FormButtonFooter';
 
-export default function AmenitiesStep() {
-  const { nextStep, previousStep } = usePropertyForm();
+export default function AmenitiesStep({ isSheetMode = false }) {
+  const { nextStep, previousStep, setOpenSection } = usePropertyForm();
 
   // This step is optional, so always allow continue
   const canContinue = true;
@@ -29,54 +29,19 @@ export default function AmenitiesStep() {
       <div className=" rounded-xl  ">
         <div className="space-y-6">
           <AmenitiesFeatures />
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between pt-6 border-t border-orange-200 dark:border-orange-900">
-            <Button
-              variant="outline"
-              size="default"
-              onClick={previousStep}
-              className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 17l-5-5m0 0l5-5m-5 5h12"
-                />
-              </svg>
-              Back
-            </Button>
-            <Button
-              size="default"
-              onClick={nextStep}
-              disabled={!canContinue}
-              className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
-            >
-              Review Listing
-              <svg
-                className="w-4 h-4 ml-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </Button>
-          </div>
         </div>
       </div>
+
+      {/* Fixed Button Footer */}
+      <FormButtonFooter
+        onBack={previousStep}
+        onNext={isSheetMode ? () => setOpenSection(null) : nextStep}
+        onCancel={() => setOpenSection(null)}
+        nextLabel={isSheetMode ? 'Save' : 'Review Listing'}
+        nextDisabled={!canContinue}
+        showBack={true}
+        isSheetMode={isSheetMode}
+      />
     </div>
   );
 }

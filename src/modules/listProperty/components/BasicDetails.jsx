@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { MapPin, Building2, Calendar, Home, FileText, Map } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -24,6 +23,7 @@ import {
 import { useFormContext } from 'react-hook-form';
 import { usePropertyForm } from '../context/PropertyFormContext';
 import basicDetailsSchema from '../schemas/basicDetailsSchema';
+import FormButtonFooter from './shared/FormButtonFooter';
 
 export default function BasicDetails({ isSheetMode = false }) {
   const formMethods = useFormContext();
@@ -444,76 +444,19 @@ export default function BasicDetails({ isSheetMode = false }) {
                 </motion.div>
               )}
             </FieldGroup>
+          </form>
+        </div>
+      </motion.div>
 
-            {/* Navigation Buttons */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="flex justify-between pt-4"
-            >
-              {!isSheetMode && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="default"
-                  onClick={previousStep}
-                  className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
-                >
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 17l-5-5m0 0l5-5m-5 5h12"
-                    />
-                  </svg>
-                  Back
-                </Button>
-              )}
-              {isSheetMode && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="default"
-                  onClick={() => setOpenSection(null)}
-                  className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
-                >
-                  Cancel
-                </Button>
-              )}
-              <Button
-                size="default"
-                type="submit"
-                disabled={!form.formState.isValid}
-                className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
-              >
-                {isSheetMode ? 'Save' : 'Continue'}
-                {!isSheetMode && (
-                  <svg
-                    className="w-4 h-4 ml-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                )}
-              </Button>
-            </motion.div>
-            </form>
-          </div>
-        </motion.div>
-      </div>
-    );
+      {/* Fixed Button Footer */}
+      <FormButtonFooter
+        onBack={previousStep}
+        onCancel={() => setOpenSection(null)}
+        nextLabel={isSheetMode ? 'Save' : 'Continue'}
+        nextDisabled={!form.formState.isValid}
+        showBack={true}
+        isSheetMode={isSheetMode}
+      />
+    </div>
+  );
 }

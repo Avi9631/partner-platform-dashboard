@@ -6,7 +6,6 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { usePropertyForm } from '../context/PropertyFormContext';
 import PropertyTypeSelector from './PropertyTypeSelector';
 import BasicDetails from './BasicDetails';
@@ -136,11 +135,11 @@ export default function SectionEditSheet({ sections }) {
           </div>
         </SheetHeader>
 
-        <ScrollArea className="flex-1">
-          <div className="max-w-7xl mx-auto w-full p-6">
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-7xl mx-auto w-full p-6 pb-24">
             {renderSectionContent()}
           </div>
-        </ScrollArea>
+        </div>
       </SheetContent>
     </Sheet>
   );
