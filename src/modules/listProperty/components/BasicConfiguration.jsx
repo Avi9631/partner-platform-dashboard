@@ -29,8 +29,8 @@ const additionalRoomOptions = [
   'Home Office',
 ];
 
-export default function BasicConfiguration() {
-  const { nextStep, previousStep, updateStepValidation } = usePropertyForm();
+export default function BasicConfiguration({ isSheetMode = false }) {
+  const { nextStep, previousStep, updateStepValidation, setOpenSection } = usePropertyForm();
   const { control, watch, setValue, formState: { isValid } } = useFormContext();
 
   // Update step validation when form validity changes
@@ -315,48 +315,63 @@ export default function BasicConfiguration() {
           transition={{ delay: 0.7 }}
           className="flex justify-between mt-8 pt-6 border-t border-orange-200 dark:border-orange-900"
         >
-          <Button
-            type="button"
-            variant="outline"
-            size="default"
-            onClick={previousStep}
-            className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
-          >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {!isSheetMode && (
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              onClick={previousStep}
+              className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 17l-5-5m0 0l5-5m-5 5h12"
-              />
-            </svg>
-            Back
-          </Button>
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 17l-5-5m0 0l5-5m-5 5h12"
+                />
+              </svg>
+              Back
+            </Button>
+          )}
+          {isSheetMode && (
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              onClick={() => setOpenSection(null)}
+              className="px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
+            >
+              Cancel
+            </Button>
+          )}
           <Button
             size="default"
-            onClick={nextStep}
+            onClick={isSheetMode ? () => setOpenSection(null) : nextStep}
             disabled={!isValid}
             className="px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
           >
-            Continue
-            <svg
-              className="w-4 h-4 ml-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
-            </svg>
+            {isSheetMode ? 'Save' : 'Continue'}
+            {!isSheetMode && (
+              <svg
+                className="w-4 h-4 ml-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+            )}
           </Button>
         </motion.div>
       </div>

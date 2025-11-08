@@ -14,6 +14,7 @@ export const usePropertyForm = () => {
 export const PropertyFormProvider = ({ children, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [propertyType, setPropertyType] = useState(null);
+  const [openSection, setOpenSection] = useState(null);
 
   // Initialize React Hook Form without validation at the top level
   // Each step will handle its own validation
@@ -176,6 +177,9 @@ export const PropertyFormProvider = ({ children, onClose }) => {
     stepValidation,
     updateStepValidation,
     onClose,
+    openSection,
+    setOpenSection,
+    formData: methods.getValues(),
   };
 
   return (

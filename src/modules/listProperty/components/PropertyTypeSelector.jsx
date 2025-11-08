@@ -57,9 +57,9 @@ const propertyTypes = [
   },
 ];
 
-export default function PropertyTypeSelector() {
+export default function PropertyTypeSelector({ onComplete }) {
   const { setValue, watch } = useFormContext();
-  const { setPropertyType, nextStep } = usePropertyForm();
+  const { setPropertyType } = usePropertyForm();
   const [selectedType, setSelectedType] = useState(watch('propertyType'));
 
   const handleSelect = (typeId) => {
@@ -70,7 +70,9 @@ export default function PropertyTypeSelector() {
   const handleContinue = () => {
     if (selectedType) {
       setPropertyType(selectedType); // Update property type in context
-      nextStep(); // Move to next step (Basic Details)
+      if (onComplete) {
+        onComplete(); // Callback to close selector and show sections
+      }
     }
   };
 
