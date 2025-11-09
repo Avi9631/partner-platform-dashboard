@@ -276,6 +276,7 @@ export default function AreaDetails({ isSheetMode = false }) {
       {/* Fixed Button Footer */}
       <FormButtonFooter
         onBack={previousStep}
+        onNext={form.handleSubmit(onSubmit)}
         onCancel={() => setOpenSection(null)}
         nextLabel={isSheetMode ? 'Save' : 'Continue'}
         nextDisabled={!form.formState.isValid}
