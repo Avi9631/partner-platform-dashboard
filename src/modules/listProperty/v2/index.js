@@ -19,6 +19,7 @@ export { PropertyFormProviderV2, usePropertyFormV2 } from './context/PropertyFor
 
 // Step components (if needed individually)
 export { default as PropertyTypeStepV2 } from './components/steps/PropertyTypeStepV2';
+export { default as LocationSelectionStepV2 } from './components/steps/LocationSelectionStepV2';
 export { default as BasicDetailsStepV2 } from './components/steps/BasicDetailsStepV2';
 export { default as BasicConfigurationStepV2 } from './components/steps/BasicConfigurationStepV2';
 export { default as AreaDetailsStepV2 } from './components/steps/AreaDetailsStepV2';

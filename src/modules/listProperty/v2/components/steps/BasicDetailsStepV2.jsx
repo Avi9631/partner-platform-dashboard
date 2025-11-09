@@ -1,14 +1,12 @@
-import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useEffect, useState, useCallback } from 'react';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
-import { MapPin, Building2, Calendar, Home, FileText, Map } from 'lucide-react';
+import { Building2, Calendar, FileText, Plus, X, Check, ChevronsUpDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -20,11 +18,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 import { useFormContext } from 'react-hook-form';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import basicDetailsSchema from '../../../schemas/basicDetailsSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
-import LocationPicker from '@/components/maps/LocationPicker';
 
 export default function BasicDetailsStepV2() {
   const formMethods = useFormContext();
@@ -37,18 +48,130 @@ export default function BasicDetailsStepV2() {
     defaultValues: {
       ownershipType: formMethods.watch('ownershipType') || 'freehold',
       projectName: formMethods.watch('projectName') || '',
-      reraId: formMethods.watch('reraId') || '',
-      city: formMethods.watch('city') || '',
-      locality: formMethods.watch('locality') || '',
-      addressText: formMethods.watch('addressText') || '',
-      landmark: formMethods.watch('landmark') || '',
-      coordinates: formMethods.watch('coordinates') || null,
-      showMapExact: formMethods.watch('showMapExact') || false,
+      reraIds: formMethods.watch('reraIds') || [],
       ageOfProperty: formMethods.watch('ageOfProperty') || '',
       possessionStatus: formMethods.watch('possessionStatus') || 'ready',
       possessionDate: formMethods.watch('possessionDate') || '',
     },
   });
+
+  // Field array for multiple RERA IDs
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'reraIds',
+  });
+
+  // State for project name search
+  const [projectNameOpen, setProjectNameOpen] = useState(false);
+  const [projectNameSearch, setProjectNameSearch] = useState('');
+  const [projectNames, setProjectNames] = useState([]);
+  const [loadingProjectNames, setLoadingProjectNames] = useState(false);
+  const [hasMoreProjectNames, setHasMoreProjectNames] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  // Simulated API call to fetch project names
+  const fetchProjectNames = useCallback(async (search = '', page = 0) => {
+    setLoadingProjectNames(true);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Mock project names data
+    const allProjectNames = [
+      'Green Valley Apartments',
+      'Sunrise Residency',
+      'Blue Pearl Heights',
+      'Golden Gate Complex',
+      'Silver Oak Towers',
+      'Emerald City',
+      'Diamond Plaza',
+      'Royal Gardens',
+      'Paradise Heights',
+      'Crystal Palace',
+      'Platinum Residency',
+      'Sapphire Towers',
+      'Ruby Heights',
+      'Pearl Gardens',
+      'Amber Apartments',
+      'Ivory Towers',
+      'Jade Residency',
+      'Opal Heights',
+      'Topaz Plaza',
+      'Garnet Gardens',
+      'Coral Heights',
+      'Azure Apartments',
+      'Crimson Towers',
+      'Indigo Residency',
+      'Violet Heights',
+      'Orchid Gardens',
+      'Magnolia Plaza',
+      'Lotus Towers',
+      'Jasmine Heights',
+      'Rose Gardens',
+      'Tulip Apartments',
+      'Lily Residency',
+      'Marigold Heights',
+      'Sunflower Plaza',
+      'Lavender Towers',
+      'Cedar Heights',
+      'Pine Gardens',
+      'Oak Apartments',
+      'Maple Residency',
+      'Willow Heights',
+      'Birch Plaza',
+      'Elm Towers',
+      'Ashwood Gardens',
+    ];
+
+    // Filter by search
+    const filtered = search
+      ? allProjectNames.filter(name => 
+          name.toLowerCase().includes(search.toLowerCase())
+        )
+      : allProjectNames;
+
+    // Paginate - 10 items per page
+    const startIndex = page * 10;
+    const endIndex = startIndex + 10;
+    const paginatedNames = filtered.slice(startIndex, endIndex);
+
+    setLoadingProjectNames(false);
+    return {
+      items: paginatedNames,
+      hasMore: endIndex < filtered.length,
+    };
+  }, []);
+
+  // Load initial project names
+  useEffect(() => {
+    if (projectNameOpen && projectNames.length === 0) {
+      fetchProjectNames('', 0).then(result => {
+        setProjectNames(result.items);
+        setHasMoreProjectNames(result.hasMore);
+        setCurrentPage(0);
+      });
+    }
+  }, [projectNameOpen, projectNames.length, fetchProjectNames]);
+
+  // Handle project name search
+  const handleProjectNameSearch = useCallback(async (search) => {
+    setProjectNameSearch(search);
+    setCurrentPage(0);
+    const result = await fetchProjectNames(search, 0);
+    setProjectNames(result.items);
+    setHasMoreProjectNames(result.hasMore);
+  }, [fetchProjectNames]);
+
+  // Load more project names
+  const loadMoreProjectNames = useCallback(async () => {
+    if (!hasMoreProjectNames || loadingProjectNames) return;
+    
+    const nextPage = currentPage + 1;
+    const result = await fetchProjectNames(projectNameSearch, nextPage);
+    setProjectNames(prev => [...prev, ...result.items]);
+    setHasMoreProjectNames(result.hasMore);
+    setCurrentPage(nextPage);
+  }, [currentPage, projectNameSearch, hasMoreProjectNames, loadingProjectNames, fetchProjectNames]);
 
   // Sync form data changes to main form context
   useEffect(() => {
@@ -80,10 +203,10 @@ export default function BasicDetailsStepV2() {
         className="mb-4 md:mb-6"
       >
         <h2 className="text-xl md:text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-          Property Location & Basic Information
+          Property Basic Information
         </h2>
         <p className="text-muted-foreground text-xs md:text-sm">
-          Provide essential details about your property
+          Provide ownership, project details, and property status
         </p>
       </motion.div>
 
@@ -133,145 +256,105 @@ export default function BasicDetailsStepV2() {
               />
             </motion.div>
 
-            {/* Project Name & RERA ID */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Controller
-                  name="projectName"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-orange-600" />
-                        Project Name <span className="text-xs text-muted-foreground">(Optional)</span>
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        placeholder="e.g., Green Valley Apartments"
-                        className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.35 }}
-              >
-                <Controller
-                  name="reraId"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-orange-600" />
-                        RERA Registration No. <span className="text-xs text-muted-foreground">(If applicable)</span>
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        placeholder="e.g., RERA123456"
-                        className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </motion.div>
-            </div>
-
-            {/* City & Locality */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <Controller
-                  name="city"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-orange-600" />
-                        City <span className="text-red-500">*</span>
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        placeholder="Enter city name"
-                        className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
-                          fieldState.invalid ? 'border-red-500' : ''
-                        }`}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.45 }}
-              >
-                <Controller
-                  name="locality"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>
-                        Locality / Sector <span className="text-red-500">*</span>
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        placeholder="e.g., Sector 62, Jubilee Hills"
-                        className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
-                          fieldState.invalid ? 'border-red-500' : ''
-                        }`}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </motion.div>
-            </div>
-
-            {/* Full Address */}
+            {/* Project Name - Searchable */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.3 }}
             >
               <Controller
-                name="addressText"
+                name="projectName"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel className="flex items-center gap-2">
-                      <Home className="w-4 h-4 text-orange-600" />
-                      Full Address <span className="text-red-500">*</span>
+                      <Building2 className="w-4 h-4 text-orange-600" />
+                      Project Name <span className="text-red-500">*</span>
                     </FieldLabel>
-                    <Textarea
-                      {...field}
-                      placeholder="House/Flat No., Street, Locality, Landmark"
-                      className={`min-h-[60px] text-sm border-2 focus:border-orange-500 transition-all ${
-                        fieldState.invalid ? 'border-red-500' : ''
-                      }`}
-                    />
+                    <Popover open={projectNameOpen} onOpenChange={setProjectNameOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={projectNameOpen}
+                          className={cn(
+                            "w-full justify-between h-10 text-sm border-2 font-normal",
+                            !field.value && "text-muted-foreground",
+                            fieldState.invalid && "border-red-500"
+                          )}
+                        >
+                          {field.value || "Search project name..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command shouldFilter={false}>
+                          <CommandInput
+                            placeholder="Search project name..."
+                            value={projectNameSearch}
+                            onValueChange={handleProjectNameSearch}
+                          />
+                          <CommandList>
+                            <CommandEmpty>
+                              {loadingProjectNames ? "Loading..." : "No project found."}
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {/* Always show "Not Listed" option at the top */}
+                              <CommandItem
+                                value="not_listed"
+                                onSelect={() => {
+                                  field.onChange('Not Listed');
+                                  setProjectNameOpen(false);
+                                }}
+                                className="font-medium text-orange-600"
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    field.value === 'Not Listed' ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                Not Listed
+                              </CommandItem>
+                              
+                              {projectNames.map((projectName) => (
+                                <CommandItem
+                                  key={projectName}
+                                  value={projectName}
+                                  onSelect={(currentValue) => {
+                                    field.onChange(currentValue);
+                                    setProjectNameOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === projectName ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {projectName}
+                                </CommandItem>
+                              ))}
+                              
+                              {hasMoreProjectNames && (
+                                <div className="px-2 py-1.5">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={loadMoreProjectNames}
+                                    disabled={loadingProjectNames}
+                                    className="w-full text-xs text-orange-600 hover:text-orange-700"
+                                  >
+                                    {loadingProjectNames ? "Loading..." : "Load more..."}
+                                  </Button>
+                                </div>
+                              )}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -280,111 +363,79 @@ export default function BasicDetailsStepV2() {
               />
             </motion.div>
 
-            {/* Landmark */}
+            {/* RERA IDs - Multiple */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.55 }}
+              transition={{ delay: 0.4 }}
             >
-              <Controller
-                name="landmark"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel className="flex items-center gap-2">
-                      <Map className="w-4 h-4 text-orange-600" />
-                      Nearby Landmark
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      placeholder="e.g., Near City Mall, Opposite Metro Station"
-                      className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
-                    />
-                    <FieldDescription>
-                      Helps buyers locate your property easily
-                    </FieldDescription>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            </motion.div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <FieldLabel className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-orange-600" />
+                    RERA Registration Numbers <span className="text-xs text-muted-foreground">(If applicable)</span>
+                  </FieldLabel>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => append({ id: '' })}
+                    className="h-8 text-xs border-orange-500 text-orange-600 hover:bg-orange-50"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add RERA
+                  </Button>
+                </div>
 
-            {/* Location Picker with Map */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.58 }}
-            >
-              <div className="space-y-2">
-                <FieldLabel className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-orange-600" />
-                  Pin Location on Map
-                </FieldLabel>
-                <FieldDescription className="mb-3">
-                  Search or click on the map to mark the exact property location
-                </FieldDescription>
-                
-                <Controller
-                  name="coordinates"
-                  control={form.control}
-                  render={({ field }) => (
-                    <LocationPicker
-                      value={field.value ? {
-                        coordinates: field.value,
-                        formattedAddress: form.watch('addressText'),
-                        city: form.watch('city'),
-                        locality: form.watch('locality'),
-                      } : null}
-                      onChange={(locationData) => {
-                        if (locationData) {
-                          field.onChange(locationData.coordinates);
-                          
-                          if (locationData.city) {
-                            form.setValue('city', locationData.city, { shouldValidate: true, shouldDirty: true });
-                          }
-                          if (locationData.locality) {
-                            form.setValue('locality', locationData.locality, { shouldValidate: true, shouldDirty: true });
-                          }
-                          if (locationData.formattedAddress) {
-                            form.setValue('addressText', locationData.formattedAddress, { shouldValidate: true, shouldDirty: true });
-                          }
-                        } else {
-                          field.onChange(null);
-                        }
-                      }}
-                      height="450px"
-                    />
-                  )}
-                />
-              </div>
-            </motion.div>
-
-            {/* Show Exact Location Toggle */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              <Controller
-                name="showMapExact"
-                control={form.control}
-                render={({ field }) => (
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border-2 border-muted">
-                    <div>
-                      <FieldLabel className="font-semibold">Show Exact Location on Map</FieldLabel>
-                      <FieldDescription className="text-xs mt-1">
-                        Display precise property location to interested buyers
-                      </FieldDescription>
-                    </div>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                {fields.length === 0 && (
+                  <div className="text-sm text-muted-foreground italic py-2 px-3 border-2 border-dashed rounded-md">
+                    No RERA IDs added. Click &ldquo;Add RERA&rdquo; to add registration numbers.
                   </div>
                 )}
-              />
+
+                <div className="space-y-2">
+                  {fields.map((field, index) => (
+                    <motion.div
+                      key={field.id}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-start gap-2"
+                    >
+                      <Controller
+                        name={`reraIds.${index}.id`}
+                        control={form.control}
+                        render={({ field: reraField, fieldState }) => (
+                          <div className="flex-1">
+                            <Input
+                              {...reraField}
+                              placeholder={`e.g., RERA${123456 + index}`}
+                              className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                                fieldState.invalid ? 'border-red-500' : ''
+                              }`}
+                            />
+                            {fieldState.invalid && (
+                              <p className="text-xs text-red-500 mt-1">
+                                {fieldState.error?.message}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => remove(index)}
+                        className="h-10 w-10 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
 
             {/* Age of Property & Possession Status */}

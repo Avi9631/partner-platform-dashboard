@@ -27,6 +27,7 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
       ownershipType: 'freehold',
       projectName: '',
       reraId: '',
+      // Auto-populated from map location selection
       city: '',
       locality: '',
       addressText: '',
@@ -108,20 +109,20 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     
     if (isBuildingType) {
       if (['apartment', 'penthouse'].includes(propertyType)) {
-        // 0: PropertyType, 1: BasicDetails, 2: BasicConfig, 3: AreaDetails, 
-        // 4: Furnishing, 5: Parking, 6: Location, 7: FloorDetails, 
-        // 8: Pricing, 9: SuitableFor, 10: ListingInfo, 11: Amenities, 12: Review
-        return 13;
+        // 0: PropertyType, 1: LocationSelection, 2: BasicDetails, 3: BasicConfig, 
+        // 4: AreaDetails, 5: Furnishing, 6: Parking, 7: LocationAttributes, 
+        // 8: FloorDetails, 9: Pricing, 10: SuitableFor, 11: ListingInfo, 12: Amenities, 13: Review
+        return 14;
       }
       // Other building types (no floor details)
-      // 0: PropertyType, 1: BasicDetails, 2: BasicConfig, 3: AreaDetails, 
-      // 4: Furnishing, 5: Parking, 6: Location, 
-      // 7: Pricing, 8: SuitableFor, 9: ListingInfo, 10: Amenities, 11: Review
-      return 12;
+      // 0: PropertyType, 1: LocationSelection, 2: BasicDetails, 3: BasicConfig, 
+      // 4: AreaDetails, 5: Furnishing, 6: Parking, 7: LocationAttributes,
+      // 8: Pricing, 9: SuitableFor, 10: ListingInfo, 11: Amenities, 12: Review
+      return 13;
     } else if (isLandType) {
-      // 0: PropertyType, 1: BasicDetails, 2: LandAttributes, 
-      // 3: Pricing, 4: ListingInfo, 5: Amenities, 6: Review
-      return 7;
+      // 0: PropertyType, 1: LocationSelection, 2: BasicDetails, 3: LandAttributes, 
+      // 4: Pricing, 5: ListingInfo, 6: Amenities, 7: Review
+      return 8;
     }
     
     // Default (only property type selector)

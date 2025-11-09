@@ -6,6 +6,7 @@ import {
 } from '@/components/ui/sheet';
 import { PropertyFormProviderV2, usePropertyFormV2 } from '../context/PropertyFormContextV2';
 import PropertyTypeStepV2 from './steps/PropertyTypeStepV2';
+import LocationSelectionStepV2 from './steps/LocationSelectionStepV2';
 import BasicDetailsStepV2 from './steps/BasicDetailsStepV2';
 import BasicConfigurationStepV2 from './steps/BasicConfigurationStepV2';
 import AreaDetailsStepV2 from './steps/AreaDetailsStepV2';
@@ -51,35 +52,37 @@ function PropertyFormContentV2({ open }) {
     if (isBuildingType) {
       if (isApartmentOrPenthouse) {
         switch (currentStep) {
-          case 1: return <BasicDetailsStepV2 />;
-          case 2: return <BasicConfigurationStepV2 />;
-          case 3: return <AreaDetailsStepV2 />;
-          case 4: return <FurnishingStepV2 />;
-          case 5: return <ParkingStepV2 />;
-          case 6: return <LocationStepV2 />;
-          case 7: return <FloorDetailsStepV2 />;
+          case 1: return <LocationSelectionStepV2 />;
+          case 2: return <BasicDetailsStepV2 />;
+          case 3: return <BasicConfigurationStepV2 />;
+          case 4: return <AreaDetailsStepV2 />;
+          case 5: return <FurnishingStepV2 />;
+          case 6: return <ParkingStepV2 />;
+          case 7: return <LocationStepV2 />;
+          case 8: return <FloorDetailsStepV2 />;
+          case 9: return <PricingStepV2 />;
+          case 10: return <SuitableForStepV2 />;
+          case 11: return <ListingInfoStepV2 />;
+          case 12: return <AmenitiesStepV2 />;
+          case 13: return <ReviewAndSubmitV2 />;
+          default: return <LocationSelectionStepV2 />;
+        }
+      } else {
+        // Other building types (no floor details)
+        switch (currentStep) {
+          case 1: return <LocationSelectionStepV2 />;
+          case 2: return <BasicDetailsStepV2 />;
+          case 3: return <BasicConfigurationStepV2 />;
+          case 4: return <AreaDetailsStepV2 />;
+          case 5: return <FurnishingStepV2 />;
+          case 6: return <ParkingStepV2 />;
+          case 7: return <LocationStepV2 />;
           case 8: return <PricingStepV2 />;
           case 9: return <SuitableForStepV2 />;
           case 10: return <ListingInfoStepV2 />;
           case 11: return <AmenitiesStepV2 />;
           case 12: return <ReviewAndSubmitV2 />;
-          default: return <BasicDetailsStepV2 />;
-        }
-      } else {
-        // Other building types (no floor details)
-        switch (currentStep) {
-          case 1: return <BasicDetailsStepV2 />;
-          case 2: return <BasicConfigurationStepV2 />;
-          case 3: return <AreaDetailsStepV2 />;
-          case 4: return <FurnishingStepV2 />;
-          case 5: return <ParkingStepV2 />;
-          case 6: return <LocationStepV2 />;
-          case 7: return <PricingStepV2 />;
-          case 8: return <SuitableForStepV2 />;
-          case 9: return <ListingInfoStepV2 />;
-          case 10: return <AmenitiesStepV2 />;
-          case 11: return <ReviewAndSubmitV2 />;
-          default: return <BasicDetailsStepV2 />;
+          default: return <LocationSelectionStepV2 />;
         }
       }
     }
@@ -87,13 +90,14 @@ function PropertyFormContentV2({ open }) {
     // Land type flow
     if (isLandType) {
       switch (currentStep) {
-        case 1: return <BasicDetailsStepV2 />;
-        case 2: return <LandAttributesStepV2 />;
-        case 3: return <PricingStepV2 />;
-        case 4: return <ListingInfoStepV2 />;
-        case 5: return <AmenitiesStepV2 />;
-        case 6: return <ReviewAndSubmitV2 />;
-        default: return <BasicDetailsStepV2 />;
+        case 1: return <LocationSelectionStepV2 />;
+        case 2: return <BasicDetailsStepV2 />;
+        case 3: return <LandAttributesStepV2 />;
+        case 4: return <PricingStepV2 />;
+        case 5: return <ListingInfoStepV2 />;
+        case 6: return <AmenitiesStepV2 />;
+        case 7: return <ReviewAndSubmitV2 />;
+        default: return <LocationSelectionStepV2 />;
       }
     }
     
