@@ -5,6 +5,7 @@ import './index.css'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
  import { Toaster } from "./components/ui/toaster.jsx";
 import ListProperty from "./modules/ListProperty.jsx";
+import ListPropertyV2 from "./modules/ListPropertyV2.jsx";
 
 const router = createBrowserRouter([
  
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
       {
     path: "/list-property",
     element: <ListProperty />,  
+  },
+  {
+    path: "/list-property-v2",
+    element: <ListPropertyV2 />,  
   },
     ],
   },

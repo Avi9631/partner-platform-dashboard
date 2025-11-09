@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PropertyFormProvider, usePropertyForm } from './listProperty/context/PropertyFormContext';
 import SectionEditSheet from './listProperty/components/SectionEditSheet';
+import { Link } from 'react-router-dom';
 
 function ListPropertyContent() {
   // eslint-disable-next-line no-unused-vars
@@ -195,9 +196,15 @@ function ListPropertyContent() {
                   List Your Property
                 </span>
               </h1>
-              <p className="text-md text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-md text-muted-foreground max-w-2xl mx-auto mb-4">
                 Complete all sections to publish your listing
               </p>
+              <Link to="/list-property-v2">
+                <Button variant="outline" size="sm" className="border-orange-300 hover:bg-orange-50 dark:border-orange-700 dark:hover:bg-orange-950/30">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Try New Multi-Step Form (V2)
+                </Button>
+              </Link>
             </div>
           </div>
         </motion.div>
