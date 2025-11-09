@@ -1,9 +1,20 @@
 import { z } from 'zod';
 
 export const basicDetailsSchema = z.object({
+  ownershipType: z.enum(['freehold', 'leasehold', 'poa', 'co_operative'], {
+    errorMap: () => ({ message: 'Please select ownership type' }),
+  }),
   projectName: z.string().optional(),
+  reraId: z.string().optional(),
   city: z.string().min(1, 'City is required').trim(),
+  locality: z.string().min(1, 'Locality is required').trim(),
   addressText: z.string().min(5, 'Please enter a complete address').trim(),
+  landmark: z.string().optional(),
+  showMapExact: z.boolean().default(false),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
   ageOfProperty: z.string()
     .min(1, 'Age of property is required')
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {

@@ -24,6 +24,7 @@ import { useFormContext } from 'react-hook-form';
 import { usePropertyForm } from '../context/PropertyFormContext';
 import basicDetailsSchema from '../schemas/basicDetailsSchema';
 import FormButtonFooter from './shared/FormButtonFooter';
+import LocationPicker from '@/components/maps/LocationPicker';
 
 export default function BasicDetails({ isSheetMode = false }) {
   const formMethods = useFormContext();
@@ -41,6 +42,7 @@ export default function BasicDetails({ isSheetMode = false }) {
       locality: formMethods.watch('locality') || '',
       addressText: formMethods.watch('addressText') || '',
       landmark: formMethods.watch('landmark') || '',
+      coordinates: formMethods.watch('coordinates') || null,
       showMapExact: formMethods.watch('showMapExact') || false,
       ageOfProperty: formMethods.watch('ageOfProperty') || '',
       possessionStatus: formMethods.watch('possessionStatus') || 'ready',
@@ -313,6 +315,69 @@ export default function BasicDetails({ isSheetMode = false }) {
                     </Field>
                   )}
                 />
+              </motion.div>
+
+              {/* Location Picker with Map */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.58 }}
+              >
+                <div className="space-y-2">
+                  <FieldLabel className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-orange-600" />
+                    Pin Location on Map
+                  </FieldLabel>
+                  <FieldDescription className="mb-3">
+                    Search or click on the map to mark the exact property location
+                  </FieldDescription>
+                  
+                  <Controller
+                    name="coordinates"
+                    control={form.control}
+                    render={({ field }) => (
+                      <LocationPicker
+                        value={field.value ? {
+                          coordinates: field.value,
+                          formattedAddress: form.watch('addressText'),
+                          city: form.watch('city'),
+                          locality: form.watch('locality'),
+                        } : null}
+                        onChange={(locationData) => {
+                          console.log('📥 BasicDetails received locationData:', locationData);
+                          
+                          if (locationData) {
+                            // Update coordinates
+                            field.onChange(locationData.coordinates);
+                            
+                            // Always update city, locality, and address when user interacts with map
+                            if (locationData.city) {
+                              console.log('🏙️ Setting city:', locationData.city);
+                              form.setValue('city', locationData.city, { shouldValidate: true, shouldDirty: true });
+                            }
+                            if (locationData.locality) {
+                              console.log('📍 Setting locality:', locationData.locality);
+                              form.setValue('locality', locationData.locality, { shouldValidate: true, shouldDirty: true });
+                            }
+                            if (locationData.formattedAddress) {
+                              console.log('🏠 Setting addressText:', locationData.formattedAddress);
+                              form.setValue('addressText', locationData.formattedAddress, { shouldValidate: true, shouldDirty: true });
+                            }
+                            
+                            console.log('✅ Form values updated:', {
+                              city: form.getValues('city'),
+                              locality: form.getValues('locality'),
+                              addressText: form.getValues('addressText')
+                            });
+                          } else {
+                            field.onChange(null);
+                          }
+                        }}
+                        height="450px"
+                      />
+                    )}
+                  />
+                </div>
               </motion.div>
 
               {/* Show Exact Location Toggle */}
