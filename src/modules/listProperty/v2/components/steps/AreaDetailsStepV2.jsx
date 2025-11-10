@@ -2,7 +2,7 @@ import { useFormContext } from 'react-hook-form';
 import { motion } from 'motion/react';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
-import AreaDetails from '../../../components/AreaDetails';
+import AreaDetailsV2 from '../AreaDetailsV2';
 
 export default function AreaDetailsStepV2() {
   const { watch } = useFormContext();
@@ -24,8 +24,9 @@ export default function AreaDetailsStepV2() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+        {/* Use v2 component without footer */}
         <div className="pb-24">
-          <AreaDetails isSheetMode={false} />
+          <AreaDetailsV2 />
         </div>
       </motion.div>
 

@@ -24,7 +24,7 @@ import ListingInfoStep from './ListingInfoStep';
 import AmenitiesStep from './AmenitiesStep';
 
 function PropertyFormContent({ open }) {
-  const { currentStep, resetForm, propertyType, onClose } = usePropertyForm();
+  const { currentStep, resetForm, propertyType, onClose, nextStep, previousStep, updateStepValidation } = usePropertyForm();
 
   const handleClose = () => {
     if (window.confirm('Are you sure you want to close? All progress will be lost.')) {
@@ -59,7 +59,11 @@ function PropertyFormContent({ open }) {
           case 1: return <BasicDetails />;
           case 2: return <BasicConfiguration />;
           case 3: return <AreaDetails />;
-          case 4: return <FurnishingAmenities />;
+          case 4: return <FurnishingAmenities 
+            onNext={nextStep}
+            onBack={previousStep}
+            updateStepValidation={updateStepValidation}
+          />;
           case 5: return <ParkingUtilities />;
           case 6: return <LocationAttributes />;
           case 7: return <FloorDetails />;
@@ -76,7 +80,11 @@ function PropertyFormContent({ open }) {
           case 1: return <BasicDetails />;
           case 2: return <BasicConfiguration />;
           case 3: return <AreaDetails />;
-          case 4: return <FurnishingAmenities />;
+          case 4: return <FurnishingAmenities 
+            onNext={nextStep}
+            onBack={previousStep}
+            updateStepValidation={updateStepValidation}
+          />;
           case 5: return <ParkingUtilities />;
           case 6: return <LocationAttributes />;
           case 7: return <PricingInfoStep />;

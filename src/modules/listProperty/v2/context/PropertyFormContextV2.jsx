@@ -34,6 +34,11 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
       landmark: '',
       coordinates: null,
       showMapExact: false,
+      // Geo Tag
+      geoTagStatus: 'pending',
+      geoTagCoordinates: null,
+      geoTagDistance: null,
+      geoTagTimestamp: null,
       ageOfProperty: '',
       possessionStatus: 'ready',
       possessionDate: '',
@@ -109,20 +114,20 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     
     if (isBuildingType) {
       if (['apartment', 'penthouse'].includes(propertyType)) {
-        // 0: PropertyType, 1: LocationSelection, 2: BasicDetails, 3: BasicConfig, 
-        // 4: AreaDetails, 5: Furnishing, 6: Parking, 7: LocationAttributes, 
-        // 8: FloorDetails, 9: Pricing, 10: SuitableFor, 11: ListingInfo, 12: Amenities, 13: Review
-        return 14;
+        // 0: PropertyType, 1: LocationSelection, 2: GeoTag, 3: BasicDetails, 4: BasicConfig, 
+        // 5: AreaDetails, 6: Furnishing, 7: Parking, 8: LocationAttributes, 
+        // 9: FloorDetails, 10: Pricing, 11: SuitableFor, 12: ListingInfo, 13: Amenities, 14: Review
+        return 15;
       }
       // Other building types (no floor details)
-      // 0: PropertyType, 1: LocationSelection, 2: BasicDetails, 3: BasicConfig, 
-      // 4: AreaDetails, 5: Furnishing, 6: Parking, 7: LocationAttributes,
-      // 8: Pricing, 9: SuitableFor, 10: ListingInfo, 11: Amenities, 12: Review
-      return 13;
+      // 0: PropertyType, 1: LocationSelection, 2: GeoTag, 3: BasicDetails, 4: BasicConfig, 
+      // 5: AreaDetails, 6: Furnishing, 7: Parking, 8: LocationAttributes,
+      // 9: Pricing, 10: SuitableFor, 11: ListingInfo, 12: Amenities, 13: Review
+      return 14;
     } else if (isLandType) {
-      // 0: PropertyType, 1: LocationSelection, 2: BasicDetails, 3: LandAttributes, 
-      // 4: Pricing, 5: ListingInfo, 6: Amenities, 7: Review
-      return 8;
+      // 0: PropertyType, 1: LocationSelection, 2: GeoTag, 3: BasicDetails, 4: LandAttributes, 
+      // 5: Pricing, 6: ListingInfo, 7: Amenities, 8: Review
+      return 9;
     }
     
     // Default (only property type selector)

@@ -25,7 +25,11 @@ export default function FurnishingStepV2() {
         transition={{ duration: 0.5 }}
       >
         <div className="pb-24">
-          <FurnishingAmenities isSheetMode={false} />
+          <FurnishingAmenities 
+            isSheetMode={false}
+            onNext={handleContinue}
+            onBack={previousStep}
+          />
         </div>
       </motion.div>
 

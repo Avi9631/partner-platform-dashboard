@@ -4,7 +4,6 @@ import { Sofa } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useFormContext } from 'react-hook-form';
-import { usePropertyForm } from '../context/PropertyFormContext';
 import FormButtonFooter from './shared/FormButtonFooter';
 
 const furnishingOptions = [
@@ -37,9 +36,14 @@ const flooringOptions = [
   'Mosaic',
 ];
 
-export default function FurnishingAmenities({ isSheetMode = false }) {
+export default function FurnishingAmenities({ 
+  isSheetMode = false,
+  onNext = null,
+  onBack = null,
+  onCancel = null,
+  updateStepValidation = null
+}) {
   const { watch, setValue } = useFormContext();
-  const { nextStep, previousStep, updateStepValidation, setOpenSection } = usePropertyForm();
 
   // Watch form values
   const furnishingStatus = watch('furnishingStatus');
@@ -48,8 +52,10 @@ export default function FurnishingAmenities({ isSheetMode = false }) {
 
   // Update validation (simple check - furnishing status must be selected)
   useEffect(() => {
-    const isValid = !!furnishingStatus;
-    updateStepValidation(4, isValid);
+    if (updateStepValidation) {
+      const isValid = !!furnishingStatus;
+      updateStepValidation(4, isValid);
+    }
   }, [furnishingStatus, updateStepValidation]);
 
   const toggleFlooringType = (type) => {
@@ -61,15 +67,30 @@ export default function FurnishingAmenities({ isSheetMode = false }) {
   };
 
   const toggleFurnishingDetail = (detail) => {
-    const current = furnishingDetails || [];
-    const updated = current.includes(detail)
-      ? current.filter((d) => d !== detail)
-      : [...current, detail];
+    const current = furnishingDetails || {};
+    const updated = {
+      ...current,
+      [detail]: !current[detail]
+    };
     setValue('furnishingDetails', updated);
   };
 
   const handleContinue = () => {
-    nextStep();
+    if (onNext) {
+      onNext();
+    }
+  };
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    }
+  };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    }
   };
 
   return (
@@ -139,7 +160,7 @@ export default function FurnishingAmenities({ isSheetMode = false }) {
                     type="button"
                     onClick={() => toggleFurnishingDetail(option.value)}
                     className={`p-3 border-2 rounded-lg text-left transition-all flex items-center gap-2 ${
-                      (furnishingDetails || []).includes(option.value)
+                      (furnishingDetails || {})[option.value]
                         ? 'border-orange-500 bg-orange-500/10 shadow-md scale-105'
                         : 'border-muted hover:border-orange-300 hover:shadow'
                     }`}
@@ -186,9 +207,9 @@ export default function FurnishingAmenities({ isSheetMode = false }) {
 
       {/* Fixed Button Footer */}
       <FormButtonFooter
-        onBack={previousStep}
-        onNext={isSheetMode ? () => setOpenSection(null) : handleContinue}
-        onCancel={() => setOpenSection(null)}
+        onBack={handleBack}
+        onNext={isSheetMode ? handleCancel : handleContinue}
+        onCancel={handleCancel}
         nextLabel={isSheetMode ? 'Save' : 'Continue'}
         nextDisabled={!furnishingStatus}
         showBack={true}

@@ -22,7 +22,7 @@ import ListingInfoStep from './ListingInfoStep';
 import AmenitiesStep from './AmenitiesStep';
 
 export default function SectionEditSheet({ sections }) {
-  const { openSection, setOpenSection } = usePropertyForm();
+  const { openSection, setOpenSection, nextStep, previousStep, updateStepValidation } = usePropertyForm();
 
   const handleClose = () => {
     setOpenSection(null);
@@ -50,7 +50,13 @@ export default function SectionEditSheet({ sections }) {
       case 'AreaDetails':
         return <AreaDetails isSheetMode />;
       case 'FurnishingAmenities':
-        return <FurnishingAmenities isSheetMode />;
+        return <FurnishingAmenities 
+          isSheetMode 
+          onNext={nextStep}
+          onBack={previousStep}
+          onCancel={() => setOpenSection(null)}
+          updateStepValidation={updateStepValidation}
+        />;
       case 'ParkingUtilities':
         return <ParkingUtilities isSheetMode />;
       case 'LocationAttributes':

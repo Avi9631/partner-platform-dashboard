@@ -2,7 +2,7 @@ import { useFormContext } from 'react-hook-form';
 import { motion } from 'motion/react';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
-import BasicConfiguration from '../../../components/BasicConfiguration';
+import BasicConfigurationV2 from '../BasicConfigurationV2';
 
 export default function BasicConfigurationStepV2() {
   const { watch } = useFormContext();
@@ -26,9 +26,9 @@ export default function BasicConfigurationStepV2() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Reuse existing component without footer */}
+        {/* Use v2 component without footer */}
         <div className="pb-24">
-          <BasicConfiguration isSheetMode={false} />
+          <BasicConfigurationV2 />
         </div>
       </motion.div>
 
