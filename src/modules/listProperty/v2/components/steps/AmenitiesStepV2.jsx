@@ -45,7 +45,7 @@ export default function AmenitiesStepV2() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="pb-24">
-            <AmenitiesFeatures />
+            <AmenitiesFeatures updateStepValidation={null} currentStep={null} />
           </div>
         </motion.div>
 

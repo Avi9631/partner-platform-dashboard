@@ -4,7 +4,7 @@ import AmenitiesFeatures from './AmenitiesFeatures';
 import FormButtonFooter from './shared/FormButtonFooter';
 
 export default function AmenitiesStep({ isSheetMode = false }) {
-  const { nextStep, previousStep, setOpenSection } = usePropertyForm();
+  const { nextStep, previousStep, setOpenSection, updateStepValidation, currentStep } = usePropertyForm();
 
   // This step is optional, so always allow continue
   const canContinue = true;
@@ -28,7 +28,7 @@ export default function AmenitiesStep({ isSheetMode = false }) {
 
       <div className=" rounded-xl  ">
         <div className="space-y-6">
-          <AmenitiesFeatures />
+          <AmenitiesFeatures updateStepValidation={updateStepValidation} currentStep={currentStep} />
         </div>
       </div>
 

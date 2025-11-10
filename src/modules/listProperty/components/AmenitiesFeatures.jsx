@@ -7,7 +7,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useFormContext } from 'react-hook-form';
-import { usePropertyForm } from '../context/PropertyFormContext';
 import { AMENITIES_LIST } from '../constants/amenities';
 import amenitiesSchema from '../schemas/amenitiesSchema';
 import ProTip from './shared/ProTip';
@@ -17,9 +16,8 @@ import ProTip from './shared/ProTip';
  * Allows users to select amenities and features for their property listing
  * Displays amenities in a responsive grid with visual feedback
  */
-export default function AmenitiesFeatures() {
+export default function AmenitiesFeatures({ updateStepValidation, currentStep } = {}) {
   const mainForm = useFormContext();
-  const { updateStepValidation, currentStep } = usePropertyForm();
 
   // Initialize React Hook Form with Zod validation
   const {
@@ -39,7 +37,9 @@ export default function AmenitiesFeatures() {
 
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(currentStep, isValid);
+    if (updateStepValidation && currentStep !== undefined) {
+      updateStepValidation(currentStep, isValid);
+    }
   }, [isValid, currentStep, updateStepValidation]);
 
   // Sync form data with main form on field changes

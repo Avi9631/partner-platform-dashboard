@@ -19,12 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { usePropertyForm } from '../context/PropertyFormContext';
 import pricingInformationSchema from '../schemas/pricingInformationSchema';
 
-export default function PricingInformation() {
+export default function PricingInformation({ updateStepValidation, currentStep } = {}) {
   const mainForm = useFormContext();
-  const { updateStepValidation, currentStep } = usePropertyForm();
 
   // Get initial pricing array from main form or create default
   const getInitialPricing = () => {
@@ -63,7 +61,9 @@ export default function PricingInformation() {
 
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(currentStep, form.formState.isValid);
+    if (updateStepValidation && currentStep !== undefined) {
+      updateStepValidation(currentStep, form.formState.isValid);
+    }
   }, [form.formState.isValid, currentStep, updateStepValidation]);
 
   // Handle listing type changes

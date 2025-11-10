@@ -41,7 +41,7 @@ export default function PricingInfoStep({ isSheetMode = false }) {
 
       <div className=" ">
         <div className="space-y-6">
-          <PricingInformation />
+          <PricingInformation updateStepValidation={updateStepValidation} currentStep={currentStep} />
         </div>
       </div>
 

@@ -25,8 +25,6 @@ export default function AreaDetailsV2() {
   // Area configuration state (for repeater)
   const [areaConfig, setAreaConfig] = useState(
     watch('areaConfig') || [
-      { type: 'carpet', value: '' },
-      { type: 'super', value: '' },
       { type: 'built_up', value: '' },
     ]
   );

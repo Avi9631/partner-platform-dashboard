@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useFormContext } from 'react-hook-form';
-import { usePropertyForm } from '../context/PropertyFormContext';
 import listingInformationSchema from '../schemas/listingInformationSchema';
 
 const suggestedTags = [
@@ -24,9 +23,8 @@ const suggestedTags = [
   'Gated Community',
 ];
 
-export default function ListingInformation() {
+export default function ListingInformation({ updateStepValidation, currentStep } = {}) {
   const mainForm = useFormContext();
-  const { updateStepValidation, currentStep } = usePropertyForm();
 
   const [tags, setTags] = useState(mainForm.watch('tags') || []);
   const [tagInput, setTagInput] = useState('');
@@ -52,7 +50,9 @@ export default function ListingInformation() {
 
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(currentStep, isValid);
+    if (updateStepValidation && currentStep !== undefined) {
+      updateStepValidation(currentStep, isValid);
+    }
   }, [isValid, currentStep, updateStepValidation]);
 
   // Sync form data with main form on field changes

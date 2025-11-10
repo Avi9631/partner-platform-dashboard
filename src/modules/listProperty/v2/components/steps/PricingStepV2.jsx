@@ -56,7 +56,7 @@ export default function PricingStepV2() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="pb-24">
-            <PricingInformation />
+            <PricingInformation updateStepValidation={null} currentStep={null} />
           </div>
         </motion.div>
 

@@ -9,7 +9,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useFormContext } from 'react-hook-form';
-import { usePropertyForm } from '../context/PropertyFormContext';
 import FormButtonFooter from './shared/FormButtonFooter';
 
 const facingOptions = [
@@ -33,9 +32,13 @@ const viewOptions = [
   'Sea View',
 ];
 
-export default function LocationAttributes({ isSheetMode = false }) {
+export default function LocationAttributes({ 
+  isSheetMode = false,
+  onNext,
+  onBack,
+  onCancel,
+}) {
   const { watch, setValue } = useFormContext();
-  const { nextStep, previousStep, setOpenSection } = usePropertyForm();
 
   return (
     <div className="w-full ">
@@ -138,15 +141,17 @@ export default function LocationAttributes({ isSheetMode = false }) {
       </div>
 
       {/* Fixed Button Footer */}
-      <FormButtonFooter
-        onBack={previousStep}
-        onNext={isSheetMode ? () => setOpenSection(null) : nextStep}
-        onCancel={() => setOpenSection(null)}
-        nextLabel={isSheetMode ? 'Save' : 'Continue'}
-        nextDisabled={false}
-        showBack={true}
-        isSheetMode={isSheetMode}
-      />
+      {(onNext || onBack || onCancel) && (
+        <FormButtonFooter
+          onBack={onBack}
+          onNext={isSheetMode ? onCancel : onNext}
+          onCancel={onCancel}
+          nextLabel={isSheetMode ? 'Save' : 'Continue'}
+          nextDisabled={false}
+          showBack={!!onBack}
+          isSheetMode={isSheetMode}
+        />
+      )}
     </div>
   );
 }

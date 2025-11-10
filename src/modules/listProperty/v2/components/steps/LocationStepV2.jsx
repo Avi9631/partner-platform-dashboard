@@ -33,7 +33,11 @@ export default function LocationStepV2() {
           transition={{ duration: 0.5 }}
         >
           <div className="pb-24">
-            <LocationAttributes isSheetMode={false} />
+            <LocationAttributes 
+              isSheetMode={false}
+              onNext={handleContinue}
+              onBack={previousStep}
+            />
           </div>
         </motion.div>
 

@@ -37,7 +37,11 @@ export default function FloorDetailsStepV2() {
           transition={{ duration: 0.5 }}
         >
           <div className="pb-24">
-            <FloorDetails isSheetMode={false} />
+            <FloorDetails 
+              isSheetMode={false}
+              onNext={handleContinue}
+              onBack={previousStep}
+            />
           </div>
         </motion.div>
 

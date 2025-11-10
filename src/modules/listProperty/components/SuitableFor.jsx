@@ -5,10 +5,8 @@ import { Users } from 'lucide-react';
 import {
   Field,
   FieldGroup,
-  FieldLabel,
 } from '@/components/ui/field';
 import { useFormContext } from 'react-hook-form';
-import { usePropertyForm } from '../context/PropertyFormContext';
 import suitableForSchema from '../schemas/suitableForSchema';
 
 const suitableForOptions = [
@@ -18,9 +16,8 @@ const suitableForOptions = [
   { value: 'students', label: 'Students', icon: '📚' },
 ];
 
-export default function SuitableFor() {
+export default function SuitableFor({ updateStepValidation, currentStep } = {}) {
   const mainForm = useFormContext();
-  const { updateStepValidation, currentStep } = usePropertyForm();
 
   // Initialize React Hook Form with Zod validation
   const form = useForm({
@@ -33,7 +30,9 @@ export default function SuitableFor() {
 
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(currentStep, form.formState.isValid);
+    if (updateStepValidation && currentStep !== undefined) {
+      updateStepValidation(currentStep, form.formState.isValid);
+    }
   }, [form.formState.isValid, currentStep, updateStepValidation]);
 
   // Sync form data with main form on field changes

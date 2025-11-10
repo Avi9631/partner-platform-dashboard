@@ -58,11 +58,20 @@ export default function SectionEditSheet({ sections }) {
           updateStepValidation={updateStepValidation}
         />;
       case 'ParkingUtilities':
-        return <ParkingUtilities isSheetMode />;
+        return <ParkingUtilities 
+          isSheetMode 
+          onCancel={() => setOpenSection(null)}
+        />;
       case 'LocationAttributes':
-        return <LocationAttributes isSheetMode />;
+        return <LocationAttributes 
+          isSheetMode 
+          onCancel={() => setOpenSection(null)}
+        />;
       case 'FloorDetails':
-        return <FloorDetails isSheetMode />;
+        return <FloorDetails 
+          isSheetMode 
+          onCancel={() => setOpenSection(null)}
+        />;
       case 'LandAttributes':
         return <LandAttributes isSheetMode />;
       case 'PricingInfoStep':

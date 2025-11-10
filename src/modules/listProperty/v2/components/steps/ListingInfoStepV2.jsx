@@ -51,7 +51,7 @@ export default function ListingInfoStepV2() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="pb-24">
-            <ListingInformation />
+            <ListingInformation updateStepValidation={null} currentStep={null} />
           </div>
         </motion.div>
 

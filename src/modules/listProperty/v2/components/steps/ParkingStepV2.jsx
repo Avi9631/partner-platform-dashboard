@@ -35,7 +35,11 @@ export default function ParkingStepV2() {
           transition={{ duration: 0.5 }}
         >
           <div className="pb-24">
-            <ParkingUtilities isSheetMode={false} />
+            <ParkingUtilities 
+              isSheetMode={false}
+              onNext={handleContinue}
+              onBack={previousStep}
+            />
           </div>
         </motion.div>
 

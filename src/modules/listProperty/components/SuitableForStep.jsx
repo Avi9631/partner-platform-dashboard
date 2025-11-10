@@ -4,13 +4,18 @@ import { usePropertyForm } from '../context/PropertyFormContext';
 import SuitableFor from './SuitableFor';
 import FormButtonFooter from './shared/FormButtonFooter';
 
-export default function SuitableForStep({ isSheetMode = false }) {
+export default function SuitableForStep({ isSheetMode = false, onNext, onBack, onCancel }) {
   const { watch } = useFormContext();
-  const { nextStep, previousStep, setOpenSection } = usePropertyForm();
+  const { nextStep, previousStep, setOpenSection, updateStepValidation, currentStep } = usePropertyForm();
   const listingType = watch('listingType');
 
   // This step is optional, so always allow continue
   const canContinue = true;
+  
+  // Use passed props if available, otherwise fallback to context
+  const handleNext = onNext || (isSheetMode ? () => setOpenSection(null) : nextStep);
+  const handleBack = onBack || previousStep;
+  const handleCancel = onCancel || (() => setOpenSection(null));
 
   return (
     <div className="w-full ">
@@ -38,16 +43,16 @@ export default function SuitableForStep({ isSheetMode = false }) {
               </p>
             </div>
           ) : (
-            <SuitableFor />
+            <SuitableFor updateStepValidation={updateStepValidation} currentStep={currentStep} />
           )}
         </div>
       </div>
 
       {/* Fixed Button Footer */}
       <FormButtonFooter
-        onBack={previousStep}
-        onNext={isSheetMode ? () => setOpenSection(null) : nextStep}
-        onCancel={() => setOpenSection(null)}
+        onBack={handleBack}
+        onNext={isSheetMode ? handleCancel : handleNext}
+        onCancel={handleCancel}
         nextLabel={isSheetMode ? 'Save' : 'Continue'}
         nextDisabled={!canContinue}
         showBack={true}

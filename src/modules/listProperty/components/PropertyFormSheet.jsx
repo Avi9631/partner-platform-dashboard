@@ -64,9 +64,20 @@ function PropertyFormContent({ open }) {
             onBack={previousStep}
             updateStepValidation={updateStepValidation}
           />;
-          case 5: return <ParkingUtilities />;
-          case 6: return <LocationAttributes />;
-          case 7: return <FloorDetails />;
+          case 5: return <ParkingUtilities 
+            onNext={nextStep}
+            onBack={previousStep}
+          />;
+          case 6: return <LocationAttributes 
+            onNext={nextStep}
+            onBack={previousStep}
+          />;
+          case 7: return <FloorDetails 
+            onNext={nextStep}
+            onBack={previousStep}
+            updateStepValidation={updateStepValidation}
+            currentStep={currentStep}
+          />;
           case 8: return <PricingInfoStep />;
           case 9: return <SuitableForStep />;
           case 10: return <ListingInfoStep />;
@@ -85,8 +96,14 @@ function PropertyFormContent({ open }) {
             onBack={previousStep}
             updateStepValidation={updateStepValidation}
           />;
-          case 5: return <ParkingUtilities />;
-          case 6: return <LocationAttributes />;
+          case 5: return <ParkingUtilities 
+            onNext={nextStep}
+            onBack={previousStep}
+          />;
+          case 6: return <LocationAttributes 
+            onNext={nextStep}
+            onBack={previousStep}
+          />;
           case 7: return <PricingInfoStep />;
           case 8: return <SuitableForStep />;
           case 9: return <ListingInfoStep />;

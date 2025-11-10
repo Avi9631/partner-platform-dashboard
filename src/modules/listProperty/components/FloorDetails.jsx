@@ -5,17 +5,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useFormContext } from 'react-hook-form';
-import { usePropertyForm } from '../context/PropertyFormContext';
 import FormButtonFooter from './shared/FormButtonFooter';
 
-export default function FloorDetails({ isSheetMode = false }) {
-  const { nextStep, previousStep, updateStepValidation, setOpenSection } = usePropertyForm();
+export default function FloorDetails({ 
+  isSheetMode = false,
+  onNext,
+  onBack,
+  onCancel,
+  updateStepValidation,
+  currentStep
+}) {
   const { register, watch, setValue, formState: { errors, isValid } } = useFormContext();
 
   // Update step validation when form validity changes
   useEffect(() => {
-    updateStepValidation(4, isValid);
-  }, [isValid, updateStepValidation]);
+    if (updateStepValidation && currentStep !== undefined) {
+      updateStepValidation(currentStep, isValid);
+    }
+  }, [isValid, updateStepValidation, currentStep]);
 
   return (
     <div className="w-full  ">
@@ -196,15 +203,17 @@ export default function FloorDetails({ isSheetMode = false }) {
       </div>
 
       {/* Fixed Button Footer */}
-      <FormButtonFooter
-        onBack={previousStep}
-        onNext={isSheetMode ? () => setOpenSection(null) : nextStep}
-        onCancel={() => setOpenSection(null)}
-        nextLabel={isSheetMode ? 'Save' : 'Continue'}
-        nextDisabled={!isValid}
-        showBack={true}
-        isSheetMode={isSheetMode}
-      />
+      {(onNext || onBack || onCancel) && (
+        <FormButtonFooter
+          onBack={onBack}
+          onNext={isSheetMode ? onCancel : onNext}
+          onCancel={onCancel}
+          nextLabel={isSheetMode ? 'Save' : 'Continue'}
+          nextDisabled={!isValid}
+          showBack={!!onBack}
+          isSheetMode={isSheetMode}
+        />
+      )}
     </div>
   );
 }

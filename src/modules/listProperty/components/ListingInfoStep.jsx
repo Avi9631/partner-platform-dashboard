@@ -41,7 +41,7 @@ export default function ListingInfoStep({ isSheetMode = false }) {
 
       <div className=" ">
         <div className="space-y-6">
-          <ListingInformation />
+          <ListingInformation updateStepValidation={updateStepValidation} currentStep={currentStep} />
         </div>
       </div>
 

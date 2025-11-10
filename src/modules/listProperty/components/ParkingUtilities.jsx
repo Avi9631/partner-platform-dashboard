@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Car, Wind, Droplets, Zap, Trash2 } from 'lucide-react';
+import { Car, Wind } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -10,12 +10,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useFormContext } from 'react-hook-form';
-import { usePropertyForm } from '../context/PropertyFormContext';
 import FormButtonFooter from './shared/FormButtonFooter';
 
-export default function ParkingUtilities({ isSheetMode = false }) {
+export default function ParkingUtilities({ 
+  isSheetMode = false,
+  onNext,
+  onBack,
+  onCancel,
+}) {
   const { watch, setValue, register } = useFormContext();
-  const { nextStep, previousStep, setOpenSection } = usePropertyForm();
 
   return (
     <div className="w-full  ">
@@ -115,15 +118,17 @@ export default function ParkingUtilities({ isSheetMode = false }) {
       </div>
 
       {/* Fixed Button Footer */}
-      <FormButtonFooter
-        onBack={previousStep}
-        onNext={isSheetMode ? () => setOpenSection(null) : nextStep}
-        onCancel={() => setOpenSection(null)}
-        nextLabel={isSheetMode ? 'Save' : 'Continue'}
-        nextDisabled={false}
-        showBack={true}
-        isSheetMode={isSheetMode}
-      />
+      {(onNext || onBack || onCancel) && (
+        <FormButtonFooter
+          onBack={onBack}
+          onNext={isSheetMode ? onCancel : onNext}
+          onCancel={onCancel}
+          nextLabel={isSheetMode ? 'Save' : 'Continue'}
+          nextDisabled={false}
+          showBack={!!onBack}
+          isSheetMode={isSheetMode}
+        />
+      )}
     </div>
   );
 }
