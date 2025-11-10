@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
@@ -9,7 +9,6 @@ import {
   FieldDescription,
   FieldLabel,
 } from '@/components/ui/field';
-import { useFormContext } from 'react-hook-form';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import geoTagSchema from '../../../schemas/geoTagSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
@@ -32,37 +31,26 @@ const calculateDistance = (lat1, lng1, lat2, lng2) => {
 };
 
 export default function GeoTagStepV2() {
-  const formMethods = useFormContext();
-  const { saveAndContinue, previousStep } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [distance, setDistance] = useState(null);
 
-  // Get property coordinates from form context
-  const propertyCoordinates = formMethods.watch('coordinates');
+  // Get property coordinates from saved formData
+  const propertyCoordinates = formData?.coordinates;
 
   // Initialize React Hook Form with Zod validation
   const form = useForm({
     resolver: zodResolver(geoTagSchema),
     mode: 'onChange',
     defaultValues: {
-      geoTagStatus: formMethods.watch('geoTagStatus') || 'pending',
-      geoTagCoordinates: formMethods.watch('geoTagCoordinates') || null,
-      geoTagDistance: formMethods.watch('geoTagDistance') || null,
-      geoTagTimestamp: formMethods.watch('geoTagTimestamp') || null,
+      geoTagStatus: formData?.geoTagStatus || 'pending',
+      geoTagCoordinates: formData?.geoTagCoordinates || null,
+      geoTagDistance: formData?.geoTagDistance || null,
+      geoTagTimestamp: formData?.geoTagTimestamp || null,
     },
   });
-
-  // Sync form data changes to main form context
-  useEffect(() => {
-    const subscription = form.watch((value) => {
-      Object.keys(value).forEach((key) => {
-        formMethods.setValue(key, value[key]);
-      });
-    });
-    return () => subscription.unsubscribe();
-  }, [form, formMethods]);
 
   // Function to get current location
   const getCurrentLocation = () => {
@@ -104,12 +92,6 @@ export default function GeoTagStepV2() {
           form.setValue('geoTagCoordinates', currentCoords);
           form.setValue('geoTagDistance', calculatedDistance);
           form.setValue('geoTagTimestamp', timestamp);
-          
-          // Also update main form context
-          formMethods.setValue('geoTagStatus', status);
-          formMethods.setValue('geoTagCoordinates', currentCoords);
-          formMethods.setValue('geoTagDistance', calculatedDistance);
-          formMethods.setValue('geoTagTimestamp', timestamp);
         }
         
         setIsGettingLocation(false);
@@ -140,12 +122,8 @@ export default function GeoTagStepV2() {
 
   // Handle form submission
   const onSubmit = (data) => {
-    // Update the main form context
-    Object.keys(data).forEach((key) => {
-      formMethods.setValue(key, data[key]);
-    });
-    
-    saveAndContinue();
+    // Pass data to context
+    saveAndContinue(data);
   };
 
   const geoTagStatus = form.watch('geoTagStatus');
@@ -192,8 +170,8 @@ export default function GeoTagStepV2() {
                     <div className="space-y-1 text-xs text-muted-foreground">
                       <p>Latitude: {propertyCoordinates.lat.toFixed(6)}</p>
                       <p>Longitude: {propertyCoordinates.lng.toFixed(6)}</p>
-                      {formMethods.watch('addressText') && (
-                        <p className="mt-2 text-sm">{formMethods.watch('addressText')}</p>
+                      {formData?.addressText && (
+                        <p className="mt-2 text-sm">{formData.addressText}</p>
                       )}
                     </div>
                   ) : (

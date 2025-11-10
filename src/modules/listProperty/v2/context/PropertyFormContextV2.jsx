@@ -16,94 +16,13 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
   const [propertyType, setPropertyType] = useState(null);
   const [completedSteps, setCompletedSteps] = useState(new Set());
   
-  // Initialize React Hook Form
+  // Store saved form data from all steps as JSON (empty initially, populated on save)
+  const [formData, setFormData] = useState({});
+  
+  // Initialize React Hook Form (not used for step forms, kept for compatibility)
   const methods = useForm({
     mode: 'onChange',
-    defaultValues: {
-      // Property Type (Step 0)
-      propertyType: null,
-      
-      // Basic Details (Step 1)
-      ownershipType: 'freehold',
-      projectName: '',
-      reraId: '',
-      // Auto-populated from map location selection
-      city: '',
-      locality: '',
-      addressText: '',
-      landmark: '',
-      coordinates: null,
-      showMapExact: false,
-      // Geo Tag
-      geoTagStatus: 'pending',
-      geoTagCoordinates: null,
-      geoTagDistance: null,
-      geoTagTimestamp: null,
-      ageOfProperty: '',
-      possessionStatus: 'ready',
-      possessionDate: '',
-      
-      // Basic Configuration (Step 2 - Building)
-      bedrooms: '',
-      bathrooms: '',
-      balconies: '',
-      balconyType: '',
-      kitchenType: '',
-      ceilingHeight: '',
-      additionalRooms: [],
-      
-      // Area Details (Step 3 - Building)
-      carpetArea: '',
-      superArea: '',
-      
-      // Furnishing & Amenities (Step 4 - Building)
-      furnishingStatus: 'unfurnished',
-      furnishingDetails: {},
-      flooringTypes: [],
-      
-      // Parking & Utilities (Step 5 - Building)
-      coveredParking: '',
-      openParking: '',
-      powerBackup: 'none',
-      waterSupply: '',
-      
-      // Location Attributes (Step 6 - Building)
-      facing: '',
-      view: '',
-      
-      // Floor Details (Step 7 - Building, conditional)
-      towerName: '',
-      floorNumber: '',
-      totalFloors: '',
-      unitNumber: '',
-      isUnitNumberPrivate: false,
-      
-      // Land Attributes (Step 2 - Land)
-      plotArea: '',
-      areaUnit: 'sqft',
-      plotDimension: '',
-      landUse: '',
-      roadWidth: '',
-      fencing: false,
-      irrigationSource: '',
-      
-      // Pricing Information
-      listingType: 'sale',
-      price: '',
-      priceUnit: 'total',
-      maintenanceCharges: '',
-      availableFrom: '',
-      
-      // Suitable For
-      suitableFor: [],
-      
-      // Listing Information
-      title: '',
-      description: '',
-      
-      // Amenities
-      amenities: [],
-    },
+    defaultValues: {},
   });
 
   // Get total steps based on property type
@@ -134,8 +53,21 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     return 1;
   }, [propertyType]);
 
+  // Update form data in context (called when save & continue is clicked)
+  const updateFormData = useCallback((stepData) => {
+    setFormData(prev => ({
+      ...prev,
+      ...stepData,
+    }));
+  }, []);
+
   // Navigate to next step with "Save & Continue"
-  const saveAndContinue = useCallback(() => {
+  const saveAndContinue = useCallback((stepData) => {
+    // Update form data in context
+    if (stepData) {
+      updateFormData(stepData);
+    }
+    
     // Mark current step as completed
     setCompletedSteps(prev => new Set([...prev, currentStep]));
     
@@ -143,7 +75,7 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     if (currentStep < totalSteps - 1) {
       setCurrentStep(currentStep + 1);
     }
-  }, [currentStep, getTotalSteps]);
+  }, [currentStep, getTotalSteps, updateFormData]);
 
   // Navigate to previous step
   const previousStep = useCallback(() => {
@@ -159,7 +91,8 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
 
   // Reset form
   const resetForm = useCallback(() => {
-    methods.reset();
+    setFormData({});
+    methods.reset({});
     setCurrentStep(0);
     setPropertyType(null);
     setCompletedSteps(new Set());
@@ -203,7 +136,8 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     isStepCompleted,
     getProgress,
     onClose,
-    formData: methods.watch(),
+    formData, // JSON object updated only on save & continue
+    updateFormData, // Method to update form data
   };
 
   return (

@@ -1,4 +1,4 @@
-import { Controller, useFormContext } from 'react-hook-form';
+import { Controller, useForm, FormProvider } from 'react-hook-form';
 import { motion } from 'motion/react';
 import { Ruler, Fence, Droplets, Map, Mountain } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -54,8 +54,24 @@ const soilTypes = [
 ];
 
 export default function LandAttributesStepV2() {
-  const { register, control, watch, formState: { errors } } = useFormContext();
-  const { saveAndContinue, previousStep } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+
+  const methods = useForm({
+    mode: 'onChange',
+    defaultValues: {
+      plotArea: formData?.plotArea || '',
+      areaUnit: formData?.areaUnit || 'sqft',
+      plotDimension: formData?.plotDimension || '',
+      landUse: formData?.landUse || '',
+      roadWidth: formData?.roadWidth || '',
+      terrainLevel: formData?.terrainLevel || '',
+      soilType: formData?.soilType || '',
+      fencing: formData?.fencing || false,
+      irrigationSource: formData?.irrigationSource || '',
+    },
+  });
+
+  const { register, control, watch, formState: { errors } } = methods;
 
   const plotArea = watch('plotArea');
   const areaUnit = watch('areaUnit');
@@ -64,33 +80,35 @@ export default function LandAttributesStepV2() {
 
   const handleContinue = () => {
     if (isValid) {
-      saveAndContinue();
+      const data = methods.getValues();
+      saveAndContinue(data);
     }
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-4 md:mb-6"
-      >
-        <h2 className="text-xl md:text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-          Land Specifications
-        </h2>
-        <p className="text-muted-foreground text-xs md:text-sm">
-          Provide detailed information about your land/plot
-        </p>
-      </motion.div>
+    <FormProvider {...methods}>
+      <div className="w-full max-w-5xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-4 md:mb-6"
+        >
+          <h2 className="text-xl md:text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+            Land Specifications
+          </h2>
+          <p className="text-muted-foreground text-xs md:text-sm">
+            Provide detailed information about your land/plot
+          </p>
+        </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="space-y-4 pb-20"
-      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="space-y-4 pb-20"
+        >
         {/* Plot Area & Dimensions */}
         <div className="space-y-3 p-4 rounded-lg border border-orange-100 dark:border-orange-900 bg-white dark:bg-gray-900">
           <h3 className="text-base font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
@@ -336,12 +354,13 @@ export default function LandAttributesStepV2() {
         </div>
       </motion.div>
 
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        nextDisabled={!isValid}
-        showBack={true}
-      />
-    </div>
+        <SaveAndContinueFooter
+          onBack={previousStep}
+          onSaveAndContinue={handleContinue}
+          nextDisabled={!isValid}
+          showBack={true}
+        />
+      </div>
+    </FormProvider>
   );
 }

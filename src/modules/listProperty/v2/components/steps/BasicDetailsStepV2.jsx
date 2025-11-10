@@ -32,26 +32,24 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
-import { useFormContext } from 'react-hook-form';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import basicDetailsSchema from '../../../schemas/basicDetailsSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 export default function BasicDetailsStepV2() {
-  const formMethods = useFormContext();
-  const { saveAndContinue, previousStep } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
 
   // Initialize React Hook Form with Zod validation
   const form = useForm({
     resolver: zodResolver(basicDetailsSchema),
     mode: 'onChange',
     defaultValues: {
-      ownershipType: formMethods.watch('ownershipType') || 'freehold',
-      projectName: formMethods.watch('projectName') || '',
-      reraIds: formMethods.watch('reraIds') || [],
-      ageOfProperty: formMethods.watch('ageOfProperty') || '',
-      possessionStatus: formMethods.watch('possessionStatus') || 'ready',
-      possessionDate: formMethods.watch('possessionDate') || '',
+      ownershipType: formData?.ownershipType || 'freehold',
+      projectName: formData?.projectName || '',
+      reraIds: formData?.reraIds || [],
+      ageOfProperty: formData?.ageOfProperty || '',
+      possessionStatus: formData?.possessionStatus || 'ready',
+      possessionDate: formData?.possessionDate || '',
     },
   });
 
@@ -173,24 +171,10 @@ export default function BasicDetailsStepV2() {
     setCurrentPage(nextPage);
   }, [currentPage, projectNameSearch, hasMoreProjectNames, loadingProjectNames, fetchProjectNames]);
 
-  // Sync form data changes to main form context
-  useEffect(() => {
-    const subscription = form.watch((value) => {
-      Object.keys(value).forEach((key) => {
-        formMethods.setValue(key, value[key]);
-      });
-    });
-    return () => subscription.unsubscribe();
-  }, [form, formMethods]);
-
   // Handle form submission
   const onSubmit = (data) => {
-    // Update the main form context
-    Object.keys(data).forEach((key) => {
-      formMethods.setValue(key, data[key]);
-    });
-    
-    saveAndContinue();
+    // Pass data to context
+    saveAndContinue(data);
   };
 
   return (

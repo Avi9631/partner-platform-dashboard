@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
@@ -8,44 +7,33 @@ import {
   FieldDescription,
   FieldLabel,
 } from '@/components/ui/field';
-import { useFormContext } from 'react-hook-form';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import locationSelectionSchema from '../../../schemas/locationSelectionSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import LocationPicker from '@/components/maps/LocationPicker';
 
 export default function LocationSelectionStepV2() {
-  const formMethods = useFormContext();
-  const { saveAndContinue, previousStep } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
 
   // Initialize React Hook Form with Zod validation
+  // Default values defined here, populated from context if previously saved
   const form = useForm({
     resolver: zodResolver(locationSelectionSchema),
     mode: 'onChange',
     defaultValues: {
-      coordinates: formMethods.watch('coordinates') || null,
-      showMapExact: formMethods.watch('showMapExact') || false,
+      coordinates: formData?.coordinates || null,
+      showMapExact: formData?.showMapExact || false,
+      city: formData?.city || '',
+      locality: formData?.locality || '',
+      addressText: formData?.addressText || '',
+      landmark: formData?.landmark || '',
     },
   });
 
-  // Sync form data changes to main form context
-  useEffect(() => {
-    const subscription = form.watch((value) => {
-      Object.keys(value).forEach((key) => {
-        formMethods.setValue(key, value[key]);
-      });
-    });
-    return () => subscription.unsubscribe();
-  }, [form, formMethods]);
-
-  // Handle form submission
+  // Handle form submission - update context only on save & continue
   const onSubmit = (data) => {
-    // Update the main form context
-    Object.keys(data).forEach((key) => {
-      formMethods.setValue(key, data[key]);
-    });
-    
-    saveAndContinue();
+    // Pass step data to context to update formData JSON
+    saveAndContinue(data);
   };
 
   return (
@@ -96,9 +84,9 @@ export default function LocationSelectionStepV2() {
                     <LocationPicker
                       value={field.value ? {
                         coordinates: field.value,
-                        formattedAddress: formMethods.watch('addressText'),
-                        city: formMethods.watch('city'),
-                        locality: formMethods.watch('locality'),
+                        formattedAddress: form.watch('addressText'),
+                        city: form.watch('city'),
+                        locality: form.watch('locality'),
                       } : null}
                       onChange={(locationData) => {
                         if (locationData) {
@@ -106,16 +94,16 @@ export default function LocationSelectionStepV2() {
                           
                           // Auto-populate address fields from map selection
                           if (locationData.city) {
-                            formMethods.setValue('city', locationData.city, { shouldValidate: true, shouldDirty: true });
+                            form.setValue('city', locationData.city, { shouldValidate: true, shouldDirty: true });
                           }
                           if (locationData.locality) {
-                            formMethods.setValue('locality', locationData.locality, { shouldValidate: true, shouldDirty: true });
+                            form.setValue('locality', locationData.locality, { shouldValidate: true, shouldDirty: true });
                           }
                           if (locationData.formattedAddress) {
-                            formMethods.setValue('addressText', locationData.formattedAddress, { shouldValidate: true, shouldDirty: true });
+                            form.setValue('addressText', locationData.formattedAddress, { shouldValidate: true, shouldDirty: true });
                           }
                           if (locationData.landmark) {
-                            formMethods.setValue('landmark', locationData.landmark, { shouldValidate: true, shouldDirty: true });
+                            form.setValue('landmark', locationData.landmark, { shouldValidate: true, shouldDirty: true });
                           }
                         } else {
                           field.onChange(null);
@@ -135,7 +123,7 @@ export default function LocationSelectionStepV2() {
           </motion.div>
 
           {/* Auto-populated address preview */}
-          {formMethods.watch('coordinates') && (
+          {form.watch('coordinates') && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -146,17 +134,17 @@ export default function LocationSelectionStepV2() {
                 ✓ Location Selected
               </p>
               <div className="space-y-1 text-xs text-green-800 dark:text-green-200">
-                {formMethods.watch('city') && (
-                  <p><span className="font-medium">City:</span> {formMethods.watch('city')}</p>
+                {form.watch('city') && (
+                  <p><span className="font-medium">City:</span> {form.watch('city')}</p>
                 )}
-                {formMethods.watch('locality') && (
-                  <p><span className="font-medium">Locality:</span> {formMethods.watch('locality')}</p>
+                {form.watch('locality') && (
+                  <p><span className="font-medium">Locality:</span> {form.watch('locality')}</p>
                 )}
-                {formMethods.watch('addressText') && (
-                  <p><span className="font-medium">Address:</span> {formMethods.watch('addressText')}</p>
+                {form.watch('addressText') && (
+                  <p><span className="font-medium">Address:</span> {form.watch('addressText')}</p>
                 )}
-                {formMethods.watch('landmark') && (
-                  <p><span className="font-medium">Landmark:</span> {formMethods.watch('landmark')}</p>
+                {form.watch('landmark') && (
+                  <p><span className="font-medium">Landmark:</span> {form.watch('landmark')}</p>
                 )}
               </div>
             </motion.div>
@@ -205,7 +193,7 @@ export default function LocationSelectionStepV2() {
           <SaveAndContinueFooter
             onBack={previousStep}
             onSaveAndContinue={form.handleSubmit(onSubmit)}
-            nextDisabled={!form.formState.isValid || !formMethods.watch('coordinates')}
+            nextDisabled={!form.formState.isValid || !form.watch('coordinates')}
             showBack={true}
           />
         </form>

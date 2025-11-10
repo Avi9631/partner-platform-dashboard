@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Building2, Home, TreePine, LandPlot } from 'lucide-react';
-import { useFormContext } from 'react-hook-form';
 import { cn } from '@/lib/utils';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
@@ -30,19 +29,18 @@ const propertyTypes = [
 ];
 
 export default function PropertyTypeStepV2() {
-  const { setValue } = useFormContext();
-  const { setPropertyType, saveAndContinue } = usePropertyFormV2();
-  const [selectedType, setSelectedType] = useState(null);
+  const { setPropertyType, saveAndContinue, formData } = usePropertyFormV2();
+  const [selectedType, setSelectedType] = useState(formData?.propertyType || null);
 
   const handleSelectType = (type) => {
     setSelectedType(type);
-    setValue('propertyType', type);
     setPropertyType(type);
   };
 
   const handleContinue = () => {
     if (selectedType) {
-      saveAndContinue();
+      // Pass property type data to context
+      saveAndContinue({ propertyType: selectedType });
     }
   };
 
