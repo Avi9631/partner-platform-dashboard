@@ -1,8 +1,11 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { motion } from 'motion/react';
+import { FileText, Tag } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
-import ListingInformation from '../../../components/ListingInformation';
 
 export default function ListingInfoStepV2() {
   const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
@@ -15,7 +18,7 @@ export default function ListingInfoStepV2() {
     },
   });
 
-  const { watch } = methods;
+  const { register, watch, formState: { errors } } = methods;
   const title = watch('title');
   const description = watch('description');
   
@@ -51,7 +54,57 @@ export default function ListingInfoStepV2() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="pb-24">
-            <ListingInformation updateStepValidation={null} currentStep={null} />
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
+                <FileText className="w-5 h-5" />
+                Listing Information
+              </h3>
+              
+              {/* Title */}
+              <div className="space-y-1.5">
+                <Label htmlFor="title" className="text-sm flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-primary" />
+                  Listing Title <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="title"
+                  placeholder="e.g., Spacious 3BHK Apartment in Prime Location"
+                  {...register('title')}
+                  className={`h-9 text-sm ${errors.title ? 'border-red-500' : ''}`}
+                  maxLength={100}
+                />
+                {errors.title && (
+                  <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
+                )}
+                {!errors.title && (
+                  <p className="text-xs text-muted-foreground">
+                    {title?.length || 0}/100 characters
+                  </p>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <Label htmlFor="description" className="text-sm">
+                  Property Description <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe your property in detail. Include unique features, nearby landmarks, connectivity, etc."
+                  {...register('description')}
+                  className={`min-h-[100px] text-sm ${errors.description ? 'border-red-500' : ''}`}
+                  maxLength={1000}
+                />
+                {errors.description && (
+                  <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>
+                )}
+                {!errors.description && (
+                  <p className="text-xs text-muted-foreground">
+                    {description?.length || 0}/1000 characters
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </motion.div>
 

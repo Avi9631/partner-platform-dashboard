@@ -37,7 +37,7 @@ export default function SaveAndContinueFooter({
         <Button
           size="default"
           type="submit"
-          onClick={onSaveAndContinue}
+          onClick={onSaveAndContinue || undefined}
           disabled={nextDisabled}
           className={`px-4 md:px-8 shadow-lg whitespace-nowrap ${
             isLastStep 

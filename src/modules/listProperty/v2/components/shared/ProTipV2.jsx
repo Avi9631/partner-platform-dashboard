@@ -1,13 +1,13 @@
 import { Sparkles } from 'lucide-react';
 
 /**
- * ProTip component - Displays helpful tips and suggestions to users
+ * ProTipV2 component - Displays helpful tips and suggestions to users
  * @param {Object} props
  * @param {string} props.title - The title of the tip
  * @param {string[]} props.tips - Array of tip strings
  * @param {React.ReactNode} props.icon - Optional custom icon (defaults to Sparkles)
  */
-export default function ProTip({ title, tips, icon: Icon = Sparkles }) {
+export default function ProTipV2({ title, tips, icon: Icon = Sparkles }) {
   return (
     <div className="bg-gradient-to-r from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
       <div className="flex gap-3">

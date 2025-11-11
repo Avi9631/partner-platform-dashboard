@@ -7,6 +7,7 @@
  * - Enhanced sidebar with locked/unlocked steps
  * - Comprehensive review page with collapsible cards
  * - Ability to edit any completed section from the review page
+ * - Consolidated step components (no separate form components)
  * 
  * Usage:
  * import { PropertyFormSheetV2 } from '@/modules/listProperty/v2';
@@ -17,9 +18,10 @@
 export { default as PropertyFormSheetV2 } from './components/PropertyFormSheetV2';
 export { PropertyFormProviderV2, usePropertyFormV2 } from './context/PropertyFormContextV2';
 
-// Step components (if needed individually)
+// Step components - Each step now contains both UI and form logic (consolidated)
 export { default as PropertyTypeStepV2 } from './components/steps/PropertyTypeStepV2';
 export { default as LocationSelectionStepV2 } from './components/steps/LocationSelectionStepV2';
+export { default as GeoTagStepV2 } from './components/steps/GeoTagStepV2';
 export { default as BasicDetailsStepV2 } from './components/steps/BasicDetailsStepV2';
 export { default as BasicConfigurationStepV2 } from './components/steps/BasicConfigurationStepV2';
 export { default as AreaDetailsStepV2 } from './components/steps/AreaDetailsStepV2';
