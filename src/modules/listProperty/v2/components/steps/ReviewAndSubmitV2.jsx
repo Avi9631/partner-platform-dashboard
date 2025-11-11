@@ -17,12 +17,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useFormContext } from 'react-hook-form';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 
 export default function ReviewAndSubmitV2() {
-  const { watch } = useFormContext();
-  const { previousStep, goToStep, propertyType, isBuildingType } = usePropertyFormV2();
+  const { previousStep, goToStep, propertyType, isBuildingType, formData } = usePropertyFormV2();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
@@ -32,8 +30,7 @@ export default function ReviewAndSubmitV2() {
     pricing: true,
   });
 
-  // Watch all form values
-  const formData = watch();
+  // Use form data from context (accumulated from all steps)
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -48,6 +45,16 @@ export default function ReviewAndSubmitV2() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    
+    // Log the complete payload
+    const payload = {
+      propertyType,
+      ...formData
+    };
+    console.log('=== PROPERTY LISTING PAYLOAD ===');
+    console.log(JSON.stringify(payload, null, 2));
+    console.log('================================');
+    
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsSubmitting(false);

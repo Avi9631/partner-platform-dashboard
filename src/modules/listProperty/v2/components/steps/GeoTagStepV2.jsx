@@ -13,6 +13,9 @@ import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import geoTagSchema from '../../../schemas/geoTagSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
+// Maximum allowed distance in meters for successful geo-tagging
+const MAX_GEOTAG_DISTANCE_METERS = 1000;
+
 // Calculate distance between two coordinates using Haversine formula
 const calculateDistance = (lat1, lng1, lat2, lng2) => {
   const R = 6371e3; // Earth's radius in meters
@@ -83,8 +86,8 @@ export default function GeoTagStepV2() {
           
           setDistance(calculatedDistance);
           
-          // Determine geo tag status (success if within 100 meters)
-          const status = calculatedDistance <= 1000 ? 'success' : 'failed';
+          // Determine geo tag status (success if within maximum allowed distance)
+          const status = calculatedDistance <= MAX_GEOTAG_DISTANCE_METERS ? 'success' : 'failed';
           const timestamp = new Date().toISOString();
           
           // Update form values
@@ -261,7 +264,7 @@ export default function GeoTagStepV2() {
                         You are at the property location. Distance from property: {distance?.toFixed(2)} meters
                       </p>
                       <div className="text-xs text-green-700 dark:text-green-300">
-                        <p>✓ Within 100 meter range</p>
+                        <p>✓ Within {MAX_GEOTAG_DISTANCE_METERS} meter range</p>
                         <p>✓ Location verified successfully</p>
                       </div>
                     </div>
@@ -279,7 +282,7 @@ export default function GeoTagStepV2() {
                         You are not at the property location. Distance from property: {distance?.toFixed(2)} meters
                       </p>
                       <div className="text-xs text-red-700 dark:text-red-300">
-                        <p>✗ More than 100 meters away from the property</p>
+                        <p>✗ More than {MAX_GEOTAG_DISTANCE_METERS} meters away from the property</p>
                         <p>Please go to the property location and try again</p>
                       </div>
                     </div>
@@ -298,7 +301,7 @@ export default function GeoTagStepV2() {
           >
             <p className="text-sm text-blue-900 dark:text-blue-100">
               <span className="font-semibold">💡 Tip:</span> Make sure you have enabled location permissions in your browser. 
-              You need to be within 100 meters of the property location for successful geo-tagging.
+              You need to be within {MAX_GEOTAG_DISTANCE_METERS} meters of the property location for successful geo-tagging.
             </p>
           </motion.div>
 
