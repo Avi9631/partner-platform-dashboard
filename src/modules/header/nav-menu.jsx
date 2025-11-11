@@ -87,25 +87,22 @@ function NavigationMenuDemo({ orientation }) {
           <NavigationMenuContent>
             <ul className="grid w-[200px] gap-3 p-4">
               <ListItem
-                title="List Property"
+                title="Property"
                 onClick={() => handleNavigate("/list-property-v2")}
                 className="cursor-pointer"
               >
-                Add a new property listing
               </ListItem>
               <ListItem
-                title="List Project"
+                title="Project"
                 onClick={() => handleNavigate("/list-project")}
                 className="cursor-pointer"
               >
-                Add a new project listing
               </ListItem>
               <ListItem
-                title="List Developer"
+                title="Developer"
                 onClick={() => handleNavigate("/list-developer")}
                 className="cursor-pointer"
               >
-                Add a new developer listing
               </ListItem>
             </ul>
           </NavigationMenuContent>

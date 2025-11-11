@@ -1,13 +1,13 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  PlusCircle, MapPin, Home, Calendar, DollarSign, 
-  Edit2, Trash2, Eye, MoreVertical, Building2, 
-  Bed, Bath, Square, Search,
-  Clock, CheckCircle, XCircle, Loader2
+  PlusCircle, MapPin, Building2, Calendar, DollarSign, 
+  Edit2, Trash2, Eye, MoreVertical, Home,
+  Users, Square, Search, Clock, CheckCircle, XCircle, Loader2,
+  TrendingUp, Building
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PropertyFormSheetV2 } from '@/modules/listProperty/v2';
+import ProjectFormSheetV2 from '@/modules/listProject/v2/components/ProjectFormSheetV2';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -18,26 +18,25 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 
-export default function ListPropertyV2Page() {
+export default function ListProjectV2Page() {
   const [showForm, setShowForm] = useState(false);
-  const [listings, setListings] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
   // Mock data - Replace with actual API call
   useEffect(() => {
-    // Simulate API call
     setTimeout(() => {
-      setListings(mockListings);
+      setProjects(mockProjects);
       setLoading(false);
     }, 1000);
   }, []);
 
-  const filteredListings = listings.filter(listing => {
-    const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         listing.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || listing.status === statusFilter;
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         project.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -48,8 +47,8 @@ export default function ListPropertyV2Page() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold mb-2">My Properties</h1>
-              <p className="text-orange-100 text-sm md:text-base">Manage and track all your property listings</p>
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-2">My Projects</h1>
+              <p className="text-orange-100 text-sm md:text-base">Manage and track all your real estate projects</p>
             </div>
             <Button
               size="lg"
@@ -57,7 +56,7 @@ export default function ListPropertyV2Page() {
               className="h-12 px-8 text-sm font-bold bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:scale-105 transition-all duration-300 self-start md:self-auto"
             >
               <PlusCircle className="w-5 h-5 mr-2" />
-              List New Property
+              List New Project
             </Button>
           </div>
         </div>
@@ -68,25 +67,25 @@ export default function ListPropertyV2Page() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatsCard
             icon={<Building2 className="w-6 h-6" />}
-            value={listings.length}
-            label="Total Listings"
+            value={projects.length}
+            label="Total Projects"
             color="blue"
           />
           <StatsCard
-            icon={<CheckCircle className="w-6 h-6" />}
-            value={listings.filter(l => l.status === 'published').length}
-            label="Published"
-            color="green"
-          />
-          <StatsCard
-            icon={<Clock className="w-6 h-6" />}
-            value={listings.filter(l => l.status === 'draft').length}
-            label="Drafts"
+            icon={<TrendingUp className="w-6 h-6" />}
+            value={projects.filter(p => p.status === 'under_construction').length}
+            label="Under Construction"
             color="orange"
           />
           <StatsCard
+            icon={<CheckCircle className="w-6 h-6" />}
+            value={projects.filter(p => p.status === 'ready_to_move').length}
+            label="Ready to Move"
+            color="green"
+          />
+          <StatsCard
             icon={<Eye className="w-6 h-6" />}
-            value="2.4k"
+            value="8.2k"
             label="Total Views"
             color="purple"
           />
@@ -100,7 +99,7 @@ export default function ListPropertyV2Page() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
-                placeholder="Search by title or location..."
+                placeholder="Search by project name or location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-11"
@@ -115,44 +114,44 @@ export default function ListPropertyV2Page() {
                 All
               </Button>
               <Button
-                variant={statusFilter === 'published' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('published')}
-                className={statusFilter === 'published' ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                variant={statusFilter === 'under_construction' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('under_construction')}
+                className={statusFilter === 'under_construction' ? 'bg-orange-500 hover:bg-orange-600' : ''}
               >
-                Published
+                Ongoing
               </Button>
               <Button
-                variant={statusFilter === 'draft' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('draft')}
-                className={statusFilter === 'draft' ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                variant={statusFilter === 'ready_to_move' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('ready_to_move')}
+                className={statusFilter === 'ready_to_move' ? 'bg-orange-500 hover:bg-orange-600' : ''}
               >
-                Drafts
+                Ready
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Listings Grid */}
+      {/* Projects Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
           </div>
-        ) : filteredListings.length === 0 ? (
+        ) : filteredProjects.length === 0 ? (
           <EmptyState searchQuery={searchQuery} onAddNew={() => setShowForm(true)} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {filteredListings.map((listing, index) => (
-                <PropertyCard key={listing.id} listing={listing} index={index} />
+              {filteredProjects.map((project, index) => (
+                <ProjectCard key={project.id} project={project} index={index} />
               ))}
             </AnimatePresence>
           </div>
         )}
       </div>
 
-      <PropertyFormSheetV2 open={showForm} onOpenChange={setShowForm} />
+      <ProjectFormSheetV2 open={showForm} onOpenChange={setShowForm} />
     </div>
   );
 }
@@ -185,30 +184,36 @@ function StatsCard({ icon, value, label, color }) {
   );
 }
 
-// Property Card Component
-function PropertyCard({ listing, index }) {
+// Project Card Component
+function ProjectCard({ project, index }) {
   const statusConfig = {
-    published: { 
+    upcoming: { 
+      color: 'blue', 
+      label: 'Upcoming', 
+      icon: Clock,
+      badgeClass: 'bg-blue-500 hover:bg-blue-600'
+    },
+    under_construction: { 
+      color: 'orange', 
+      label: 'Under Construction', 
+      icon: TrendingUp,
+      badgeClass: 'bg-orange-500 hover:bg-orange-600'
+    },
+    ready_to_move: { 
       color: 'green', 
-      label: 'Published', 
+      label: 'Ready to Move', 
       icon: CheckCircle,
       badgeClass: 'bg-green-500 hover:bg-green-600'
     },
-    draft: { 
-      color: 'orange', 
-      label: 'Draft', 
-      icon: Clock,
-      badgeClass: 'bg-orange-500 hover:bg-orange-600'
-    },
-    archived: { 
-      color: 'gray', 
-      label: 'Archived', 
+    completed: { 
+      color: 'purple', 
+      label: 'Completed', 
       icon: XCircle,
-      badgeClass: 'bg-gray-500 hover:bg-gray-600'
+      badgeClass: 'bg-purple-500 hover:bg-purple-600'
     },
   };
 
-  const config = statusConfig[listing.status] || statusConfig.draft;
+  const config = statusConfig[project.status] || statusConfig.under_construction;
   const StatusIcon = config.icon;
 
   return (
@@ -223,15 +228,15 @@ function PropertyCard({ listing, index }) {
       <Card className="overflow-hidden border-2 border-gray-200 dark:border-gray-700 hover:border-orange-400 dark:hover:border-orange-500 transition-all duration-300 shadow-lg hover:shadow-2xl bg-white dark:bg-gray-900">
         {/* Image Section */}
         <div className="relative h-48 overflow-hidden bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
-          {listing.image ? (
+          {project.image ? (
             <img 
-              src={listing.image} 
-              alt={listing.title}
+              src={project.image} 
+              alt={project.name}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Home className="w-20 h-20 text-orange-300 dark:text-orange-700" />
+              <Building className="w-20 h-20 text-orange-300 dark:text-orange-700" />
             </div>
           )}
           
@@ -278,65 +283,70 @@ function PropertyCard({ listing, index }) {
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                {listing.title}
+                {project.name}
               </h3>
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
                 <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                <span className="truncate">{listing.location}</span>
+                <span className="truncate">{project.location}</span>
               </div>
+              <p className="text-xs text-gray-500 dark:text-gray-500">
+                by {project.developer}
+              </p>
             </div>
           </div>
         </CardHeader>
 
         <CardContent className="pb-3">
-          {/* Property Type Badge */}
+          {/* Project Type Badge */}
           <div className="mb-3">
             <Badge variant="outline" className="text-xs font-medium">
               <Building2 className="w-3 h-3 mr-1" />
-              {listing.propertyType}
+              {project.projectType}
             </Badge>
           </div>
 
-          {/* Property Details */}
+          {/* Project Details */}
           <div className="grid grid-cols-3 gap-2 mb-4">
-            {listing.bedrooms && (
+            {project.totalUnits && (
               <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Bed className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{listing.bedrooms}</span>
+                <Home className="w-4 h-4 mr-1" />
+                <span className="font-semibold">{project.totalUnits}</span>
               </div>
             )}
-            {listing.bathrooms && (
+            {project.configurations && (
               <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Bath className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{listing.bathrooms}</span>
+                <Users className="w-4 h-4 mr-1" />
+                <span className="font-semibold">{project.configurations}</span>
               </div>
             )}
-            {listing.area && (
+            {project.area && (
               <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
                 <Square className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{listing.area}</span>
+                <span className="font-semibold">{project.area}</span>
               </div>
             )}
           </div>
 
-          {/* Price */}
+          {/* Price Range */}
           <div className="flex items-baseline gap-2">
             <DollarSign className="w-5 h-5 text-orange-500" />
-            <span className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">
-              {listing.price}
-            </span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">{listing.priceUnit}</span>
+            <div className="flex flex-col">
+              <span className="text-xl font-extrabold text-orange-600 dark:text-orange-400">
+                {project.priceRange}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Price Range</span>
+            </div>
           </div>
         </CardContent>
 
         <CardFooter className="pt-0 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center">
             <Calendar className="w-3 h-3 mr-1" />
-            <span>{listing.createdAt}</span>
+            <span>{project.launchDate}</span>
           </div>
           <div className="flex items-center">
             <Eye className="w-3 h-3 mr-1" />
-            <span>{listing.views} views</span>
+            <span>{project.views} views</span>
           </div>
         </CardFooter>
       </Card>
@@ -356,12 +366,12 @@ function EmptyState({ searchQuery, onAddNew }) {
         <Building2 className="w-10 h-10 text-orange-500" />
       </div>
       <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-        {searchQuery ? 'No properties found' : 'No properties yet'}
+        {searchQuery ? 'No projects found' : 'No projects yet'}
       </h3>
       <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
         {searchQuery
           ? 'Try adjusting your search or filter to find what you\'re looking for.'
-          : 'Start by listing your first property and watch your portfolio grow.'}
+          : 'Start by listing your first project and grow your real estate portfolio.'}
       </p>
       {!searchQuery && (
         <Button
@@ -370,7 +380,7 @@ function EmptyState({ searchQuery, onAddNew }) {
           className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
         >
           <PlusCircle className="w-5 h-5 mr-2" />
-          List Your First Property
+          List Your First Project
         </Button>
       )}
     </motion.div>
@@ -378,95 +388,95 @@ function EmptyState({ searchQuery, onAddNew }) {
 }
 
 // Mock Data
-const mockListings = [
+const mockProjects = [
   {
     id: 1,
-    title: 'Luxury 3BHK Apartment with Sea View',
+    name: 'Sky Heights Residency',
     location: 'Bandra West, Mumbai',
-    propertyType: 'Apartment',
-    bedrooms: 3,
-    bathrooms: 2,
-    area: '1500 sq.ft',
-    price: '₹2.5 Cr',
-    priceUnit: '',
-    status: 'published',
+    developer: 'Prestige Group',
+    projectType: 'Apartment Complex',
+    totalUnits: 450,
+    configurations: '2-4 BHK',
+    area: '12 acres',
+    priceRange: '₹1.2-3.5 Cr',
+    status: 'under_construction',
     image: null,
-    views: 234,
-    createdAt: 'Jan 15, 2025',
+    views: 1234,
+    launchDate: 'Jan 2024',
   },
   {
     id: 2,
-    title: 'Modern Villa in Gated Community',
+    name: 'Green Valley Villas',
     location: 'Whitefield, Bangalore',
-    propertyType: 'Villa',
-    bedrooms: 4,
-    bathrooms: 3,
-    area: '2500 sq.ft',
-    price: '₹1.8 Cr',
-    priceUnit: '',
-    status: 'published',
+    developer: 'Godrej Properties',
+    projectType: 'Villa Community',
+    totalUnits: 85,
+    configurations: '3-4 BHK',
+    area: '25 acres',
+    priceRange: '₹2.5-4.8 Cr',
+    status: 'ready_to_move',
     image: null,
-    views: 456,
-    createdAt: 'Jan 10, 2025',
+    views: 2456,
+    launchDate: 'Mar 2023',
   },
   {
     id: 3,
-    title: 'Spacious Penthouse with Terrace',
-    location: 'Andheri East, Mumbai',
-    propertyType: 'Penthouse',
-    bedrooms: 5,
-    bathrooms: 4,
-    area: '3200 sq.ft',
-    price: '₹4.5 Cr',
-    priceUnit: '',
-    status: 'draft',
+    name: 'Metro Park Township',
+    location: 'Gurgaon, Haryana',
+    developer: 'DLF Limited',
+    projectType: 'Township',
+    totalUnits: 1200,
+    configurations: '1-4 BHK',
+    area: '50 acres',
+    priceRange: '₹65L-2.8 Cr',
+    status: 'under_construction',
     image: null,
-    views: 89,
-    createdAt: 'Jan 8, 2025',
+    views: 3789,
+    launchDate: 'Sep 2024',
   },
   {
     id: 4,
-    title: 'Cozy 2BHK Ready to Move',
-    location: 'Powai, Mumbai',
-    propertyType: 'Apartment',
-    bedrooms: 2,
-    bathrooms: 2,
-    area: '1100 sq.ft',
-    price: '₹1.2 Cr',
-    priceUnit: '',
-    status: 'published',
+    name: 'Riverside Row Houses',
+    location: 'Pune, Maharashtra',
+    developer: 'Sobha Limited',
+    projectType: 'Row Houses',
+    totalUnits: 120,
+    configurations: '3 BHK',
+    area: '8 acres',
+    priceRange: '₹1.8-2.2 Cr',
+    status: 'upcoming',
     image: null,
     views: 567,
-    createdAt: 'Jan 5, 2025',
+    launchDate: 'Dec 2024',
   },
   {
     id: 5,
-    title: 'Independent House with Garden',
-    location: 'Koramangala, Bangalore',
-    propertyType: 'Independent House',
-    bedrooms: 3,
-    bathrooms: 2,
-    area: '1800 sq.ft',
-    price: '₹95 Lac',
-    priceUnit: '',
-    status: 'draft',
+    name: 'Tech Park Commercial',
+    location: 'Hyderabad, Telangana',
+    developer: 'Brigade Group',
+    projectType: 'Office Complex',
+    totalUnits: 250,
+    configurations: 'Office Spaces',
+    area: '15 acres',
+    priceRange: '₹45L-1.5 Cr',
+    status: 'ready_to_move',
     image: null,
-    views: 123,
-    createdAt: 'Jan 3, 2025',
+    views: 2123,
+    launchDate: 'Jun 2023',
   },
   {
     id: 6,
-    title: 'Studio Apartment Near Metro',
-    location: 'Goregaon West, Mumbai',
-    propertyType: 'Studio',
-    bedrooms: null,
-    bathrooms: 1,
-    area: '450 sq.ft',
-    price: '₹65 Lac',
-    priceUnit: '',
-    status: 'published',
+    name: 'Lake View Plots',
+    location: 'Noida Extension',
+    developer: 'ATS Group',
+    projectType: 'Plotted Development',
+    totalUnits: 300,
+    configurations: 'Plots',
+    area: '40 acres',
+    priceRange: '₹35-85 L',
+    status: 'completed',
     image: null,
-    views: 789,
-    createdAt: 'Dec 28, 2024',
+    views: 1890,
+    launchDate: 'Jan 2022',
   },
 ];

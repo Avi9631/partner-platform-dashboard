@@ -1,8 +1,13 @@
-import { Controller, useForm, FormProvider } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { motion } from 'motion/react';
 import { Ruler, Fence, Droplets, Map, Mountain } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
 import {
   Select,
   SelectContent,
@@ -56,7 +61,7 @@ const soilTypes = [
 export default function LandAttributesStepV2() {
   const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
 
-  const methods = useForm({
+  const form = useForm({
     mode: 'onChange',
     defaultValues: {
       plotArea: formData?.plotArea || '',
@@ -71,296 +76,345 @@ export default function LandAttributesStepV2() {
     },
   });
 
-  const { register, control, watch, formState: { errors } } = methods;
+  const { control } = form;
 
-  const plotArea = watch('plotArea');
-  const areaUnit = watch('areaUnit');
+  const plotArea = form.watch('plotArea');
+  const areaUnit = form.watch('areaUnit');
   
   const isValid = !!plotArea && !!areaUnit;
 
-  const handleContinue = () => {
-    if (isValid) {
-      const data = methods.getValues();
-      saveAndContinue(data);
-    }
+  const handleSubmit = (data) => {
+    saveAndContinue(data);
   };
 
   return (
-    <FormProvider {...methods}>
-      <div className="w-full max-w-5xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-4 md:mb-6"
-        >
-          <h2 className="text-xl md:text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-            Land Specifications
-          </h2>
-          <p className="text-muted-foreground text-xs md:text-sm">
-            Provide detailed information about your land/plot
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="space-y-4 pb-20"
-        >
-        {/* Plot Area & Dimensions */}
-        <div className="space-y-3 p-4 rounded-lg border border-orange-100 dark:border-orange-900 bg-white dark:bg-gray-900">
-          <h3 className="text-base font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
-            <Ruler className="w-4 h-4" />
-            Plot Dimensions
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-            {/* Plot Area */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                Plot Area <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Enter area"
-                {...register('plotArea', { required: 'Plot area is required' })}
-                className={`h-10 ${errors.plotArea ? 'border-red-500' : ''}`}
-              />
-              {errors.plotArea && (
-                <p className="text-sm text-red-500">{errors.plotArea.message}</p>
-              )}
-            </div>
-
-            {/* Area Unit */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                Unit <span className="text-red-500">*</span>
-              </Label>
-              <Controller
-                name="areaUnit"
-                control={control}
-                rules={{ required: 'Unit is required' }}
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger className={`h-10 ${errors.areaUnit ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="Select unit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {areaUnits.map((unit) => (
-                        <SelectItem key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.areaUnit && (
-                <p className="text-sm text-red-500">{errors.areaUnit.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Plot Dimension */}
-          <div className="space-y-2">
-            <Label htmlFor="plotDimension" className="text-sm font-medium">
-              Plot Dimensions (Length x Width)
-            </Label>
-            <Input
-              id="plotDimension"
-              type="text"
-              placeholder="e.g., 50 x 40 feet"
-              {...register('plotDimension')}
-              className="h-10"
-            />
-            <p className="text-xs text-muted-foreground">Optional: Enter dimensions if known</p>
-          </div>
-        </div>
-
-        {/* Land Use & Classification */}
-        <div className="space-y-3 p-4 rounded-lg border border-orange-100 dark:border-orange-900 bg-white dark:bg-gray-900">
-          <h3 className="text-base font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
-            <Map className="w-4 h-4" />
-            Land Use & Classification
-          </h3>
-          
-          {/* Land Use */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Land Use Type</Label>
-            <Controller
-              name="landUse"
-              control={control}
-              render={({ field }) => (
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-                  {landUseOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => field.onChange(option.value)}
-                      className={`p-3 md:p-4 rounded-lg border-2 transition-all ${
-                        field.value === option.value
-                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-md'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-700'
-                      }`}
-                    >
-                      <div className="text-xl md:text-2xl mb-1">{option.icon}</div>
-                      <div className="text-xs md:text-sm font-medium">{option.label}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            />
-          </div>
-
-          {/* Road Width */}
-          <div className="space-y-2">
-            <Label htmlFor="roadWidth" className="text-sm font-medium">
-              Road Width (feet)
-            </Label>
-            <Input
-              id="roadWidth"
-              type="number"
-              min="0"
-              placeholder="Enter road width"
-              {...register('roadWidth')}
-              className="h-10"
-            />
-          </div>
-        </div>
-
-        {/* Terrain & Soil */}
-        <div className="space-y-3 p-4 rounded-lg border border-orange-100 dark:border-orange-900 bg-white dark:bg-gray-900">
-          <h3 className="text-base font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
-            <Mountain className="w-4 h-4" />
-            Terrain & Soil Information
-          </h3>
-          
-          {/* Terrain Level */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Terrain Level</Label>
-            <Controller
-              name="terrainLevel"
-              control={control}
-              render={({ field }) => (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-3">
-                  {terrainLevels.map((terrain) => (
-                    <button
-                      key={terrain.value}
-                      type="button"
-                      onClick={() => field.onChange(terrain.value)}
-                      className={`p-2 md:p-3 rounded-lg border-2 transition-all ${
-                        field.value === terrain.value
-                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'
-                      }`}
-                    >
-                      <div className="text-lg md:text-xl mb-1">{terrain.icon}</div>
-                      <div className="text-xs md:text-sm font-medium">{terrain.label}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            />
-          </div>
-
-          {/* Soil Type */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Soil Type</Label>
-            <Controller
-              name="soilType"
-              control={control}
-              render={({ field }) => (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
-                  {soilTypes.map((soil) => (
-                    <button
-                      key={soil.value}
-                      type="button"
-                      onClick={() => field.onChange(soil.value)}
-                      className={`p-2 md:p-3 rounded-lg border-2 transition-all ${
-                        field.value === soil.value
-                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'
-                      }`}
-                    >
-                      <div className="text-lg md:text-xl mb-1">{soil.icon}</div>
-                      <div className="text-xs font-medium truncate">{soil.label}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Infrastructure */}
-        <div className="space-y-3 p-4 rounded-lg border border-orange-100 dark:border-orange-900 bg-white dark:bg-gray-900">
-          <h3 className="text-base font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
-            <Fence className="w-4 h-4" />
-            Infrastructure & Utilities
-          </h3>
-          
-          {/* Fencing */}
-          <div className="flex items-center justify-between p-4 rounded-lg bg-orange-50 dark:bg-orange-950/20">
-            <div>
-              <Label className="text-sm font-medium">Fencing Available</Label>
-              <p className="text-xs text-muted-foreground">Is the plot fenced?</p>
-            </div>
-            <Controller
-              name="fencing"
-              control={control}
-              render={({ field }) => (
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              )}
-            />
-          </div>
-
-          {/* Irrigation Source */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Droplets className="w-4 h-4" />
-              Irrigation Source
-            </Label>
-            <Controller
-              name="irrigationSource"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select irrigation source" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {irrigationSources.map((source) => (
-                      <SelectItem key={source} value={source.toLowerCase().replace(/\s+/g, '_')}>
-                        {source}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-        </div>
+    <div className="w-full max-w-5xl mx-auto">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-4 md:mb-6"
+      >
+        <h2 className="text-xl md:text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+          Land Specifications
+        </h2>
+        <p className="text-muted-foreground text-xs md:text-sm">
+          Provide detailed information about your land/plot
+        </p>
       </motion.div>
 
-        <SaveAndContinueFooter
-          onBack={previousStep}
-          onSaveAndContinue={handleContinue}
-          nextDisabled={!isValid}
-          showBack={true}
-        />
-      </div>
-    </FormProvider>
+      {/* Form */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <FieldGroup>
+            {/* Plot Area */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Controller
+                  name="plotArea"
+                  control={control}
+                  rules={{ required: 'Plot area is required' }}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel className="flex items-center gap-2">
+                        <Ruler className="w-4 h-4 text-orange-600" />
+                        Plot Area <span className="text-red-500">*</span>
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Enter area"
+                        className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                          fieldState.invalid ? 'border-red-500' : ''
+                        }`}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name="areaUnit"
+                  control={control}
+                  rules={{ required: 'Unit is required' }}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>
+                        Unit <span className="text-red-500">*</span>
+                      </FieldLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className={`h-10 text-sm border-2 ${
+                          fieldState.invalid ? 'border-red-500' : ''
+                        }`}>
+                          <SelectValue placeholder="Select unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {areaUnits.map((unit) => (
+                            <SelectItem key={unit.value} value={unit.value}>
+                              {unit.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+              </div>
+            </motion.div>
+
+            {/* Plot Dimension */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Controller
+                name="plotDimension"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>
+                      Plot Dimensions (Length x Width)
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      type="text"
+                      placeholder="e.g., 50 x 40 feet"
+                      className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Optional: Enter dimensions if known</p>
+                  </Field>
+                )}
+              />
+            </motion.div>
+
+            {/* Land Use */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Controller
+                name="landUse"
+                control={control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel className="flex items-center gap-2">
+                      <Map className="w-4 h-4 text-orange-600" />
+                      Land Use Type
+                    </FieldLabel>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {landUseOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => field.onChange(option.value)}
+                          className={`p-4 rounded-lg border-2 transition-all hover:scale-105 ${
+                            field.value === option.value
+                              ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-md'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-700'
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">{option.icon}</div>
+                          <div className="text-sm font-medium">{option.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </Field>
+                )}
+              />
+            </motion.div>
+
+            {/* Road Width */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Controller
+                name="roadWidth"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>
+                      Road Width (feet)
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      type="number"
+                      min="0"
+                      placeholder="Enter road width"
+                      className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
+                    />
+                  </Field>
+                )}
+              />
+            </motion.div>
+
+            {/* Terrain Level */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Controller
+                name="terrainLevel"
+                control={control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel className="flex items-center gap-2">
+                      <Mountain className="w-4 h-4 text-orange-600" />
+                      Terrain Level
+                    </FieldLabel>
+                    <div className="grid grid-cols-3 gap-3">
+                      {terrainLevels.map((terrain) => (
+                        <button
+                          key={terrain.value}
+                          type="button"
+                          onClick={() => field.onChange(terrain.value)}
+                          className={`p-3 rounded-lg border-2 transition-all hover:scale-105 ${
+                            field.value === terrain.value
+                              ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-md'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'
+                          }`}
+                        >
+                          <div className="text-xl mb-1">{terrain.icon}</div>
+                          <div className="text-sm font-medium">{terrain.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </Field>
+                )}
+              />
+            </motion.div>
+
+            {/* Soil Type */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <Controller
+                name="soilType"
+                control={control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel>
+                      Soil Type
+                    </FieldLabel>
+                    <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                      {soilTypes.map((soil) => (
+                        <button
+                          key={soil.value}
+                          type="button"
+                          onClick={() => field.onChange(soil.value)}
+                          className={`p-3 rounded-lg border-2 transition-all hover:scale-105 ${
+                            field.value === soil.value
+                              ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-md'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'
+                          }`}
+                        >
+                          <div className="text-xl mb-1">{soil.icon}</div>
+                          <div className="text-xs font-medium">{soil.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </Field>
+                )}
+              />
+            </motion.div>
+
+            {/* Fencing */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              <div className="flex items-center justify-between p-4 rounded-lg border-2 border-orange-100 dark:border-orange-900 bg-orange-50/50 dark:bg-orange-950/20">
+                <div>
+                  <FieldLabel className="flex items-center gap-2">
+                    <Fence className="w-4 h-4 text-orange-600" />
+                    Fencing Available
+                  </FieldLabel>
+                  <p className="text-xs text-muted-foreground">Is the plot fenced?</p>
+                </div>
+                <Controller
+                  name="fencing"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+            </motion.div>
+
+            {/* Irrigation Source */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.9 }}
+            >
+              <Controller
+                name="irrigationSource"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel className="flex items-center gap-2">
+                      <Droplets className="w-4 h-4 text-orange-600" />
+                      Irrigation Source
+                    </FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="h-10 text-sm border-2">
+                        <SelectValue placeholder="Select irrigation source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {irrigationSources.map((source) => (
+                          <SelectItem key={source} value={source.toLowerCase().replace(/\s+/g, '_')}>
+                            {source}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                )}
+              />
+            </motion.div>
+          </FieldGroup>
+
+          {/* Save & Continue Footer */}
+          <SaveAndContinueFooter
+            onBack={previousStep}
+            onSaveAndContinue={form.handleSubmit(handleSubmit)}
+            nextDisabled={!isValid}
+            showBack={true}
+          />
+        </form>
+      </motion.div>
+    </div>
   );
 }
