@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  PlusCircle, MapPin, Building2, Calendar, DollarSign, 
-  Edit2, Trash2, Eye, MoreVertical, Home,
-  Users, Square, Search, Clock, CheckCircle, XCircle, Loader2,
-  TrendingUp, Building
+  PlusCircle, MapPin, Building2, Calendar,
+  Edit2, Trash2, Eye, MoreVertical, Award,
+  Search, CheckCircle, Loader2,
+  Briefcase, Home
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ProjectFormSheetV2 from '@/modules/listProject/v2/components/ProjectFormSheetV2';
+import { DeveloperFormSheetV2 } from '@/modules/listDeveloper/v2/index.js';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -18,26 +18,26 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 
-export default function ListProjectV2Page() {
+export default function ListDeveloperV2Page() {
   const [showForm, setShowForm] = useState(false);
-  const [projects, setProjects] = useState([]);
+  const [developers, setDevelopers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
 
   // Mock data - Replace with actual API call
   useEffect(() => {
     setTimeout(() => {
-      setProjects(mockProjects);
+      setDevelopers(mockDevelopers);
       setLoading(false);
     }, 1000);
   }, []);
 
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  const filteredDevelopers = developers.filter(developer => {
+    const matchesSearch = developer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         developer.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = typeFilter === 'all' || developer.type === typeFilter;
+    return matchesSearch && matchesType;
   });
 
   return (
@@ -47,8 +47,8 @@ export default function ListProjectV2Page() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold mb-2">My Projects</h1>
-              <p className="text-orange-100 text-sm md:text-base">Manage and track all your real estate projects</p>
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-2">Developer Partners</h1>
+              <p className="text-orange-100 text-sm md:text-base">Manage and showcase your developer portfolio</p>
             </div>
             <Button
               size="lg"
@@ -56,7 +56,7 @@ export default function ListProjectV2Page() {
               className="h-12 px-8 text-sm font-bold bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:scale-105 transition-all duration-300 self-start md:self-auto"
             >
               <PlusCircle className="w-5 h-5 mr-2" />
-              List New Project
+              Add New Developer
             </Button>
           </div>
         </div>
@@ -67,27 +67,27 @@ export default function ListProjectV2Page() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatsCard
             icon={<Building2 className="w-6 h-6" />}
-            value={projects.length}
-            label="Total Projects"
+            value={developers.length}
+            label="Total Developers"
             color="blue"
           />
           <StatsCard
-            icon={<TrendingUp className="w-6 h-6" />}
-            value={projects.filter(p => p.status === 'under_construction').length}
-            label="Under Construction"
-            color="orange"
-          />
-          <StatsCard
-            icon={<CheckCircle className="w-6 h-6" />}
-            value={projects.filter(p => p.status === 'ready_to_move').length}
-            label="Ready to Move"
+            icon={<Award className="w-6 h-6" />}
+            value={developers.filter(d => d.verified).length}
+            label="Verified Partners"
             color="green"
           />
           <StatsCard
-            icon={<Eye className="w-6 h-6" />}
-            value="8.2k"
-            label="Total Views"
+            icon={<Home className="w-6 h-6" />}
+            value={developers.reduce((sum, d) => sum + d.projectsCount, 0)}
+            label="Total Projects"
             color="purple"
+          />
+          <StatsCard
+            icon={<Eye className="w-6 h-6" />}
+            value="15.3k"
+            label="Total Views"
+            color="orange"
           />
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function ListProjectV2Page() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
-                placeholder="Search by project name or location..."
+                placeholder="Search by developer name or location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-11"
@@ -107,51 +107,58 @@ export default function ListProjectV2Page() {
             </div>
             <div className="flex gap-2">
               <Button
-                variant={statusFilter === 'all' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('all')}
-                className={statusFilter === 'all' ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                variant={typeFilter === 'all' ? 'default' : 'outline'}
+                onClick={() => setTypeFilter('all')}
+                className={typeFilter === 'all' ? 'bg-orange-500 hover:bg-orange-600' : ''}
               >
                 All
               </Button>
               <Button
-                variant={statusFilter === 'under_construction' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('under_construction')}
-                className={statusFilter === 'under_construction' ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                variant={typeFilter === 'National Developer' ? 'default' : 'outline'}
+                onClick={() => setTypeFilter('National Developer')}
+                className={typeFilter === 'National Developer' ? 'bg-orange-500 hover:bg-orange-600' : ''}
               >
-                Ongoing
+                National
               </Button>
               <Button
-                variant={statusFilter === 'ready_to_move' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('ready_to_move')}
-                className={statusFilter === 'ready_to_move' ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                variant={typeFilter === 'Regional Developer' ? 'default' : 'outline'}
+                onClick={() => setTypeFilter('Regional Developer')}
+                className={typeFilter === 'Regional Developer' ? 'bg-orange-500 hover:bg-orange-600' : ''}
               >
-                Ready
+                Regional
+              </Button>
+              <Button
+                variant={typeFilter === 'Local Builder' ? 'default' : 'outline'}
+                onClick={() => setTypeFilter('Local Builder')}
+                className={typeFilter === 'Local Builder' ? 'bg-orange-500 hover:bg-orange-600' : ''}
+              >
+                Local
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Projects Grid */}
+      {/* Developers Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
           </div>
-        ) : filteredProjects.length === 0 ? (
+        ) : filteredDevelopers.length === 0 ? (
           <EmptyState searchQuery={searchQuery} onAddNew={() => setShowForm(true)} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {filteredProjects.map((project, index) => (
-                <ProjectCard key={project.id} project={project} index={index} />
+              {filteredDevelopers.map((developer, index) => (
+                <DeveloperCard key={developer.id} developer={developer} index={index} />
               ))}
             </AnimatePresence>
           </div>
         )}
       </div>
 
-      <ProjectFormSheetV2 open={showForm} onOpenChange={setShowForm} />
+      <DeveloperFormSheetV2 open={showForm} onOpenChange={setShowForm} />
     </div>
   );
 }
@@ -184,37 +191,36 @@ function StatsCard({ icon, value, label, color }) {
   );
 }
 
-// Project Card Component
-function ProjectCard({ project, index }) {
-  const statusConfig = {
-    upcoming: { 
+// Developer Card Component
+function DeveloperCard({ developer, index }) {
+  const typeConfig = {
+    'National Developer': { 
       color: 'blue', 
-      label: 'Upcoming', 
-      icon: Clock,
-      badgeClass: 'bg-blue-500 hover:bg-blue-600'
-    },
-    under_construction: { 
-      color: 'orange', 
-      label: 'Under Construction', 
-      icon: TrendingUp,
       badgeClass: 'bg-orange-500 hover:bg-orange-600'
     },
-    ready_to_move: { 
-      color: 'green', 
-      label: 'Ready to Move', 
-      icon: CheckCircle,
-      badgeClass: 'bg-green-500 hover:bg-green-600'
-    },
-    completed: { 
+    'Regional Developer': { 
       color: 'purple', 
-      label: 'Completed', 
-      icon: XCircle,
       badgeClass: 'bg-purple-500 hover:bg-purple-600'
+    },
+    'Local Builder': { 
+      color: 'indigo', 
+      badgeClass: 'bg-indigo-500 hover:bg-indigo-600'
+    },
+    'Boutique Developer': { 
+      color: 'cyan', 
+      badgeClass: 'bg-cyan-500 hover:bg-cyan-600'
+    },
+    'Luxury Developer': { 
+      color: 'teal', 
+      badgeClass: 'bg-teal-500 hover:bg-teal-600'
+    },
+    'Affordable Housing Developer': { 
+      color: 'green', 
+      badgeClass: 'bg-green-500 hover:bg-green-600'
     },
   };
 
-  const config = statusConfig[project.status] || statusConfig.under_construction;
-  const StatusIcon = config.icon;
+  const config = typeConfig[developer.type] || typeConfig['Local Builder'];
 
   return (
     <motion.div
@@ -226,27 +232,29 @@ function ProjectCard({ project, index }) {
       className="group"
     >
       <Card className="overflow-hidden border-2 border-gray-200 dark:border-gray-700 hover:border-orange-400 dark:hover:border-orange-500 transition-all duration-300 shadow-lg hover:shadow-2xl bg-white dark:bg-gray-900">
-        {/* Image Section */}
+        {/* Logo/Banner Section */}
         <div className="relative h-48 overflow-hidden bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
-          {project.image ? (
+          {developer.logo ? (
             <img 
-              src={project.image} 
-              alt={project.name}
+              src={developer.logo} 
+              alt={developer.name}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Building className="w-20 h-20 text-orange-300 dark:text-orange-700" />
+              <Building2 className="w-20 h-20 text-orange-300 dark:text-orange-700" />
             </div>
           )}
           
-          {/* Status Badge */}
-          <div className="absolute top-3 right-3">
-            <Badge className={`${config.badgeClass} text-white font-semibold px-3 py-1 shadow-lg flex items-center`}>
-              <StatusIcon className="w-3 h-3 mr-1" />
-              {config.label}
-            </Badge>
-          </div>
+          {/* Verified Badge */}
+          {developer.verified && (
+            <div className="absolute top-3 right-3">
+              <Badge className="bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1 shadow-lg flex items-center">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Verified
+              </Badge>
+            </div>
+          )}
 
           {/* Actions Menu */}
           <div className="absolute top-3 left-3">
@@ -263,7 +271,7 @@ function ProjectCard({ project, index }) {
               <DropdownMenuContent align="start">
                 <DropdownMenuItem>
                   <Eye className="w-4 h-4 mr-2" />
-                  View
+                  View Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Edit2 className="w-4 h-4 mr-2" />
@@ -283,70 +291,69 @@ function ProjectCard({ project, index }) {
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                {project.name}
+                {developer.name}
               </h3>
               <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
                 <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                <span className="truncate">{project.location}</span>
+                <span className="truncate">{developer.location}</span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-500">
-                by {project.developer}
-              </p>
             </div>
           </div>
         </CardHeader>
 
         <CardContent className="pb-3">
-          {/* Project Type Badge */}
+          {/* Developer Type Badge */}
           <div className="mb-3">
-            <Badge variant="outline" className="text-xs font-medium">
-              <Building2 className="w-3 h-3 mr-1" />
-              {project.projectType}
+            <Badge className={`${config.badgeClass} text-white text-xs font-medium`}>
+              <Briefcase className="w-3 h-3 mr-1" />
+              {developer.type}
             </Badge>
           </div>
 
-          {/* Project Details */}
+          {/* Developer Stats */}
           <div className="grid grid-cols-3 gap-2 mb-4">
-            {project.totalUnits && (
-              <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Home className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{project.totalUnits}</span>
+            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                {developer.experience}
               </div>
-            )}
-            {project.configurations && (
-              <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Users className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{project.configurations}</span>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Years</div>
+            </div>
+            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                {developer.projectsCount}
               </div>
-            )}
-            {project.area && (
-              <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Square className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{project.area}</span>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Projects</div>
+            </div>
+            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                {developer.rating}
               </div>
-            )}
+              <div className="text-xs text-gray-600 dark:text-gray-400">Rating</div>
+            </div>
           </div>
 
-          {/* Price Range */}
-          <div className="flex items-baseline gap-2">
-            <DollarSign className="w-5 h-5 text-orange-500" />
-            <div className="flex flex-col">
-              <span className="text-xl font-extrabold text-orange-600 dark:text-orange-400">
-                {project.priceRange}
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Price Range</span>
-            </div>
+          {/* Specializations */}
+          <div className="flex flex-wrap gap-1">
+            {developer.specializations.map((spec, idx) => (
+              <Badge 
+                key={idx} 
+                variant="outline" 
+                className="text-xs"
+              >
+                {spec}
+              </Badge>
+            ))}
           </div>
         </CardContent>
 
         <CardFooter className="pt-0 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center">
             <Calendar className="w-3 h-3 mr-1" />
-            <span>{project.launchDate}</span>
+            <span>Est. {developer.established}</span>
           </div>
           <div className="flex items-center">
             <Eye className="w-3 h-3 mr-1" />
-            <span>{project.views} views</span>
+            <span>{developer.views} views</span>
           </div>
         </CardFooter>
       </Card>
@@ -366,12 +373,12 @@ function EmptyState({ searchQuery, onAddNew }) {
         <Building2 className="w-10 h-10 text-orange-500" />
       </div>
       <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-        {searchQuery ? 'No projects found' : 'No projects yet'}
+        {searchQuery ? 'No developers found' : 'No developers yet'}
       </h3>
       <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
         {searchQuery
           ? 'Try adjusting your search or filter to find what you\'re looking for.'
-          : 'Start by listing your first project and grow your real estate portfolio.'}
+          : 'Start by adding your first developer partner to build your network.'}
       </p>
       {!searchQuery && (
         <Button
@@ -380,7 +387,7 @@ function EmptyState({ searchQuery, onAddNew }) {
           className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
         >
           <PlusCircle className="w-5 h-5 mr-2" />
-          List Your First Project
+          Add Your First Developer
         </Button>
       )}
     </motion.div>
@@ -388,95 +395,117 @@ function EmptyState({ searchQuery, onAddNew }) {
 }
 
 // Mock Data
-const mockProjects = [
+const mockDevelopers = [
   {
     id: 1,
-    name: 'Sky Heights Residency',
-    location: 'Bandra West, Mumbai',
-    developer: 'Prestige Group',
-    projectType: 'Apartment Complex',
-    totalUnits: 450,
-    configurations: '2-4 BHK',
-    area: '12 acres',
-    priceRange: '₹1.2-3.5 Cr',
-    status: 'under_construction',
-    image: null,
-    views: 1234,
-    launchDate: 'Jan 2024',
+    name: 'Prestige Group',
+    location: 'Bangalore, Karnataka',
+    type: 'National Developer',
+    experience: 35,
+    projectsCount: 280,
+    rating: 4.8,
+    verified: true,
+    established: 1986,
+    specializations: ['Apartments', 'Villas', 'Commercial'],
+    logo: null,
+    views: 3456,
   },
   {
     id: 2,
-    name: 'Green Valley Villas',
-    location: 'Whitefield, Bangalore',
-    developer: 'Godrej Properties',
-    projectType: 'Villa Community',
-    totalUnits: 85,
-    configurations: '3-4 BHK',
-    area: '25 acres',
-    priceRange: '₹2.5-4.8 Cr',
-    status: 'ready_to_move',
-    image: null,
-    views: 2456,
-    launchDate: 'Mar 2023',
+    name: 'Godrej Properties',
+    location: 'Mumbai, Maharashtra',
+    type: 'National Developer',
+    experience: 28,
+    projectsCount: 195,
+    rating: 4.7,
+    verified: true,
+    established: 1990,
+    specializations: ['Residential', 'Townships', 'Plotted'],
+    logo: null,
+    views: 4123,
   },
   {
     id: 3,
-    name: 'Metro Park Township',
+    name: 'DLF Limited',
     location: 'Gurgaon, Haryana',
-    developer: 'DLF Limited',
-    projectType: 'Township',
-    totalUnits: 1200,
-    configurations: '1-4 BHK',
-    area: '50 acres',
-    priceRange: '₹65L-2.8 Cr',
-    status: 'under_construction',
-    image: null,
-    views: 3789,
-    launchDate: 'Sep 2024',
+    type: 'National Developer',
+    experience: 76,
+    projectsCount: 425,
+    rating: 4.9,
+    verified: true,
+    established: 1946,
+    specializations: ['Commercial', 'Residential', 'Retail'],
+    logo: null,
+    views: 5234,
   },
   {
     id: 4,
-    name: 'Riverside Row Houses',
+    name: 'Sobha Limited',
     location: 'Pune, Maharashtra',
-    developer: 'Sobha Limited',
-    projectType: 'Row Houses',
-    totalUnits: 120,
-    configurations: '3 BHK',
-    area: '8 acres',
-    priceRange: '₹1.8-2.2 Cr',
-    status: 'upcoming',
-    image: null,
-    views: 567,
-    launchDate: 'Dec 2024',
+    type: 'Regional Developer',
+    experience: 45,
+    projectsCount: 145,
+    rating: 4.6,
+    verified: true,
+    established: 1976,
+    specializations: ['Row Houses', 'Villas', 'Apartments'],
+    logo: null,
+    views: 2890,
   },
   {
     id: 5,
-    name: 'Tech Park Commercial',
+    name: 'Brigade Group',
     location: 'Hyderabad, Telangana',
-    developer: 'Brigade Group',
-    projectType: 'Office Complex',
-    totalUnits: 250,
-    configurations: 'Office Spaces',
-    area: '15 acres',
-    priceRange: '₹45L-1.5 Cr',
-    status: 'ready_to_move',
-    image: null,
-    views: 2123,
-    launchDate: 'Jun 2023',
+    type: 'Regional Developer',
+    experience: 38,
+    projectsCount: 168,
+    rating: 4.5,
+    verified: false,
+    established: 1986,
+    specializations: ['Office Spaces', 'Residential', 'Hospitality'],
+    logo: null,
+    views: 2156,
   },
   {
     id: 6,
-    name: 'Lake View Plots',
-    location: 'Noida Extension',
-    developer: 'ATS Group',
-    projectType: 'Plotted Development',
-    totalUnits: 300,
-    configurations: 'Plots',
-    area: '40 acres',
-    priceRange: '₹35-85 L',
-    status: 'completed',
-    image: null,
+    name: 'ATS Group',
+    location: 'Noida, Uttar Pradesh',
+    type: 'Local Builder',
+    experience: 25,
+    projectsCount: 78,
+    rating: 4.4,
+    verified: true,
+    established: 1998,
+    specializations: ['Plotted', 'Villas', 'Apartments'],
+    logo: null,
     views: 1890,
-    launchDate: 'Jan 2022',
+  },
+  {
+    id: 7,
+    name: 'Lodha Group',
+    location: 'Mumbai, Maharashtra',
+    type: 'Luxury Developer',
+    experience: 42,
+    projectsCount: 215,
+    rating: 4.9,
+    verified: true,
+    established: 1980,
+    specializations: ['Luxury', 'Ultra Luxury', 'Premium'],
+    logo: null,
+    views: 6234,
+  },
+  {
+    id: 8,
+    name: 'Mahindra Lifespace',
+    location: 'Chennai, Tamil Nadu',
+    type: 'National Developer',
+    experience: 30,
+    projectsCount: 125,
+    rating: 4.6,
+    verified: true,
+    established: 1994,
+    specializations: ['Sustainable', 'Residential', 'Industrial'],
+    logo: null,
+    views: 2567,
   },
 ];

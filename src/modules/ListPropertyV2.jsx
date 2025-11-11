@@ -44,7 +44,7 @@ export default function ListPropertyV2Page() {
   return (
     <div className="min-h-screen">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-orange-600 via-orange-700 to-orange-800 text-white shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -160,7 +160,7 @@ export default function ListPropertyV2Page() {
 // Stats Card Component
 function StatsCard({ icon, value, label, color }) {
   const colorClasses = {
-    blue: 'from-blue-500 to-blue-600 shadow-blue-500/20',
+    blue: 'from-orange-500 to-orange-600 shadow-orange-500/20',
     green: 'from-green-500 to-green-600 shadow-green-500/20',
     orange: 'from-orange-500 to-orange-600 shadow-orange-500/20',
     purple: 'from-purple-500 to-purple-600 shadow-purple-500/20',

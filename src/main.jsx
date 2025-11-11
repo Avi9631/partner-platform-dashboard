@@ -6,6 +6,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
  import { Toaster } from "./components/ui/toaster.jsx";
 import ListPropertyV2 from "./modules/ListPropertyV2.jsx";
 import ListProjectV2Page from "./modules/ListProjectV2.jsx";
+import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
 
 const router = createBrowserRouter([
  
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
     element: <App />, 
     children: [
       {
+    path: "/list-developer",
+    element: <ListDeveloperV2Page />,
+  },
+  {
     path: "/list-project",
     element: <ListProjectV2Page />,  
   },      {

@@ -82,7 +82,7 @@ function NavigationMenuDemo({ orientation }) {
               ) && "bg-secondary"
             )}
           >
-            POST LISTING
+            MANAGE LISTING
           </NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid w-[200px] gap-3 p-4">
