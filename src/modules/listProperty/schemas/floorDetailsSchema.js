@@ -6,14 +6,14 @@ import { z } from 'zod';
  */
 export const floorDetailsSchema = z.object({
   towerName: z.string().optional(),
-  floorNumber: z.string()
-    .optional()
-    .refine((val) => !val || (!isNaN(Number(val)) && Number(val) >= 0), {
+  floorNumber: z.string({ required_error: 'Floor number is required' })
+    .min(1, 'Floor number is required')
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
       message: 'Floor number must be a valid number',
     }),
-  totalFloors: z.string()
-    .optional()
-    .refine((val) => !val || (!isNaN(Number(val)) && Number(val) > 0), {
+  totalFloors: z.string({ required_error: 'Total floors is required' })
+    .min(1, 'Total floors is required')
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
       message: 'Total floors must be a positive number',
     }),
   unitNumber: z.string().optional(),
@@ -21,20 +21,8 @@ export const floorDetailsSchema = z.object({
   
   // Existing fields
   liftAvailable: z.boolean().default(false),
-  evCharging: z.boolean().default(false),
   
   // NEW: Phase 1 enhancements
-  flatLayoutType: z.enum([
-    'corner',        // Corner unit
-    'middle',        // Middle unit
-    'end_unit',      // End of corridor
-    'duplex',        // Two-floor unit
-    'penthouse',     // Top floor luxury
-    'simplex',       // Single floor
-    'triplex',       // Three floors
-    'other'
-  ]).optional(),
-  
   fireExitProximity: z.enum([
     'very_near',     // Within 10m
     'near',          // Within 50m

@@ -50,6 +50,7 @@ export default function BasicDetailsStepV2() {
     defaultValues: {
       ownershipType: formData?.ownershipType || 'freehold',
       projectName: formData?.projectName || '',
+      customPropertyName: formData?.customPropertyName || '',
       reraIds: formData?.reraIds || [],
       ageOfProperty: formData?.ageOfProperty || '',
       possessionStatus: formData?.possessionStatus || 'ready',
@@ -185,8 +186,16 @@ export default function BasicDetailsStepV2() {
   // Handle form submission
   const onSubmit = (data) => {
     logger.logSubmission(data, form.formState.errors);
+    
+    // If "Not Listed" is selected, use customPropertyName as the projectName
+    const submissionData = {
+      ...data,
+      projectName: data.projectName === 'Not Listed' ? data.customPropertyName : data.projectName,
+      isNewProperty: data.projectName === 'Not Listed',
+    };
+    
     // Pass data to context
-    saveAndContinue(data);
+    saveAndContinue(submissionData);
   };
 
   const onError = (errors) => {
@@ -362,6 +371,41 @@ export default function BasicDetailsStepV2() {
                 )}
               />
             </motion.div>
+
+            {/* Custom Property Name - Shown when "Not Listed" is selected */}
+            {form.watch('projectName') === 'Not Listed' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Controller
+                  name="customPropertyName"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-orange-600" />
+                        Enter New Property Name <span className="text-red-500">*</span>
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        placeholder="Enter property/project name"
+                        className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                          fieldState.invalid ? 'border-red-500' : ''
+                        }`}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This will create a new property in the system
+                      </p>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+              </motion.div>
+            )}
 
             {/* RERA IDs - Multiple */}
             <motion.div

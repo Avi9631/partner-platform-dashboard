@@ -5,6 +5,7 @@ export const basicDetailsSchema = z.object({
     errorMap: () => ({ message: 'Please select ownership type' }),
   }),
   projectName: z.string().min(1, 'Project name is required'),
+  customPropertyName: z.string().optional(),
   reraIds: z.array(z.object({
     id: z.string().min(1, 'RERA ID is required'),
   })).optional().default([]),
@@ -26,6 +27,15 @@ export const basicDetailsSchema = z.object({
 }, {
   message: 'Expected possession date is required for properties under construction',
   path: ['possessionDate'],
+}).refine((data) => {
+  // If "Not Listed" is selected, custom property name must be provided
+  if (data.projectName === 'Not Listed' && (!data.customPropertyName || data.customPropertyName.trim() === '')) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Custom property name is required when "Not Listed" is selected',
+  path: ['customPropertyName'],
 });
 
 export default basicDetailsSchema;

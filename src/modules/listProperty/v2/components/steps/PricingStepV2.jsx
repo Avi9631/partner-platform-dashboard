@@ -140,7 +140,7 @@ export default function PricingStepV2() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-5xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -158,7 +158,7 @@ export default function PricingStepV2() {
 
       <div className="pb-24">
         <FieldGroup>
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -167,7 +167,7 @@ export default function PricingStepV2() {
               <DollarSign className="w-5 h-5" />
               Pricing Information
             </h3>
-          </motion.div>
+          </motion.div> */}
                 {/* Listing Type */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}

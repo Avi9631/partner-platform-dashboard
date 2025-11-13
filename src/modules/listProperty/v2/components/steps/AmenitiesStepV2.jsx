@@ -6,8 +6,47 @@ import { Sparkles, Shield, Dog, Lock } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { AMENITIES_LIST } from '../../../constants/amenities';
 import ProTipV2 from '../shared/ProTipV2';
+
+// Property Features (building/property level)
+const FEATURES_LIST = [
+  { id: 'gym', label: 'Gymnasium', icon: '🏋️' },
+  { id: 'swimming_pool', label: 'Swimming Pool', icon: '🏊' },
+  { id: 'clubhouse', label: 'Club House', icon: '🎪' },
+  { id: 'garden', label: 'Garden/Park', icon: '🌳' },
+  { id: 'children_play_area', label: 'Children Play Area', icon: '🎠' },
+  { id: 'jogging_track', label: 'Jogging Track', icon: '🏃' },
+  { id: 'lift', label: 'Lift/Elevator', icon: '🛗' },
+  { id: 'power_backup', label: 'Power Backup', icon: '⚡' },
+  { id: 'water_supply_247', label: '24/7 Water Supply', icon: '💧' },
+  { id: 'visitor_parking', label: 'Visitor Parking', icon: '🅿️' },
+  { id: 'security_247', label: '24/7 Security', icon: '🔒' },
+  { id: 'cctv_surveillance', label: 'CCTV Surveillance', icon: '📹' },
+  { id: 'maintenance_staff', label: 'Maintenance Staff', icon: '👷' },
+  { id: 'rainwater_harvesting', label: 'Rainwater Harvesting', icon: '🌧️' },
+  { id: 'waste_disposal', label: 'Waste Disposal', icon: '🗑️' },
+  { id: 'piped_gas', label: 'Piped Gas', icon: '🔥' },
+];
+
+// Unit Amenities (flat/unit level)
+const UNIT_AMENITIES_LIST = [
+  { id: 'air_conditioning', label: 'Air Conditioning', icon: '❄️' },
+  { id: 'modular_kitchen', label: 'Modular Kitchen', icon: '🍳' },
+  { id: 'furnished', label: 'Furnished', icon: '🛋️' },
+  { id: 'semi_furnished', label: 'Semi-Furnished', icon: '🪑' },
+  { id: 'wardrobe', label: 'Wardrobe', icon: '👔' },
+  { id: 'balcony', label: 'Balcony', icon: '🏞️' },
+  { id: 'servant_room', label: 'Servant Room', icon: '🚪' },
+  { id: 'study_room', label: 'Study Room', icon: '📚' },
+  { id: 'pooja_room', label: 'Pooja Room', icon: '🙏' },
+  { id: 'private_terrace', label: 'Private Terrace', icon: '🏠' },
+  { id: 'private_garden', label: 'Private Garden', icon: '🌿' },
+  { id: 'internet_wifi', label: 'Internet/Wi-Fi', icon: '📶' },
+  { id: 'intercom', label: 'Intercom Facility', icon: '📞' },
+  { id: 'gas_pipeline', label: 'Gas Pipeline', icon: '🔥' },
+  { id: 'water_purifier', label: 'Water Purifier', icon: '💧' },
+  { id: 'geyser', label: 'Geyser', icon: '🚿' },
+];
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
@@ -17,6 +56,7 @@ export default function AmenitiesStepV2() {
   const methods = useForm({
     mode: 'onChange',
     defaultValues: {
+      features: formData?.features || [],
       amenities: formData?.amenities || [],
       isGated: formData?.isGated || false,
       fireSafety: formData?.fireSafety || false,
@@ -34,15 +74,33 @@ export default function AmenitiesStepV2() {
     saveAndContinue(data);
   };
 
-  // Memoize selected amenities array to prevent unnecessary re-renders
+  // Memoize selected features and amenities arrays
+  const selectedFeatures = useMemo(
+    () => watch('features') || [],
+    [watch]
+  );
+
   const selectedAmenities = useMemo(
     () => watch('amenities') || [],
     [watch]
   );
 
   /**
+   * Toggle feature selection
+   */
+  const toggleFeature = useCallback(
+    (featureId) => {
+      const updated = selectedFeatures.includes(featureId)
+        ? selectedFeatures.filter((id) => id !== featureId)
+        : [...selectedFeatures, featureId];
+      
+      setValue('features', updated, { shouldValidate: true });
+    },
+    [selectedFeatures, setValue]
+  );
+
+  /**
    * Toggle amenity selection
-   * Adds or removes amenity from the selected list
    */
   const toggleAmenity = useCallback(
     (amenityId) => {
@@ -53,6 +111,14 @@ export default function AmenitiesStepV2() {
       setValue('amenities', updated, { shouldValidate: true });
     },
     [selectedAmenities, setValue]
+  );
+
+  /**
+   * Check if a feature is selected
+   */
+  const isFeatureSelected = useCallback(
+    (featureId) => selectedFeatures.includes(featureId),
+    [selectedFeatures]
   );
 
   /**
@@ -73,7 +139,7 @@ export default function AmenitiesStepV2() {
 
   return (
     <FormProvider {...methods}>
-      <div className="w-full max-w-4xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -95,18 +161,6 @@ export default function AmenitiesStepV2() {
         >
           <div className="pb-24">
             <div className="space-y-6">
-              {/* Header */}
-              <div>
-                <h3 className="text-lg font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
-                  <Sparkles className="w-5 h-5" />
-                  Amenities & Features
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Select all amenities available at your property{' '}
-                  <span className="text-xs">({selectedAmenities.length} selected)</span>
-                </p>
-              </div>
-
               {/* Community Features Toggles */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Gated Society */}
@@ -161,22 +215,65 @@ export default function AmenitiesStepV2() {
                 </div>
               </div>
 
-              {/* Amenities Grid */}
-              <fieldset className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                <legend className="sr-only">Property Amenities</legend>
-                {AMENITIES_LIST.map((amenity) => {
-                  const isSelected = isAmenitySelected(amenity.id);
-                  
-                  return (
-                    <AmenityCard
-                      key={amenity.id}
-                      amenity={amenity}
-                      isSelected={isSelected}
-                      onToggle={toggleAmenity}
-                    />
-                  );
-                })}
-              </fieldset>
+              {/* Property Features Section */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
+                    <Sparkles className="w-5 h-5" />
+                    Property Features
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Select features available at the property/building level{' '}
+                    <span className="text-xs">({selectedFeatures.length} selected)</span>
+                  </p>
+                </div>
+                
+                <fieldset className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <legend className="sr-only">Property Features</legend>
+                  {FEATURES_LIST.map((feature) => {
+                    const isSelected = isFeatureSelected(feature.id);
+                    
+                    return (
+                      <AmenityCard
+                        key={feature.id}
+                        amenity={feature}
+                        isSelected={isSelected}
+                        onToggle={toggleFeature}
+                      />
+                    );
+                  })}
+                </fieldset>
+              </div>
+
+              {/* Unit Amenities Section */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
+                    <Sparkles className="w-5 h-5" />
+                    Unit Amenities
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Select amenities available within the unit/flat{' '}
+                    <span className="text-xs">({selectedAmenities.length} selected)</span>
+                  </p>
+                </div>
+                
+                <fieldset className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <legend className="sr-only">Unit Amenities</legend>
+                  {UNIT_AMENITIES_LIST.map((amenity) => {
+                    const isSelected = isAmenitySelected(amenity.id);
+                    
+                    return (
+                      <AmenityCard
+                        key={amenity.id}
+                        amenity={amenity}
+                        isSelected={isSelected}
+                        onToggle={toggleAmenity}
+                      />
+                    );
+                  })}
+                </fieldset>
+              </div>
 
               {/* Pro Tip Section */}
               <ProTipV2 title="Make Your Listing Stand Out" tips={listingTips} />

@@ -5,8 +5,8 @@ import { z } from 'zod';
  * Phase 1 Enhancement - Step 8: Location Attributes
  */
 const locationAttributesSchema = z.object({
-  facing: z.string().optional(),
-  view: z.string().optional(),
+  facing: z.string().min(1, 'Facing direction is required'),
+  view: z.string().min(1, 'View is required'),
   
   // Property position type (replaces isCornerProperty)
   propertyPosition: z.enum([
@@ -16,7 +16,7 @@ const locationAttributesSchema = z.object({
     'standalone',
     'front_facing',
     'rear'
-  ]).optional(),
+  ], { required_error: 'Property position is required' }),
   
   overlooking: z.array(z.enum([
     'park',

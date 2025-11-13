@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
-import { Layers, ArrowUpCircle, Zap, Layout, Flame, AlertTriangle, ArrowUpDown, Phone } from 'lucide-react';
+import { Layers, ArrowUpCircle, Flame, AlertTriangle, ArrowUpDown, Phone } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -35,9 +35,7 @@ export default function FloorDetailsStepV2() {
       unitNumber: formData?.unitNumber || '',
       isUnitNumberPrivate: formData?.isUnitNumberPrivate || false,
       liftAvailable: formData?.liftAvailable || false,
-      evCharging: formData?.evCharging || false,
       // Phase 1 enhancements
-      flatLayoutType: formData?.flatLayoutType || '',
       fireExitProximity: formData?.fireExitProximity || '',
       hasEmergencyExit: formData?.hasEmergencyExit || false,
       staircaseType: formData?.staircaseType || '',
@@ -65,7 +63,7 @@ export default function FloorDetailsStepV2() {
 
   return (
     <FormProvider {...methods}>
-      <div className="w-full max-w-4xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -117,7 +115,7 @@ export default function FloorDetailsStepV2() {
                   className="space-y-2"
                 >
                   <Label htmlFor="floorNumber" className="text-sm">
-                    Floor Number
+                    Floor Number <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="floorNumber"
@@ -142,7 +140,7 @@ export default function FloorDetailsStepV2() {
                   className="space-y-2"
                 >
                   <Label htmlFor="totalFloors" className="text-sm">
-                    Total Floors
+                    Total Floors <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="totalFloors"
@@ -190,93 +188,30 @@ export default function FloorDetailsStepV2() {
                 </div>
               </motion.div>
 
-              {/* Lift & EV Charging */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Lift Available */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                      <ArrowUpCircle className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-semibold">Lift/Elevator Available</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Is there a working elevator?
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={watch('liftAvailable')}
-                    onCheckedChange={(checked) =>
-                      setValue('liftAvailable', checked, { shouldValidate: true })
-                    }
-                  />
-                </motion.div>
-
-                {/* EV Charging */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.65 }}
-                  className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                      <Zap className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-semibold">EV Charging Point</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Electric vehicle charging facility
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={watch('evCharging')}
-                    onCheckedChange={(checked) =>
-                      setValue('evCharging', checked, { shouldValidate: true })
-                    }
-                  />
-                </motion.div>
-              </div>
-
-              {/* Flat Layout Type */}
+              {/* Lift Available */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-                className="space-y-2"
+                transition={{ delay: 0.6 }}
+                className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors"
               >
-                <Label className="text-sm flex items-center gap-2">
-                  <Layout className="w-4 h-4 text-orange-600" />
-                  Flat Layout Type
-                </Label>
-                <Select
-                  value={watch('flatLayoutType')}
-                  onValueChange={(value) => setValue('flatLayoutType', value)}
-                >
-                  <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
-                    <SelectValue placeholder="Select layout type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="corner">Corner Unit</SelectItem>
-                    <SelectItem value="middle">Middle Unit</SelectItem>
-                    <SelectItem value="end_unit">End of Corridor</SelectItem>
-                    <SelectItem value="duplex">Duplex (Two floors)</SelectItem>
-                    <SelectItem value="penthouse">Penthouse</SelectItem>
-                    <SelectItem value="simplex">Simplex (Single floor)</SelectItem>
-                    <SelectItem value="triplex">Triplex (Three floors)</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Position and layout configuration of the unit
-                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                    <ArrowUpCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-semibold">Lift/Elevator Available</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Is there a working elevator?
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={watch('liftAvailable')}
+                  onCheckedChange={(checked) =>
+                    setValue('liftAvailable', checked, { shouldValidate: true })
+                  }
+                />
               </motion.div>
 
               {/* Fire Exit & Emergency */}

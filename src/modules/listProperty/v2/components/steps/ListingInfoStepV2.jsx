@@ -33,7 +33,7 @@ export default function ListingInfoStepV2() {
 
   return (
     <FormProvider {...methods}>
-      <div className="w-full max-w-4xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -55,10 +55,7 @@ export default function ListingInfoStepV2() {
         >
           <div className="pb-24">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
-                <FileText className="w-5 h-5" />
-                Listing Information
-              </h3>
+ 
               
               {/* Title */}
               <div className="space-y-1.5">

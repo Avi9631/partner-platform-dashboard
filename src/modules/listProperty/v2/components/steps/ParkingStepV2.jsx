@@ -45,7 +45,7 @@ export default function ParkingStepV2() {
 
   return (
     <FormProvider {...methods}>
-      <div className="w-full max-w-4xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -83,16 +83,19 @@ export default function ParkingStepV2() {
                     className="space-y-2"
                   >
                     <Label htmlFor="coveredParking" className="text-sm">
-                      Covered Parking
+                      Covered Parking <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="coveredParking"
                       type="number"
                       min="0"
-                      placeholder="Number of spaces"
+                      placeholder="e.g., 1 (enter 0 if none)"
                       {...register('coveredParking')}
                       className="h-11 text-sm border-2 focus:border-orange-500 transition-all"
                     />
+                    {formState.errors.coveredParking && (
+                      <p className="text-sm text-red-500">{formState.errors.coveredParking.message}</p>
+                    )}
                   </motion.div>
 
                   {/* Open Parking */}
@@ -103,16 +106,19 @@ export default function ParkingStepV2() {
                     className="space-y-2"
                   >
                     <Label htmlFor="openParking" className="text-sm">
-                      Open Parking
+                      Open Parking <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="openParking"
                       type="number"
                       min="0"
-                      placeholder="Number of spaces"
+                      placeholder="e.g., 2 (enter 0 if none)"
                       {...register('openParking')}
                       className="h-11 text-sm border-2 focus:border-orange-500 transition-all"
                     />
+                    {formState.errors.openParking && (
+                      <p className="text-sm text-red-500">{formState.errors.openParking.message}</p>
+                    )}
                   </motion.div>
                 </div>
               </div>
@@ -126,14 +132,14 @@ export default function ParkingStepV2() {
               >
                 <Label className="text-sm flex items-center gap-2">
                   <Wind className="w-4 h-4 text-orange-600" />
-                  Power Backup
+                  Power Backup <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={watch('powerBackup')}
                   onValueChange={(value) => setValue('powerBackup', value)}
                 >
                   <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
-                    <SelectValue />
+                    <SelectValue placeholder="Select power backup option" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Backup</SelectItem>
@@ -141,6 +147,9 @@ export default function ParkingStepV2() {
                     <SelectItem value="full">Full Backup (100% coverage)</SelectItem>
                   </SelectContent>
                 </Select>
+                {formState.errors.powerBackup && (
+                  <p className="text-sm text-red-500">{formState.errors.powerBackup.message}</p>
+                )}
               </motion.div>
 
               {/* EV Charging */}
@@ -183,16 +192,19 @@ export default function ParkingStepV2() {
                       className="space-y-2"
                     >
                       <Label htmlFor="evChargingPoints" className="text-sm">
-                        Number of Charging Points
+                        Number of Charging Points <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="evChargingPoints"
                         type="number"
-                        min="0"
+                        min="1"
                         placeholder="e.g., 2"
                         {...register('evChargingPoints')}
                         className="h-11 text-sm border-2 focus:border-orange-500 transition-all"
                       />
+                      {formState.errors.evChargingPoints && (
+                        <p className="text-sm text-red-500">{formState.errors.evChargingPoints.message}</p>
+                      )}
                     </motion.div>
                   )}
                 </div>
@@ -229,7 +241,7 @@ export default function ParkingStepV2() {
                       className="space-y-2"
                     >
                       <Label htmlFor="visitorParkingSpaces" className="text-sm">
-                        Number of Visitor Parking Spaces
+                        Number of Visitor Parking Spaces <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="visitorParkingSpaces"
@@ -239,6 +251,9 @@ export default function ParkingStepV2() {
                         {...register('visitorParkingSpaces')}
                         className="h-11 text-sm border-2 focus:border-orange-500 transition-all"
                       />
+                      {formState.errors.visitorParkingSpaces && (
+                        <p className="text-sm text-red-500">{formState.errors.visitorParkingSpaces.message}</p>
+                      )}
                     </motion.div>
                   )}
                 </motion.div>
@@ -253,7 +268,7 @@ export default function ParkingStepV2() {
                   transition={{ delay: 0.65 }}
                   className="space-y-2"
                 >
-                  <Label className="text-sm">Parking Allocation Type</Label>
+                  <Label className="text-sm">Parking Allocation Type <span className="text-red-500">*</span></Label>
                   <Select
                     value={watch('parkingType')}
                     onValueChange={(value) => setValue('parkingType', value)}
@@ -267,6 +282,9 @@ export default function ParkingStepV2() {
                       <SelectItem value="first_come">First Come First Serve</SelectItem>
                     </SelectContent>
                   </Select>
+                  {formState.errors.parkingType && (
+                    <p className="text-sm text-red-500">{formState.errors.parkingType.message}</p>
+                  )}
                 </motion.div>
 
                 {/* Parking Security */}

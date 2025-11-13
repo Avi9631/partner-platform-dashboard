@@ -58,22 +58,33 @@ export default function LocationStepV2() {
       propertyPosition: formData?.propertyPosition || '',
       overlooking: formData?.overlooking || [],
     },
+    reValidateMode: 'onChange',
   });
 
-  const { watch, setValue, handleSubmit, formState } = methods;
+  const { watch, setValue, handleSubmit, formState, trigger } = methods;
 
   // Trigger validation on mount to ensure form state is correct
-  // useEffect(() => {
-  //   trigger();
-  // }, [trigger]);
+  useEffect(() => {
+    trigger();
+  }, [trigger]);
+
+  // Debug: Log form state changes
+  useEffect(() => {
+    console.log('Form State:', {
+      isValid: formState.isValid,
+      errors: formState.errors,
+      values: watch(),
+    });
+  }, [formState.isValid, formState.errors, watch]);
 
   const onSubmit = (data) => {
+    console.log('Form submitted with data:', data);
     saveAndContinue(data);
   };
 
   return (
     <FormProvider {...methods}>
-      <div className="w-full max-w-4xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -106,11 +117,11 @@ export default function LocationStepV2() {
                 >
                   <Label className="text-sm flex items-center gap-2">
                     <Compass className="w-4 h-4 text-orange-600" />
-                    Facing Direction
+                    Facing Direction <span className="text-red-500">*</span>
                   </Label>
                   <Select
                     value={watch('facing')}
-                    onValueChange={(value) => setValue('facing', value)}
+                    onValueChange={(value) => setValue('facing', value, { shouldValidate: true })}
                   >
                     <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
                       <SelectValue placeholder="Select direction" />
@@ -137,11 +148,11 @@ export default function LocationStepV2() {
                 >
                   <Label className="text-sm flex items-center gap-2">
                     <Eye className="w-4 h-4 text-orange-600" />
-                    View
+                    View <span className="text-red-500">*</span>
                   </Label>
                   <Select
                     value={watch('view')}
-                    onValueChange={(value) => setValue('view', value)}
+                    onValueChange={(value) => setValue('view', value, { shouldValidate: true })}
                   >
                     <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
                       <SelectValue placeholder="Select view" />
@@ -172,11 +183,11 @@ export default function LocationStepV2() {
               >
                 <Label className="text-sm flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-orange-600" />
-                  Property Position
+                  Property Position <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={watch('propertyPosition')}
-                  onValueChange={(value) => setValue('propertyPosition', value)}
+                  onValueChange={(value) => setValue('propertyPosition', value, { shouldValidate: true })}
                 >
                   <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
                     <SelectValue placeholder="Select property position" />
@@ -226,7 +237,7 @@ export default function LocationStepV2() {
                           const updated = overlooking.includes(item.value)
                             ? overlooking.filter((v) => v !== item.value)
                             : [...overlooking, item.value];
-                          setValue('overlooking', updated);
+                          setValue('overlooking', updated, { shouldValidate: true });
                         }}
                       >
                         <Checkbox
@@ -235,7 +246,7 @@ export default function LocationStepV2() {
                             const updated = overlooking.includes(item.value)
                               ? overlooking.filter((v) => v !== item.value)
                               : [...overlooking, item.value];
-                            setValue('overlooking', updated);
+                            setValue('overlooking', updated, { shouldValidate: true });
                           }}
                         />
                         <span className="text-lg">{item.icon}</span>

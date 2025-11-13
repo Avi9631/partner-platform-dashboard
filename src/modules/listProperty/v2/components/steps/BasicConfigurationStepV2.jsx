@@ -1,7 +1,7 @@
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
-import { Bed, Bath, Ruler, Plus, X } from 'lucide-react';
+import { Bed, Bath, Ruler, Plus, X, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -165,7 +165,7 @@ export default function BasicConfigurationV2() {
             </motion.div>
           </div>
 
-          {/* Additional Rooms */}
+          {/* Room Dimensions */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -209,113 +209,130 @@ export default function BasicConfigurationV2() {
                 </Button>
               </div>
 
+              {(watch('roomDimensions') || []).length === 0 && (
+                <p className="text-sm text-muted-foreground italic py-2 px-3 border-2 border-dashed rounded-md">
+                  No room dimensions added. Click &quot;Add Room&quot; to specify dimensions for individual rooms.
+                </p>
+              )}
+
               <div className="space-y-3">
                 {(watch('roomDimensions') || []).map((room, index) => (
                   <motion.div
                     key={room.id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="p-4 border-2 rounded-lg bg-gray-50/50"
+                    className="p-4 border-2 rounded-lg bg-muted/30"
                   >
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <Controller
-                        name={`roomDimensions.${index}.roomName`}
-                        control={control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid} className="flex-1">
-                            <FieldLabel className="text-sm">Room Name</FieldLabel>
-                            <Input
-                              {...field}
-                              placeholder="e.g., Master Bedroom"
-                              className="h-10 text-sm border-2 focus:border-orange-500"
-                            />
-                            {fieldState.invalid && (
-                              <FieldError errors={[fieldState.error]} />
-                            )}
-                          </Field>
-                        )}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const currentDimensions = watch('roomDimensions');
-                          setValue(
-                            'roomDimensions',
-                            currentDimensions.filter((_, i) => i !== index),
-                            { shouldValidate: true }
-                          );
-                        }}
-                        className="mt-6 text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <div className="grid grid-cols-12 gap-3 items-end">
+                      <div className="col-span-12 md:col-span-4">
+                        <Controller
+                          name={`roomDimensions.${index}.roomName`}
+                          control={control}
+                          render={({ field, fieldState }) => (
+                            <Field data-invalid={fieldState.invalid}>
+                              <FieldLabel className="text-xs">Room Name</FieldLabel>
+                              <Input
+                                {...field}
+                                placeholder="e.g., Master Bedroom"
+                                className="h-9 text-sm border-2 focus:border-orange-500"
+                              />
+                              {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                              )}
+                            </Field>
+                          )}
+                        />
+                      </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                      <Controller
-                        name={`roomDimensions.${index}.length`}
-                        control={control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel className="text-sm">Length</FieldLabel>
-                            <Input
-                              {...field}
-                              type="number"
-                              step="0.1"
-                              min="0"
-                              placeholder="12"
-                              className="h-10 text-sm border-2 focus:border-orange-500"
-                            />
-                            {fieldState.invalid && (
-                              <FieldError errors={[fieldState.error]} />
-                            )}
-                          </Field>
-                        )}
-                      />
-                      <Controller
-                        name={`roomDimensions.${index}.width`}
-                        control={control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel className="text-sm">Width</FieldLabel>
-                            <Input
-                              {...field}
-                              type="number"
-                              step="0.1"
-                              min="0"
-                              placeholder="10"
-                              className="h-10 text-sm border-2 focus:border-orange-500"
-                            />
-                            {fieldState.invalid && (
-                              <FieldError errors={[fieldState.error]} />
-                            )}
-                          </Field>
-                        )}
-                      />
-                      <Controller
-                        name={`roomDimensions.${index}.unit`}
-                        control={control}
-                        render={({ field }) => (
-                          <Field>
-                            <FieldLabel className="text-sm">Unit</FieldLabel>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="feet">Feet</SelectItem>
-                                <SelectItem value="meters">Meters</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </Field>
-                        )}
-                      />
+                      <div className="col-span-4 md:col-span-3">
+                        <Controller
+                          name={`roomDimensions.${index}.length`}
+                          control={control}
+                          render={({ field, fieldState }) => (
+                            <Field data-invalid={fieldState.invalid}>
+                              <FieldLabel className="text-xs">Length</FieldLabel>
+                              <Input
+                                {...field}
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                placeholder="12"
+                                className="h-9 text-sm border-2 focus:border-orange-500"
+                              />
+                              {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                              )}
+                            </Field>
+                          )}
+                        />
+                      </div>
+
+                      <div className="col-span-4 md:col-span-3">
+                        <Controller
+                          name={`roomDimensions.${index}.width`}
+                          control={control}
+                          render={({ field, fieldState }) => (
+                            <Field data-invalid={fieldState.invalid}>
+                              <FieldLabel className="text-xs">Width</FieldLabel>
+                              <Input
+                                {...field}
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                placeholder="10"
+                                className="h-9 text-sm border-2 focus:border-orange-500"
+                              />
+                              {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                              )}
+                            </Field>
+                          )}
+                        />
+                      </div>
+
+                      <div className="col-span-3 md:col-span-1">
+                        <Controller
+                          name={`roomDimensions.${index}.unit`}
+                          control={control}
+                          render={({ field }) => (
+                            <Field>
+                              <FieldLabel className="text-xs">Unit</FieldLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <SelectTrigger className="h-9 text-sm border-2 focus:border-orange-500">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="feet">Feet</SelectItem>
+                                  <SelectItem value="meters">Meters</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </Field>
+                          )}
+                        />
+                      </div>
+
+                      <div className="col-span-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const currentDimensions = watch('roomDimensions');
+                            setValue(
+                              'roomDimensions',
+                              currentDimensions.filter((_, i) => i !== index),
+                              { shouldValidate: true }
+                            );
+                          }}
+                          className="h-9 w-full text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
@@ -362,57 +379,65 @@ export default function BasicConfigurationV2() {
                 </Button>
               </div>
 
+              {(watch('additionalRooms') || []).length === 0 && (
+                <p className="text-sm text-muted-foreground italic py-2 px-3 border-2 border-dashed rounded-md">
+                  No additional rooms added. Click &quot;Add Room&quot; to include balcony, study room, etc.
+                </p>
+              )}
+
               <div className="space-y-3">
                 {(watch('additionalRooms') || []).map((room, index) => (
                   <motion.div
                     key={room.id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="p-4 border-2 rounded-lg bg-gray-50/50"
+                    className="p-4 border-2 rounded-lg bg-muted/30"
                   >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <Controller
-                        name={`additionalRooms.${index}.type`}
-                        control={control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel className="text-sm">Room Type</FieldLabel>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
-                                <SelectValue placeholder="Select room type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {additionalRoomOptions.map((option) => (
-                                  <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {fieldState.invalid && (
-                              <FieldError errors={[fieldState.error]} />
-                            )}
-                          </Field>
-                        )}
-                      />
-                      
-                      <div className="flex gap-2">
+                    <div className="grid grid-cols-12 gap-3 items-end">
+                      <div className="col-span-6">
+                        <Controller
+                          name={`additionalRooms.${index}.type`}
+                          control={control}
+                          render={({ field, fieldState }) => (
+                            <Field data-invalid={fieldState.invalid}>
+                              <FieldLabel className="text-xs">Room Type</FieldLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <SelectTrigger className="h-9 text-sm border-2 focus:border-orange-500">
+                                  <SelectValue placeholder="Select room type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {additionalRoomOptions.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                              )}
+                            </Field>
+                          )}
+                        />
+                      </div>
+
+                      <div className="col-span-5">
                         <Controller
                           name={`additionalRooms.${index}.count`}
                           control={control}
                           render={({ field, fieldState }) => (
-                            <Field data-invalid={fieldState.invalid} className="flex-1">
-                              <FieldLabel className="text-sm">Count</FieldLabel>
+                            <Field data-invalid={fieldState.invalid}>
+                              <FieldLabel className="text-xs">Count</FieldLabel>
                               <Select
                                 value={field.value}
                                 onValueChange={field.onChange}
                                 disabled={!room.type}
                               >
-                                <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
+                                <SelectTrigger className="h-9 text-sm border-2 focus:border-orange-500">
                                   <SelectValue placeholder="Select" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -429,7 +454,9 @@ export default function BasicConfigurationV2() {
                             </Field>
                           )}
                         />
-                        
+                      </div>
+
+                      <div className="col-span-1">
                         <Button
                           type="button"
                           variant="ghost"
@@ -442,9 +469,9 @@ export default function BasicConfigurationV2() {
                               { shouldValidate: true }
                             );
                           }}
-                          className="mt-6 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="h-9 w-full text-red-500 hover:text-red-700 hover:bg-red-50"
                         >
-                          <X className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>

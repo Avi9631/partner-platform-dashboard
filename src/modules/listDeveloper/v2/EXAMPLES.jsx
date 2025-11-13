@@ -62,7 +62,7 @@ export function DashboardExample() {
 
   return (
     <div className="p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-2xl font-bold mb-4">Welcome to Partner Platform</h2>
           <p className="text-gray-600 mb-4">

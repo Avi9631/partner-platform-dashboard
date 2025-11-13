@@ -181,7 +181,8 @@ const BUILDING_STEPS = [
     name: 'Suitable For',
     component: SuitableForStepV2,
     category: STEP_CATEGORIES.BUILDING,
-    isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
+    // Only visible for rent/lease, hidden for sale
+    isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType) && formData.listingType !== 'sale',
     order: 11,
   },
 ];
