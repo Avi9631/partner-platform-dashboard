@@ -1,22 +1,33 @@
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Globe, Grip, Menu, Presentation } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import {
   Sheet,
   SheetTrigger,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
 } from "@/components/ui/sheet";
 import NavigationMenuDemo from "./nav-menu.jsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx";
-import React, { useEffect } from "react";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card.jsx";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Header() {
-  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const { user, logout } = useAuth();
 
-
+  const getInitials = (email) => {
+    if (!email) return "U";
+    const parts = email.split("@")[0].split(".");
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return email.substring(0, 2).toUpperCase();
+  };
 
   return (
     <>
@@ -42,20 +53,34 @@ export default function Header() {
           <NavigationMenuDemo />
         </div>
 
-        {/* Right-side button */}
-        {/* <div className="hidden md:flex items-center gap-2 ml-auto">
-          <Link to={`/account-settings/profile`}>
-
-            <Avatar className="w-10 h-10   shadow-sm hover:shadow-xl">
-              <AvatarFallback className="text-lg sm:text-lg  bg-black text-white font-bold">
-                {userDetail?.nameInitial}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
-        </div> */}
+        {/* Right-side user menu */}
+        <div className="hidden md:flex items-center gap-2 ml-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar className="w-10 h-10 cursor-pointer shadow-sm hover:shadow-xl">
+                <AvatarFallback className="text-lg sm:text-lg bg-black text-white font-bold">
+                  {getInitials(user?.userEmail)}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">My Account</span>
+                  <span className="text-xs text-gray-500">{user?.userEmail}</span>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         {/* Mobile Hamburger */}
-        {/* <div className="flex md:hidden ml-auto">
+        <div className="flex md:hidden ml-auto">
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -63,17 +88,30 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="p-4 w-64">
-              <div className="flex flex-col gap-4 mt-4 ">
+              <div className="flex flex-col gap-4 mt-4">
                 <NavigationMenuDemo orientation={"vertical"} />
-                <Link to={`/account-settings/profile`}>
-                  <Button variant="secondary" className="w-full">
-                    {userDetail?.nameInitial}
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback className="text-sm bg-black text-white font-bold">
+                        {getInitials(user?.userEmail)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm text-gray-600">{user?.userEmail}</span>
+                  </div>
+                  <Button
+                    onClick={logout}
+                    variant="destructive"
+                    className="w-full mt-2"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
                   </Button>
-                </Link>
+                </div>
               </div>
             </SheetContent>
           </Sheet>
-        </div> */}
+        </div>
       </header>
     </>
   );
