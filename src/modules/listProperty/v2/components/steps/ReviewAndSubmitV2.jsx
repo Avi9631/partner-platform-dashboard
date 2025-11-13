@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import {
   CheckCircle2,
-  Edit,
   MapPin,
   Building2,
   Home,
@@ -10,8 +9,17 @@ import {
   Calendar,
   Sparkles,
   Loader2,
-  ChevronDown,
-  ChevronUp,
+  FileText,
+  Image as ImageIcon,
+  Info,
+  Bed,
+  Bath,
+  Square,
+  Car,
+  Wind,
+  Ruler,
+  TreePine,
+  CheckSquare,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,28 +28,9 @@ import { Separator } from '@/components/ui/separator';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 
 export default function ReviewAndSubmitV2() {
-  const { previousStep, goToStep, propertyType, isBuildingType, formData } = usePropertyFormV2();
+  const { previousStep, propertyType, isBuildingType, formData } = usePropertyFormV2();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({
-    propertyType: true,
-    location: true,
-    specifications: true,
-    pricing: true,
-  });
-
-  // Use form data from context (accumulated from all steps)
-
-  const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
-  const handleEdit = (step) => {
-    goToStep(step);
-  };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -105,147 +94,130 @@ export default function ReviewAndSubmitV2() {
         className="mb-8 text-center"
       >
         <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-          Review Your Listing
+          Review Your Property Listing
         </h2>
-        <p className="text-muted-foreground text-base">
-          Please verify all details before submitting. Click Edit to make changes.
+        <p className="text-muted-foreground text-base max-w-2xl mx-auto">
+          Please review all the information carefully before submitting your property listing. 
+          Use the back button to make any changes if needed.
         </p>
       </motion.div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Property Type & Basic Info */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="border-2 hover:shadow-lg transition-shadow">
-            <CardHeader 
-              className="flex flex-row items-center justify-between cursor-pointer"
-              onClick={() => toggleSection('propertyType')}
-            >
+          <Card className="border-2 shadow-md">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100/50 dark:from-orange-950/20 dark:to-orange-900/20">
               <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-white" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+                  <Building2 className="w-6 h-6 text-white" />
                 </div>
-                <span>Property Information</span>
+                <div>
+                  <span className="text-xl">Property Information</span>
+                  <p className="text-sm text-muted-foreground font-normal mt-1">
+                    Basic details about your property
+                  </p>
+                </div>
               </CardTitle>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEdit(0);
-                  }}
-                  className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-                {expandedSections.propertyType ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </div>
             </CardHeader>
-            {expandedSections.propertyType && (
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Property Type</p>
-                    <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white capitalize text-sm px-3 py-1">
-                      {propertyType?.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                  {formData.ownershipType && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Ownership</p>
-                      <p className="font-semibold capitalize">{formData.ownershipType.replace('_', ' ')}</p>
-                    </div>
-                  )}
-                  {formData.projectName && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Project Name</p>
-                      <p className="font-semibold">{formData.projectName}</p>
-                    </div>
-                  )}
-                  {formData.reraId && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">RERA ID</p>
-                      <p className="font-semibold">{formData.reraId}</p>
-                    </div>
-                  )}
+            <CardContent className="pt-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">Property Type</p>
+                  <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white capitalize text-base px-4 py-1.5">
+                    {propertyType?.replace(/_/g, ' ')}
+                  </Badge>
                 </div>
-              </CardContent>
-            )}
+                {formData.ownershipType && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Ownership Type</p>
+                    <p className="text-lg font-semibold capitalize">{formData.ownershipType.replace(/_/g, ' ')}</p>
+                  </div>
+                )}
+                {formData.projectName && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Project Name</p>
+                    <p className="text-lg font-semibold">{formData.projectName}</p>
+                  </div>
+                )}
+                {formData.reraId && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">RERA ID</p>
+                    <p className="text-lg font-semibold font-mono">{formData.reraId}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
           </Card>
         </motion.div>
 
-        {/* Location */}
+        {/* Location Details */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="border-2 hover:shadow-lg transition-shadow">
-            <CardHeader 
-              className="flex flex-row items-center justify-between cursor-pointer"
-              onClick={() => toggleSection('location')}
-            >
+          <Card className="border-2 shadow-md">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-100/50 dark:from-blue-950/20 dark:to-cyan-900/20">
               <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-white" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+                  <MapPin className="w-6 h-6 text-white" />
                 </div>
-                <span>Location Details</span>
+                <div>
+                  <span className="text-xl">Location Details</span>
+                  <p className="text-sm text-muted-foreground font-normal mt-1">
+                    Where your property is located
+                  </p>
+                </div>
               </CardTitle>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEdit(1);
-                  }}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-                {expandedSections.location ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </div>
             </CardHeader>
-            {expandedSections.location && (
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">City</p>
-                    <p className="font-semibold">{formData.city}</p>
+            <CardContent className="pt-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {formData.city && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">City</p>
+                    <p className="text-lg font-semibold">{formData.city}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Locality</p>
-                    <p className="font-semibold">{formData.locality}</p>
+                )}
+                {formData.locality && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Locality</p>
+                    <p className="text-lg font-semibold">{formData.locality}</p>
                   </div>
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground mb-1">Full Address</p>
-                    <p className="font-semibold">{formData.addressText}</p>
+                )}
+                {formData.addressText && (
+                  <div className="col-span-2 space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Complete Address</p>
+                    <p className="text-base font-medium leading-relaxed bg-muted/30 p-4 rounded-lg">
+                      {formData.addressText}
+                    </p>
                   </div>
-                  {formData.landmark && (
-                    <div className="col-span-2">
-                      <p className="text-sm text-muted-foreground mb-1">Landmark</p>
-                      <p className="font-semibold">{formData.landmark}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Property Age</p>
-                    <p className="font-semibold">{formData.ageOfProperty} years</p>
+                )}
+                {formData.landmark && (
+                  <div className="col-span-2 space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Landmark</p>
+                    <p className="text-base font-medium">{formData.landmark}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Possession Status</p>
-                    <Badge variant="secondary" className="capitalize">
-                      {formData.possessionStatus?.replace('_', ' ')}
+                )}
+                {formData.ageOfProperty !== undefined && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Property Age</p>
+                    <p className="text-lg font-semibold">{formData.ageOfProperty} {formData.ageOfProperty === 1 ? 'year' : 'years'}</p>
+                  </div>
+                )}
+                {formData.possessionStatus && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Possession Status</p>
+                    <Badge variant="secondary" className="capitalize text-base px-4 py-1.5">
+                      {formData.possessionStatus?.replace(/_/g, ' ')}
                     </Badge>
                   </div>
-                </div>
-              </CardContent>
-            )}
+                )}
+              </div>
+            </CardContent>
           </Card>
         </motion.div>
 
@@ -255,208 +227,276 @@ export default function ReviewAndSubmitV2() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="border-2 hover:shadow-lg transition-shadow">
-            <CardHeader 
-              className="flex flex-row items-center justify-between cursor-pointer"
-              onClick={() => toggleSection('specifications')}
-            >
+          <Card className="border-2 shadow-md">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-100/50 dark:from-purple-950/20 dark:to-pink-900/20">
               <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <Home className="w-5 h-5 text-white" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                  <Home className="w-6 h-6 text-white" />
                 </div>
-                <span>{isBuildingType() ? 'Property Specifications' : 'Land Details'}</span>
+                <div>
+                  <span className="text-xl">{isBuildingType() ? 'Property Specifications' : 'Land Details'}</span>
+                  <p className="text-sm text-muted-foreground font-normal mt-1">
+                    {isBuildingType() ? 'Size, layout and features' : 'Plot area and dimensions'}
+                  </p>
+                </div>
               </CardTitle>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEdit(2);
-                  }}
-                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-                {expandedSections.specifications ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </div>
             </CardHeader>
-            {expandedSections.specifications && (
-              <CardContent>
-                {isBuildingType() ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {formData.bedrooms && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Bedrooms</p>
-                        <p className="font-semibold">{formData.bedrooms}</p>
-                      </div>
-                    )}
-                    {formData.bathrooms && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Bathrooms</p>
-                        <p className="font-semibold">{formData.bathrooms}</p>
-                      </div>
-                    )}
-                    {formData.balconies && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Balconies</p>
-                        <p className="font-semibold">{formData.balconies}</p>
-                      </div>
-                    )}
-                    {formData.carpetArea && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Carpet Area</p>
-                        <p className="font-semibold">{formData.carpetArea} sq.ft</p>
-                      </div>
-                    )}
-                    {formData.superArea && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Super Area</p>
-                        <p className="font-semibold">{formData.superArea} sq.ft</p>
-                      </div>
-                    )}
-                    {formData.furnishingStatus && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Furnishing</p>
-                        <Badge variant="outline" className="capitalize">
-                          {formData.furnishingStatus}
-                        </Badge>
-                      </div>
-                    )}
-                    {formData.facing && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Facing</p>
-                        <p className="font-semibold capitalize">{formData.facing}</p>
-                      </div>
-                    )}
-                    {formData.coveredParking && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Parking</p>
-                        <p className="font-semibold">{formData.coveredParking} Covered</p>
-                      </div>
-                    )}
+            <CardContent className="pt-6">
+              {isBuildingType() ? (
+                <div className="space-y-6">
+                  {/* Room Configuration */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
+                      Room Configuration
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {formData.bedrooms !== undefined && (
+                        <div className="bg-muted/30 p-4 rounded-lg space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Bedrooms</p>
+                          <p className="text-2xl font-bold">{formData.bedrooms}</p>
+                        </div>
+                      )}
+                      {formData.bathrooms !== undefined && (
+                        <div className="bg-muted/30 p-4 rounded-lg space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Bathrooms</p>
+                          <p className="text-2xl font-bold">{formData.bathrooms}</p>
+                        </div>
+                      )}
+                      {formData.balconies !== undefined && (
+                        <div className="bg-muted/30 p-4 rounded-lg space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Balconies</p>
+                          <p className="text-2xl font-bold">{formData.balconies}</p>
+                        </div>
+                      )}
+                      {formData.floors !== undefined && (
+                        <div className="bg-muted/30 p-4 rounded-lg space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Floors</p>
+                          <p className="text-2xl font-bold">{formData.floors}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {formData.plotArea && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Plot Area</p>
-                        <p className="font-semibold">
-                          {formData.plotArea} {formData.areaUnit}
-                        </p>
-                      </div>
-                    )}
-                    {formData.plotDimension && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Dimensions</p>
-                        <p className="font-semibold">{formData.plotDimension}</p>
-                      </div>
-                    )}
-                    {formData.landUse && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Land Use</p>
-                        <Badge variant="outline" className="capitalize">
-                          {formData.landUse}
-                        </Badge>
-                      </div>
-                    )}
+
+                  {/* Area Details */}
+                  <Separator />
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
+                      Area Details
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {formData.carpetArea && (
+                        <div className="bg-muted/30 p-4 rounded-lg space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Carpet Area</p>
+                          <p className="text-xl font-bold">{formData.carpetArea} sq.ft</p>
+                        </div>
+                      )}
+                      {formData.builtUpArea && (
+                        <div className="bg-muted/30 p-4 rounded-lg space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Built-up Area</p>
+                          <p className="text-xl font-bold">{formData.builtUpArea} sq.ft</p>
+                        </div>
+                      )}
+                      {formData.superArea && (
+                        <div className="bg-muted/30 p-4 rounded-lg space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Super Built-up Area</p>
+                          <p className="text-xl font-bold">{formData.superArea} sq.ft</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            )}
+
+                  {/* Additional Features */}
+                  <Separator />
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
+                      Additional Features
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                      {formData.furnishingStatus && (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Furnishing Status</p>
+                          <Badge variant="outline" className="capitalize text-base px-4 py-1.5">
+                            {formData.furnishingStatus}
+                          </Badge>
+                        </div>
+                      )}
+                      {formData.facing && (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Facing Direction</p>
+                          <p className="text-lg font-semibold capitalize">{formData.facing}</p>
+                        </div>
+                      )}
+                      {formData.floorNumber !== undefined && (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Floor Number</p>
+                          <p className="text-lg font-semibold">{formData.floorNumber}</p>
+                        </div>
+                      )}
+                      {formData.totalFloors !== undefined && (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Total Floors</p>
+                          <p className="text-lg font-semibold">{formData.totalFloors}</p>
+                        </div>
+                      )}
+                      {(formData.coveredParking !== undefined || formData.openParking !== undefined) && (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">Parking</p>
+                          <div className="flex gap-2">
+                            {formData.coveredParking !== undefined && (
+                              <Badge variant="outline" className="text-sm">
+                                {formData.coveredParking} Covered
+                              </Badge>
+                            )}
+                            {formData.openParking !== undefined && (
+                              <Badge variant="outline" className="text-sm">
+                                {formData.openParking} Open
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {formData.plotArea && (
+                    <div className="bg-muted/30 p-4 rounded-lg space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">Plot Area</p>
+                      <p className="text-2xl font-bold">
+                        {formData.plotArea} {formData.areaUnit || 'sq.ft'}
+                      </p>
+                    </div>
+                  )}
+                  {formData.plotLength && formData.plotWidth && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">Plot Dimensions</p>
+                      <p className="text-lg font-semibold">
+                        {formData.plotLength} × {formData.plotWidth} ft
+                      </p>
+                    </div>
+                  )}
+                  {formData.plotDimension && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">Dimensions</p>
+                      <p className="text-lg font-semibold">{formData.plotDimension}</p>
+                    </div>
+                  )}
+                  {formData.landUse && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">Land Use Type</p>
+                      <Badge variant="outline" className="capitalize text-base px-4 py-1.5">
+                        {formData.landUse}
+                      </Badge>
+                    </div>
+                  )}
+                  {formData.boundaryWall !== undefined && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">Boundary Wall</p>
+                      <Badge variant={formData.boundaryWall ? "default" : "secondary"} className="text-base px-4 py-1.5">
+                        {formData.boundaryWall ? 'Yes' : 'No'}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
           </Card>
         </motion.div>
 
-        {/* Listing & Pricing */}
+        {/* Pricing & Listing Details */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="border-2 hover:shadow-lg transition-shadow">
-            <CardHeader 
-              className="flex flex-row items-center justify-between cursor-pointer"
-              onClick={() => toggleSection('pricing')}
-            >
+          <Card className="border-2 shadow-md">
+            <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-100/50 dark:from-green-950/20 dark:to-emerald-900/20">
               <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-white" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
+                  <DollarSign className="w-6 h-6 text-white" />
                 </div>
-                <span>Listing & Pricing</span>
+                <div>
+                  <span className="text-xl">Pricing & Listing Details</span>
+                  <p className="text-sm text-muted-foreground font-normal mt-1">
+                    Price and property description
+                  </p>
+                </div>
               </CardTitle>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const pricingStep = isBuildingType() ? 
-                      (['apartment', 'penthouse'].includes(propertyType) ? 8 : 7) : 3;
-                    handleEdit(pricingStep);
-                  }}
-                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-                {expandedSections.pricing ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </div>
             </CardHeader>
-            {expandedSections.pricing && (
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Listing Type</p>
-                    <Badge className="capitalize">{formData.listingType}</Badge>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground mb-1">Price</p>
-                    <p className="text-3xl font-bold text-green-600">
-                      ₹ {Number(formData.price).toLocaleString('en-IN')}
-                    </p>
-                  </div>
-                  {formData.availableFrom && (
-                    <div>
-                      <p className="text-sm text-muted-foreground flex items-center gap-1 mb-1">
-                        <Calendar className="w-3 h-3" />
-                        Available From
+            <CardContent className="pt-6 space-y-6">
+              {/* Price & Listing Type */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-xl border-2 border-green-200 dark:border-green-900">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {formData.listingType && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">Listing Type</p>
+                      <Badge className="bg-green-600 text-white capitalize text-base px-4 py-1.5">
+                        {formData.listingType}
+                      </Badge>
+                    </div>
+                  )}
+                  {formData.price && (
+                    <div className="md:col-span-2 space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">Price</p>
+                      <p className="text-4xl font-bold text-green-600">
+                        ₹ {Number(formData.price).toLocaleString('en-IN')}
                       </p>
-                      <p className="font-semibold">{formData.availableFrom}</p>
                     </div>
                   )}
                 </div>
-                <Separator />
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Listing Title</p>
-                  <p className="font-semibold text-lg">{formData.title}</p>
+              </div>
+
+              {/* Availability */}
+              {formData.availableFrom && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Available From
+                  </p>
+                  <p className="text-lg font-semibold">{formData.availableFrom}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Description</p>
-                  <p className="text-sm">{formData.description}</p>
+              )}
+
+              <Separator />
+
+              {/* Listing Title & Description */}
+              {formData.title && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">Listing Title</p>
+                  <p className="text-xl font-bold leading-relaxed">{formData.title}</p>
                 </div>
-                {formData.amenities?.length > 0 && (
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
+              )}
+
+              {formData.description && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">Property Description</p>
+                  <div className="bg-muted/30 p-5 rounded-lg">
+                    <p className="text-base leading-relaxed whitespace-pre-line">{formData.description}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Amenities */}
+              {formData.amenities?.length > 0 && (
+                <>
+                  <Separator />
+                  <div className="space-y-4">
+                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Sparkles className="w-4 h-4" />
-                      Amenities ({formData.amenities.length})
+                      Amenities & Features ({formData.amenities.length})
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {formData.amenities.slice(0, 8).map((amenity) => (
-                        <Badge key={amenity} variant="secondary">
-                          {amenity.replace('_', ' ')}
+                      {formData.amenities.map((amenity) => (
+                        <Badge key={amenity} variant="secondary" className="text-sm px-3 py-1.5 capitalize">
+                          {amenity.replace(/_/g, ' ')}
                         </Badge>
                       ))}
-                      {formData.amenities.length > 8 && (
-                        <Badge variant="secondary">
-                          +{formData.amenities.length - 8} more
-                        </Badge>
-                      )}
                     </div>
                   </div>
-                )}
-              </CardContent>
-            )}
+                </>
+              )}
+            </CardContent>
           </Card>
         </motion.div>
       </div>

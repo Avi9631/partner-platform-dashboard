@@ -26,9 +26,6 @@ const pricingItemSchema = z.object({
 });
 
 export const pricingInformationSchema = z.object({
-  listingType: z.enum(['sale', 'rent', 'lease'], {
-    errorMap: () => ({ message: 'Please select listing type' }),
-  }),
   pricing: z.array(pricingItemSchema)
     .min(1, 'At least one pricing item is required')
     .refine((items) => {

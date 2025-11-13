@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
 export const basicDetailsSchema = z.object({
+  listingType: z.enum(['sale', 'rent', 'lease'], {
+    errorMap: () => ({ message: 'Please select listing type' }),
+  }),
   ownershipType: z.enum(['freehold', 'leasehold', 'poa', 'co_operative'], {
     errorMap: () => ({ message: 'Please select ownership type' }),
   }),

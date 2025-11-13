@@ -48,6 +48,7 @@ export default function BasicDetailsStepV2() {
     resolver: zodResolver(basicDetailsSchema),
     mode: 'onChange',
     defaultValues: {
+      listingType: formData?.listingType || 'sale',
       ownershipType: formData?.ownershipType || 'freehold',
       projectName: formData?.projectName || '',
       customPropertyName: formData?.customPropertyName || '',
@@ -227,6 +228,49 @@ export default function BasicDetailsStepV2() {
       >
         <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6">
           <FieldGroup>
+            {/* Listing Type */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <Controller
+                name="listingType"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>
+                      Listing Type <span className="text-red-500">*</span>
+                    </FieldLabel>
+                    <div className="grid grid-cols-3 gap-3">
+                      {['sale', 'rent', 'lease'].map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => field.onChange(type)}
+                          className={`p-3 border-2 rounded-lg text-sm font-medium capitalize transition-all ${
+                            field.value === type
+                              ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400 scale-105'
+                              : 'border-muted hover:border-orange-500/50 hover:scale-105'
+                          }`}
+                        >
+                          For {type}
+                        </button>
+                      ))}
+                    </div>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                    {!fieldState.invalid && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Select whether this property is for sale, rent, or lease
+                      </p>
+                    )}
+                  </Field>
+                )}
+              />
+            </motion.div>
+
             {/* Ownership Type */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}

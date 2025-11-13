@@ -36,7 +36,6 @@ export default function PricingStepV2() {
     resolver: zodResolver(pricingInformationSchema),
     mode: 'onChange',
     defaultValues: {
-      listingType: formData?.listingType || 'sale',
       pricing: formData?.pricing || [{ type: 'asking_price', value: '', unit: 'total' }],
       isPriceNegotiable: formData?.isPriceNegotiable || false,
       availableFrom: formData?.availableFrom || '',
@@ -49,7 +48,8 @@ export default function PricingStepV2() {
     name: 'pricing',
   });
 
-  const listingType = watch('listingType');
+  // Get listing type from formData (set in Basic Details step)
+  const listingType = formData?.listingType || 'sale';
 
   // Log validation errors when they change
   useEffect(() => {
@@ -158,57 +158,19 @@ export default function PricingStepV2() {
 
       <div className="pb-24">
         <FieldGroup>
-          {/* <motion.div
+          {/* Info: Listing Type from Basic Details */}
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            transition={{ delay: 0.1 }}
+            className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800"
           >
-            <h3 className="text-lg font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400 mb-4">
-              <DollarSign className="w-5 h-5" />
-              Pricing Information
-            </h3>
-          </motion.div> */}
-                {/* Listing Type */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Controller
-              name="listingType"
-              control={control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>
-                    Listing Type <span className="text-red-500">*</span>
-                  </FieldLabel>
-                  <div className="grid grid-cols-3 gap-3">
-                    {['sale', 'rent', 'lease'].map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => field.onChange(type)}
-                        className={`p-3 border-2 rounded-lg text-sm font-medium capitalize transition-all ${
-                          field.value === type
-                            ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400 scale-105'
-                            : 'border-muted hover:border-orange-500/50 hover:scale-105'
-                        }`}
-                      >
-                        For {type}
-                      </button>
-                    ))}
-                  </div>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                  {!fieldState.invalid && (
-                    <FieldDescription>
-                      Select whether this property is for sale, rent, or lease
-                    </FieldDescription>
-                  )}
-                </Field>
-              )}
-            />
+            <p className="text-sm text-blue-900 dark:text-blue-100">
+              <span className="font-semibold">Listing Type:</span> For <span className="capitalize font-semibold">{listingType}</span>
+              <span className="text-xs block mt-1 text-blue-700 dark:text-blue-300">
+                (Set in Basic Details step. Go back to change it.)
+              </span>
+            </p>
           </motion.div>
 
           {/* Dynamic Pricing Items */}
