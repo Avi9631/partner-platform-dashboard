@@ -1,11 +1,16 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { useForm, FormProvider as RHFFormProvider } from 'react-hook-form';
+import { getTotalVisibleSteps } from '../config/stepConfiguration';
 
 const PropertyFormContextV2 = createContext(null);
 
 export const usePropertyFormV2 = () => {
   const context = useContext(PropertyFormContextV2);
   if (!context) {
+    if (import.meta.env.DEV) {
+      console.error('usePropertyFormV2 must be used within PropertyFormProviderV2');
+      return null; // Return null in dev mode for better HMR support
+    }
     throw new Error('usePropertyFormV2 must be used within PropertyFormProviderV2');
   }
   return context;
@@ -25,33 +30,16 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     defaultValues: {},
   });
 
-  // Get total steps based on property type
+  // Memoize the form data with propertyType for step configuration
+  const formDataWithType = useMemo(() => ({
+    ...formData,
+    propertyType,
+  }), [formData, propertyType]);
+
+  // Get total steps dynamically based on current form data
   const getTotalSteps = useCallback(() => {
-    const isBuildingType = ['apartment', 'villa', 'duplex', 'independent_house', 
-                            'penthouse', 'studio', 'independent_floor'].includes(propertyType);
-    const isLandType = ['plot', 'farmhouse', 'agricultural_land'].includes(propertyType);
-    
-    if (isBuildingType) {
-      if (['apartment', 'penthouse'].includes(propertyType)) {
-        // 0: PropertyType, 1: LocationSelection, 2: GeoTag, 3: BasicDetails, 4: BasicConfig, 
-        // 5: AreaDetails, 6: Furnishing, 7: Parking, 8: LocationAttributes, 
-        // 9: FloorDetails, 10: Pricing, 11: SuitableFor, 12: ListingInfo, 13: Amenities, 14: Review
-        return 15;
-      }
-      // Other building types (no floor details)
-      // 0: PropertyType, 1: LocationSelection, 2: GeoTag, 3: BasicDetails, 4: BasicConfig, 
-      // 5: AreaDetails, 6: Furnishing, 7: Parking, 8: LocationAttributes,
-      // 9: Pricing, 10: SuitableFor, 11: ListingInfo, 12: Amenities, 13: Review
-      return 14;
-    } else if (isLandType) {
-      // 0: PropertyType, 1: LocationSelection, 2: GeoTag, 3: BasicDetails, 4: LandAttributes, 
-      // 5: Pricing, 6: ListingInfo, 7: Amenities, 8: Review
-      return 9;
-    }
-    
-    // Default (only property type selector)
-    return 1;
-  }, [propertyType]);
+    return getTotalVisibleSteps(formDataWithType);
+  }, [formDataWithType]);
 
   // Update form data in context (called when save & continue is clicked)
   const updateFormData = useCallback((stepData) => {
@@ -112,12 +100,14 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
 
   // Helper functions
   const isBuildingType = useCallback(() => {
-    return ['apartment', 'villa', 'duplex', 'independent_house', 
-            'penthouse', 'studio', 'independent_floor'].includes(propertyType);
+    const buildingTypes = ['apartment', 'villa', 'duplex', 'independent_house', 
+            'penthouse', 'studio', 'independent_floor'];
+    return buildingTypes.includes(propertyType);
   }, [propertyType]);
 
   const isLandType = useCallback(() => {
-    return ['plot', 'farmhouse', 'agricultural_land'].includes(propertyType);
+    const landTypes = ['plot', 'farmhouse', 'agricultural_land'];
+    return landTypes.includes(propertyType);
   }, [propertyType]);
 
   const value = {
@@ -138,6 +128,7 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     onClose,
     formData, // JSON object updated only on save & continue
     updateFormData, // Method to update form data
+    formDataWithType, // Form data with propertyType for step configuration
   };
 
   return (

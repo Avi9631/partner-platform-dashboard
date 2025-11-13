@@ -5,107 +5,40 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { PropertyFormProviderV2, usePropertyFormV2 } from '../context/PropertyFormContextV2';
-import PropertyTypeStepV2 from './steps/PropertyTypeStepV2';
-import LocationSelectionStepV2 from './steps/LocationSelectionStepV2';
-import GeoTagStepV2 from './steps/GeoTagStepV2';
-import BasicDetailsStepV2 from './steps/BasicDetailsStepV2';
-import BasicConfigurationStepV2 from './steps/BasicConfigurationStepV2';
-import AreaDetailsStepV2 from './steps/AreaDetailsStepV2';
-import FurnishingStepV2 from './steps/FurnishingStepV2';
-import ParkingStepV2 from './steps/ParkingStepV2';
-import LocationStepV2 from './steps/LocationStepV2';
-import FloorDetailsStepV2 from './steps/FloorDetailsStepV2';
-import LandAttributesStepV2 from './steps/LandAttributesStepV2';
-import PricingStepV2 from './steps/PricingStepV2';
-import SuitableForStepV2 from './steps/SuitableForStepV2';
-import ListingInfoStepV2 from './steps/ListingInfoStepV2';
-import AmenitiesStepV2 from './steps/AmenitiesStepV2';
-import ReviewAndSubmitV2 from './steps/ReviewAndSubmitV2';
+import { getStepComponent } from '../config/stepConfiguration';
 
-function PropertyFormContentV2({ open }) {
-  const { currentStep, resetForm, propertyType, onClose } = usePropertyFormV2();
+function PropertyFormContentV2({ open, onOpenChange }) {
+  const context = usePropertyFormV2();
+  
+  // Safety check for context
+  if (!context) {
+    console.error('PropertyFormContentV2 rendered outside of PropertyFormProviderV2');
+    return null;
+  }
+  
+  const { currentStep, resetForm, propertyType, onClose, formDataWithType } = context;
 
   const handleClose = () => {
     if (window.confirm('Are you sure you want to close? All progress will be lost.')) {
       resetForm();
-      onClose(false);
+      if (onClose) onClose(false);
+      if (onOpenChange) onOpenChange(false);
     }
   };
 
   const renderStepContent = () => {
-    // Step 0: Property Type Selection
-    if (currentStep === 0) {
-      return <PropertyTypeStepV2 />;
+    // Get the step component dynamically based on current step and form data
+    const StepComponent = getStepComponent(currentStep, formDataWithType);
+    
+    if (!StepComponent) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Step not found</p>
+        </div>
+      );
     }
     
-    const isBuildingType = propertyType && [
-      'apartment', 'villa', 'duplex', 'independent_house', 
-      'penthouse', 'studio', 'independent_floor'
-    ].includes(propertyType);
-    
-    const isLandType = propertyType && [
-      'plot', 'farmhouse', 'agricultural_land'
-    ].includes(propertyType);
-    
-    const isApartmentOrPenthouse = ['apartment', 'penthouse'].includes(propertyType);
-    
-    // Building type flow
-    if (isBuildingType) {
-      if (isApartmentOrPenthouse) {
-        switch (currentStep) {
-          case 1: return <LocationSelectionStepV2 />;
-          case 2: return <GeoTagStepV2 />;
-          case 3: return <BasicDetailsStepV2 />;
-          case 4: return <BasicConfigurationStepV2 />;
-          case 5: return <AreaDetailsStepV2 />;
-          case 6: return <FurnishingStepV2 />;
-          case 7: return <ParkingStepV2 />;
-          case 8: return <LocationStepV2 />;
-          case 9: return <FloorDetailsStepV2 />;
-          case 10: return <PricingStepV2 />;
-          case 11: return <SuitableForStepV2 />;
-          case 12: return <ListingInfoStepV2 />;
-          case 13: return <AmenitiesStepV2 />;
-          case 14: return <ReviewAndSubmitV2 />;
-          default: return <LocationSelectionStepV2 />;
-        }
-      } else {
-        // Other building types (no floor details)
-        switch (currentStep) {
-          case 1: return <LocationSelectionStepV2 />;
-          case 2: return <GeoTagStepV2 />;
-          case 3: return <BasicDetailsStepV2 />;
-          case 4: return <BasicConfigurationStepV2 />;
-          case 5: return <AreaDetailsStepV2 />;
-          case 6: return <FurnishingStepV2 />;
-          case 7: return <ParkingStepV2 />;
-          case 8: return <LocationStepV2 />;
-          case 9: return <PricingStepV2 />;
-          case 10: return <SuitableForStepV2 />;
-          case 11: return <ListingInfoStepV2 />;
-          case 12: return <AmenitiesStepV2 />;
-          case 13: return <ReviewAndSubmitV2 />;
-          default: return <LocationSelectionStepV2 />;
-        }
-      }
-    }
-    
-    // Land type flow
-    if (isLandType) {
-      switch (currentStep) {
-        case 1: return <LocationSelectionStepV2 />;
-        case 2: return <GeoTagStepV2 />;
-        case 3: return <BasicDetailsStepV2 />;
-        case 4: return <LandAttributesStepV2 />;
-        case 5: return <PricingStepV2 />;
-        case 6: return <ListingInfoStepV2 />;
-        case 7: return <AmenitiesStepV2 />;
-        case 8: return <ReviewAndSubmitV2 />;
-        default: return <LocationSelectionStepV2 />;
-      }
-    }
-    
-    return null;
+    return <StepComponent />;
   };
 
   return (
@@ -139,6 +72,11 @@ function PropertyFormContentV2({ open }) {
 }
 
 export default function PropertyFormSheetV2({ open, onOpenChange }) {
+  // Don't render provider if not open (prevents HMR issues)
+  if (!open) {
+    return null;
+  }
+  
   return (
     <PropertyFormProviderV2 onClose={onOpenChange}>
       <PropertyFormContentV2 open={open} onOpenChange={onOpenChange} />

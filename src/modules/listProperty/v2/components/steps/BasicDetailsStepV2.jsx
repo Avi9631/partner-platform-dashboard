@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
@@ -35,9 +35,13 @@ import { cn } from '@/lib/utils';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import basicDetailsSchema from '../../../schemas/basicDetailsSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
+import { createStepLogger } from '../../../utils/validationLogger';
 
 export default function BasicDetailsStepV2() {
   const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+
+  // Create logger instance (memoized to prevent recreation)
+  const logger = useMemo(() => createStepLogger('Basic Details Step'), []);
 
   // Initialize React Hook Form with Zod validation
   const form = useForm({
@@ -66,6 +70,13 @@ export default function BasicDetailsStepV2() {
   const [loadingProjectNames, setLoadingProjectNames] = useState(false);
   const [hasMoreProjectNames, setHasMoreProjectNames] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
+
+  // Log validation errors when they change
+  useEffect(() => {
+    if (Object.keys(form.formState.errors).length > 0) {
+      logger.logErrors(form.formState.errors);
+    }
+  }, [form.formState.errors, logger]);
 
   // Simulated API call to fetch project names
   const fetchProjectNames = useCallback(async (search = '', page = 0) => {
@@ -173,8 +184,13 @@ export default function BasicDetailsStepV2() {
 
   // Handle form submission
   const onSubmit = (data) => {
+    logger.logSubmission(data, form.formState.errors);
     // Pass data to context
     saveAndContinue(data);
+  };
+
+  const onError = (errors) => {
+    logger.logSubmission(form.getValues(), errors);
   };
 
   return (
@@ -200,7 +216,7 @@ export default function BasicDetailsStepV2() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6">
           <FieldGroup>
             {/* Ownership Type */}
             <motion.div

@@ -1,7 +1,10 @@
 import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
-import { Compass, Eye } from 'lucide-react';
+import { useEffect } from 'react';
+import { Compass, Eye, MapPin } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -10,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
+import locationAttributesSchema from '../../../schemas/locationAttributesSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 const facingOptions = [
@@ -33,25 +37,37 @@ const viewOptions = [
   'Sea View',
 ];
 
+const propertyPositionOptions = [
+  { value: 'corner', label: 'Corner Property', description: 'Property located at a corner' },
+  { value: 'middle', label: 'Middle Unit', description: 'Property between other units' },
+  { value: 'end', label: 'End Unit', description: 'Property at the end of a row' },
+  { value: 'standalone', label: 'Standalone', description: 'Independent property with no attached units' },
+  { value: 'front_facing', label: 'Front Facing', description: 'Property facing the main street/entrance' },
+  { value: 'rear', label: 'Rear Unit', description: 'Property at the back of the complex' },
+];
+
 export default function LocationStepV2() {
   const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
 
   const methods = useForm({
+    resolver: zodResolver(locationAttributesSchema),
     mode: 'onChange',
     defaultValues: {
       facing: formData?.facing || '',
       view: formData?.view || '',
-      locationAdvantages: formData?.locationAdvantages || [],
+      propertyPosition: formData?.propertyPosition || '',
+      overlooking: formData?.overlooking || [],
     },
   });
 
-  const { watch, setValue } = methods;
+  const { watch, setValue, handleSubmit, formState } = methods;
 
-  // Optional step, can always continue
-  const isValid = true;
+  // Trigger validation on mount to ensure form state is correct
+  // useEffect(() => {
+  //   trigger();
+  // }, [trigger]);
 
-  const handleContinue = () => {
-    const data = methods.getValues();
+  const onSubmit = (data) => {
     saveAndContinue(data);
   };
 
@@ -147,11 +163,99 @@ export default function LocationStepV2() {
                 </motion.div>
               </div>
 
-              {/* Info Box */}
+              {/* Corner Property */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
+                className="space-y-2"
+              >
+                <Label className="text-sm flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-orange-600" />
+                  Property Position
+                </Label>
+                <Select
+                  value={watch('propertyPosition')}
+                  onValueChange={(value) => setValue('propertyPosition', value)}
+                >
+                  <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
+                    <SelectValue placeholder="Select property position" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {propertyPositionOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{option.label}</span>
+                          <span className="text-xs text-muted-foreground">{option.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Position of the property within the building or layout
+                </p>
+              </motion.div>
+
+              {/* Overlooking */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className="space-y-3"
+              >
+                <Label className="text-sm font-semibold flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-orange-600" />
+                  Property Overlooks
+                </Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { value: 'garden', label: 'Garden', icon: '🌳' },
+                    { value: 'park', label: 'Park', icon: '🏞️' },
+                    { value: 'main_road', label: 'Main Road', icon: '🛣️' },
+                    { value: 'swimming_pool', label: 'Swimming Pool', icon: '🏊' },
+                    { value: 'club_house', label: 'Club House', icon: '🏛️' },
+                    { value: 'other_buildings', label: 'Other Buildings', icon: '🏢' },
+                  ].map((item) => {
+                    const overlooking = watch('overlooking') || [];
+                    return (
+                      <div
+                        key={item.value}
+                        className="flex items-center space-x-2 p-3 border-2 rounded-lg hover:border-orange-500 transition-colors cursor-pointer"
+                        onClick={() => {
+                          const updated = overlooking.includes(item.value)
+                            ? overlooking.filter((v) => v !== item.value)
+                            : [...overlooking, item.value];
+                          setValue('overlooking', updated);
+                        }}
+                      >
+                        <Checkbox
+                          checked={overlooking.includes(item.value)}
+                          onCheckedChange={() => {
+                            const updated = overlooking.includes(item.value)
+                              ? overlooking.filter((v) => v !== item.value)
+                              : [...overlooking, item.value];
+                            setValue('overlooking', updated);
+                          }}
+                        />
+                        <span className="text-lg">{item.icon}</span>
+                        <label className="text-xs font-medium cursor-pointer flex-1">
+                          {item.label}
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Select all views visible from the property
+                </p>
+              </motion.div>
+
+              {/* Info Box */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
                 className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800"
               >
                 <p className="text-sm text-blue-900 dark:text-blue-100">
@@ -162,12 +266,13 @@ export default function LocationStepV2() {
           </div>
         </motion.div>
 
-        <SaveAndContinueFooter
-          onBack={previousStep}
-          onSaveAndContinue={handleContinue}
-          nextDisabled={!isValid}
-          showBack={true}
-        />
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <SaveAndContinueFooter
+            onBack={previousStep}
+            nextDisabled={!formState.isValid}
+            showBack={true}
+          />
+        </form>
       </div>
     </FormProvider>
   );

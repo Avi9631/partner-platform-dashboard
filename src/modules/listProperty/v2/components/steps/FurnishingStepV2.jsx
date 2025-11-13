@@ -1,8 +1,17 @@
 import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
-import { Sofa } from 'lucide-react';
+import { Sofa, Smartphone, CheckCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import furnishingAmenitiesSchema from '../../../schemas/furnishingAmenitiesSchema';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
@@ -41,25 +50,25 @@ export default function FurnishingStepV2() {
 
   // Create local form with defaults from context
   const methods = useForm({
+    resolver: zodResolver(furnishingAmenitiesSchema),
     mode: 'onChange',
     defaultValues: {
       furnishingStatus: formData?.furnishingStatus || 'unfurnished',
       furnishingDetails: formData?.furnishingDetails || {},
       flooringTypes: formData?.flooringTypes || [],
+      // Phase 1 enhancements
+      smartHomeDevices: formData?.smartHomeDevices || [],
+      furnitureCondition: formData?.furnitureCondition || undefined,
     },
   });
 
-  const { watch, setValue } = methods;
+  const { watch, setValue, formState, handleSubmit } = methods;
   const furnishingStatus = watch('furnishingStatus');
   const furnishingDetails = watch('furnishingDetails');
   const flooringTypes = watch('flooringTypes');
-  const isValid = !!furnishingStatus;
 
-  const handleContinue = () => {
-    if (isValid) {
-      const data = methods.getValues();
-      saveAndContinue(data);
-    }
+  const onSubmit = (data) => {
+    saveAndContinue(data);
   };
 
   const toggleFlooringType = (type) => {
@@ -194,16 +203,109 @@ export default function FurnishingStepV2() {
                   ))}
                 </div>
               </motion.div>
+
+              {/* Smart Home Devices */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="space-y-3"
+              >
+                <Label className="text-sm font-semibold flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-orange-600" />
+                  Smart Home Devices
+                </Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { value: 'smart_door_lock', label: 'Smart Door Lock', icon: '🔐' },
+                    { value: 'smart_lights', label: 'Smart Lights', icon: '💡' },
+                    { value: 'smart_thermostat', label: 'Smart Thermostat', icon: '🌡️' },
+                    { value: 'cctv_cameras', label: 'CCTV Cameras', icon: '📹' },
+                    { value: 'smart_switches', label: 'Smart Switches', icon: '🔌' },
+                    { value: 'video_doorbell', label: 'Video Doorbell', icon: '🔔' },
+                    { value: 'smart_curtains', label: 'Smart Curtains', icon: '🪟' },
+                    { value: 'home_automation_system', label: 'Home Automation', icon: '🏠' },
+                    { value: 'voice_assistant', label: 'Voice Assistant', icon: '🗣️' },
+                    { value: 'smart_security_system', label: 'Security System', icon: '🛡️' },
+                  ].map((device) => {
+                    const smartHomeDevices = watch('smartHomeDevices') || [];
+                    return (
+                      <div
+                        key={device.value}
+                        className="flex items-center space-x-2 p-3 border-2 rounded-lg hover:border-orange-500 transition-colors cursor-pointer"
+                        onClick={() => {
+                          const updated = smartHomeDevices.includes(device.value)
+                            ? smartHomeDevices.filter((d) => d !== device.value)
+                            : [...smartHomeDevices, device.value];
+                          setValue('smartHomeDevices', updated);
+                        }}
+                      >
+                        <Checkbox
+                          checked={smartHomeDevices.includes(device.value)}
+                          onCheckedChange={() => {
+                            const updated = smartHomeDevices.includes(device.value)
+                              ? smartHomeDevices.filter((d) => d !== device.value)
+                              : [...smartHomeDevices, device.value];
+                            setValue('smartHomeDevices', updated);
+                          }}
+                        />
+                        <span className="text-lg">{device.icon}</span>
+                        <label className="text-xs font-medium cursor-pointer flex-1">
+                          {device.label}
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Select all smart home features included
+                </p>
+              </motion.div>
+
+              {/* Furniture Condition */}
+              {(furnishingStatus === 'semi' || furnishingStatus === 'fully') && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="space-y-3"
+                >
+                  <Label className="text-sm font-semibold flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-orange-600" />
+                    Furniture Condition
+                  </Label>
+                  <Select
+                    value={watch('furnitureCondition')}
+                    onValueChange={(value) => setValue('furnitureCondition', value)}
+                  >
+                    <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
+                      <SelectValue placeholder="Select condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New (Less than 1 year)</SelectItem>
+                      <SelectItem value="excellent">Excellent (1-2 years, like new)</SelectItem>
+                      <SelectItem value="good">Good (2-5 years, well maintained)</SelectItem>
+                      <SelectItem value="fair">Fair (5+ years, shows wear)</SelectItem>
+                      <SelectItem value="needs_repair">Needs Repair</SelectItem>
+                      <SelectItem value="not_applicable">Not Applicable</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Overall condition of the included furniture
+                  </p>
+                </motion.div>
+              )}
             </div>
           </div>
         </motion.div>
 
-        <SaveAndContinueFooter
-          onBack={previousStep}
-          onSaveAndContinue={handleContinue}
-          nextDisabled={!isValid}
-          showBack={true}
-        />
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <SaveAndContinueFooter
+            onBack={previousStep}
+            nextDisabled={!formState.isValid}
+            showBack={true}
+          />
+        </form>
       </div>
     </FormProvider>
   );

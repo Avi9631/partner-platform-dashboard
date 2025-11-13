@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+/**
+ * Enhanced Pricing Information Schema
+ * Phase 1 Enhancement - Step 11: Pricing
+ */
 const pricingItemSchema = z.object({
   type: z.enum([
     'asking_price', 
@@ -36,6 +40,34 @@ export const pricingInformationSchema = z.object({
     }),
   isPriceNegotiable: z.boolean().optional(),
   availableFrom: z.string().optional(),
+  
+  // NEW: Phase 1 enhancements
+  pricePerSqft: z.number().optional(), // Auto-calculated
+  pricePerSqm: z.number().optional(),  // Auto-calculated
+  
+  maintenanceIncludes: z.array(z.enum([
+    'electricity',
+    'water',
+    'gas',
+    'common_area_maintenance',
+    'security',
+    'lift_maintenance',
+    'garden_maintenance',
+    'club_facilities',
+    'waste_management',
+    'pest_control',
+    'none'
+  ])).optional().default([]),
+  
+  taxStampDuty: z.string()
+    .refine((val) => !val || (!isNaN(Number(val)) && Number(val) >= 0), {
+      message: 'Tax/stamp duty must be a non-negative number',
+    })
+    .optional(),
+  
+  isPriceVerified: z.boolean().default(false),
+  priceVerifiedBy: z.string().optional(), // Agent/Admin ID
+  priceVerifiedAt: z.string().optional(),
 });
 
 export default pricingInformationSchema;

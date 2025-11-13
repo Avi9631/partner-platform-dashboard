@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
@@ -22,9 +23,13 @@ import {
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import pricingInformationSchema from '../../../schemas/pricingInformationSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
+import { createStepLogger } from '../../../utils/validationLogger';
 
 export default function PricingStepV2() {
   const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+
+  // Create logger instance (memoized to prevent recreation)
+  const logger = useMemo(() => createStepLogger('Pricing Information Step'), []);
 
   // Initialize React Hook Form with Zod validation
   const form = useForm({
@@ -46,9 +51,21 @@ export default function PricingStepV2() {
 
   const listingType = watch('listingType');
 
+  // Log validation errors when they change
+  useEffect(() => {
+    if (Object.keys(formState.errors).length > 0) {
+      logger.logErrors(formState.errors);
+    }
+  }, [formState.errors, logger]);
+
   // Handle form submission
   const onSubmit = (data) => {
+    logger.logSubmission(data, formState.errors);
     saveAndContinue(data);
+  };
+
+  const onError = (errors) => {
+    logger.logSubmission(form.getValues(), errors);
   };
 
   // Helper function to get pricing type options based on listing type
@@ -410,7 +427,7 @@ export default function PricingStepV2() {
 
       <SaveAndContinueFooter
         onBack={previousStep}
-        onSaveAndContinue={handleSubmit(onSubmit)}
+        onSaveAndContinue={handleSubmit(onSubmit, onError)}
         nextDisabled={!formState.isValid}
         showBack={true}
       />

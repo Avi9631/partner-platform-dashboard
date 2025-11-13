@@ -1,8 +1,9 @@
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
-import { Bed, Bath, ChefHat, ArrowUpDown } from 'lucide-react';
+import { Bed, Bath, Ruler, Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Field,
   FieldDescription,
@@ -17,17 +18,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import basicConfigurationSchema from '../../../schemas/basicConfigurationSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 const additionalRoomOptions = [
-  'Servant Room',
-  'Study Room',
-  'Store Room',
-  'Pooja Room',
-  'Home Office',
+  { value: 'balcony', label: 'Balcony' },
+  { value: 'servantRoom', label: 'Servant Room' },
+  { value: 'studyRoom', label: 'Study Room' },
+  { value: 'storeRoom', label: 'Store Room' },
+  { value: 'poojaRoom', label: 'Pooja Room' },
+  { value: 'homeOffice', label: 'Home Office' },
+  { value: 'guestRoom', label: 'Guest Room' },
+  { value: 'utilityRoom', label: 'Utility Room' },
+  { value: 'diningRoom', label: 'Dining Room' },
+  { value: 'familyRoom', label: 'Family Room' },
+  { value: 'laundryRoom', label: 'Laundry Room' },
 ];
 
 export default function BasicConfigurationV2() {
@@ -40,23 +46,12 @@ export default function BasicConfigurationV2() {
     defaultValues: {
       bedrooms: formData?.bedrooms || '',
       bathrooms: formData?.bathrooms || '',
-      balconies: formData?.balconies || '',
-      balconyType: formData?.balconyType || '',
-      kitchenType: formData?.kitchenType || '',
-      ceilingHeight: formData?.ceilingHeight || '',
       additionalRooms: formData?.additionalRooms || [],
+      roomDimensions: formData?.roomDimensions || [],
     },
   });
 
   const { control, watch, setValue, handleSubmit, formState } = form;
-
-  const toggleAdditionalRoom = (room) => {
-    const current = watch('additionalRooms') || [];
-    const updated = current.includes(room)
-      ? current.filter((r) => r !== room)
-      : [...current, room];
-    setValue('additionalRooms', updated, { shouldValidate: true });
-  };
 
   const onSubmit = (data) => {
     saveAndContinue(data);
@@ -87,8 +82,8 @@ export default function BasicConfigurationV2() {
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <FieldGroup>
-          {/* Bedrooms, Bathrooms, Balconies */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Bedrooms, Bathrooms */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Bedrooms */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -168,161 +163,292 @@ export default function BasicConfigurationV2() {
                 )}
               />
             </motion.div>
-
-            {/* Balconies */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <Controller
-                name="balconies"
-                control={control}
-                render={({ field }) => (
-                  <Field>
-                    <FieldLabel>Balconies</FieldLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[0, 1, 2, 3, 4, '5+'].map((num) => (
-                          <SelectItem key={num} value={String(num)}>
-                            {num} {num === '5+' ? '' : num === 1 ? 'Balcony' : 'Balconies'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                )}
-              />
-            </motion.div>
           </div>
 
-          {/* Balcony Type & Kitchen Type */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Balcony Type */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.45 }}
-            >
-              <Controller
-                name="balconyType"
-                control={control}
-                render={({ field }) => (
-                  <Field>
-                    <FieldLabel>Balcony Type</FieldLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="standard">Standard Balcony</SelectItem>
-                        <SelectItem value="terrace">Terrace / Rooftop</SelectItem>
-                        <SelectItem value="french">French Balcony</SelectItem>
-                        <SelectItem value="juliet">Juliet Balcony</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                )}
-              />
-            </motion.div>
-
-            {/* Kitchen Type */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <Controller
-                name="kitchenType"
-                control={control}
-                render={({ field }) => (
-                  <Field>
-                    <FieldLabel className="flex items-center gap-2">
-                      <ChefHat className="w-4 h-4 text-orange-600" />
-                      Kitchen Type
-                    </FieldLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="modular">Modular Kitchen</SelectItem>
-                        <SelectItem value="basic">Basic Kitchen</SelectItem>
-                        <SelectItem value="open">Open Kitchen</SelectItem>
-                        <SelectItem value="semi_open">Semi-Open Kitchen</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                )}
-              />
-            </motion.div>
-          </div>
-
-          {/* Ceiling Height */}
+          {/* Additional Rooms */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55 }}
+            transition={{ delay: 0.7 }}
           >
-            <Controller
-              name="ceilingHeight"
-              control={control}
-              render={({ field }) => (
-                <Field>
-                  <FieldLabel className="flex items-center gap-2">
-                    <ArrowUpDown className="w-4 h-4 text-orange-600" />
-                    Ceiling Height (in feet)
+            <Field>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <FieldLabel className="flex items-center gap-2 font-semibold">
+                    <Ruler className="w-4 h-4 text-orange-600" />
+                    Room Dimensions
                   </FieldLabel>
-                  <Input
-                    {...field}
-                    type="number"
-                    step="0.1"
-                    min="8"
-                    placeholder="e.g., 10"
-                    className="h-10 text-sm border-2 focus:border-orange-500 transition-all"
-                  />
                   <FieldDescription>
-                    Standard height is usually 10 feet
+                    Add dimensions for specific rooms (optional, max 10 rooms)
                   </FieldDescription>
-                </Field>
-              )}
-            />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const currentDimensions = watch('roomDimensions') || [];
+                    if (currentDimensions.length < 10) {
+                      setValue('roomDimensions', [
+                        ...currentDimensions,
+                        {
+                          id: `room_${Date.now()}`,
+                          roomName: '',
+                          length: '',
+                          width: '',
+                          unit: 'feet',
+                        },
+                      ], { shouldValidate: true });
+                    }
+                  }}
+                  disabled={(watch('roomDimensions') || []).length >= 10}
+                  className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Room
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {(watch('roomDimensions') || []).map((room, index) => (
+                  <motion.div
+                    key={room.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="p-4 border-2 rounded-lg bg-gray-50/50"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <Controller
+                        name={`roomDimensions.${index}.roomName`}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid} className="flex-1">
+                            <FieldLabel className="text-sm">Room Name</FieldLabel>
+                            <Input
+                              {...field}
+                              placeholder="e.g., Master Bedroom"
+                              className="h-10 text-sm border-2 focus:border-orange-500"
+                            />
+                            {fieldState.invalid && (
+                              <FieldError errors={[fieldState.error]} />
+                            )}
+                          </Field>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const currentDimensions = watch('roomDimensions');
+                          setValue(
+                            'roomDimensions',
+                            currentDimensions.filter((_, i) => i !== index),
+                            { shouldValidate: true }
+                          );
+                        }}
+                        className="mt-6 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <Controller
+                        name={`roomDimensions.${index}.length`}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel className="text-sm">Length</FieldLabel>
+                            <Input
+                              {...field}
+                              type="number"
+                              step="0.1"
+                              min="0"
+                              placeholder="12"
+                              className="h-10 text-sm border-2 focus:border-orange-500"
+                            />
+                            {fieldState.invalid && (
+                              <FieldError errors={[fieldState.error]} />
+                            )}
+                          </Field>
+                        )}
+                      />
+                      <Controller
+                        name={`roomDimensions.${index}.width`}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel className="text-sm">Width</FieldLabel>
+                            <Input
+                              {...field}
+                              type="number"
+                              step="0.1"
+                              min="0"
+                              placeholder="10"
+                              className="h-10 text-sm border-2 focus:border-orange-500"
+                            />
+                            {fieldState.invalid && (
+                              <FieldError errors={[fieldState.error]} />
+                            )}
+                          </Field>
+                        )}
+                      />
+                      <Controller
+                        name={`roomDimensions.${index}.unit`}
+                        control={control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel className="text-sm">Unit</FieldLabel>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="feet">Feet</SelectItem>
+                                <SelectItem value="meters">Meters</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </Field>
+                        )}
+                      />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </Field>
           </motion.div>
 
           {/* Additional Rooms */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.45 }}
           >
             <Field>
-              <FieldLabel className="font-semibold">Additional Rooms</FieldLabel>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {additionalRoomOptions.map((room) => (
-                  <label
-                    key={room}
-                    className="flex items-center space-x-2 p-3 border-2 rounded-lg hover:border-orange-500 transition-colors cursor-pointer"
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <FieldLabel className="font-semibold">Additional Rooms</FieldLabel>
+                  <FieldDescription>
+                    Add other rooms in your property (optional, max 10 rooms)
+                  </FieldDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const currentRooms = watch('additionalRooms') || [];
+                    if (currentRooms.length < 10) {
+                      setValue('additionalRooms', [
+                        ...currentRooms,
+                        {
+                          id: `additional_${Date.now()}`,
+                          type: '',
+                          count: '',
+                        },
+                      ], { shouldValidate: true });
+                    }
+                  }}
+                  disabled={(watch('additionalRooms') || []).length >= 10}
+                  className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Room
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {(watch('additionalRooms') || []).map((room, index) => (
+                  <motion.div
+                    key={room.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="p-4 border-2 rounded-lg bg-gray-50/50"
                   >
-                    <Checkbox
-                      checked={(watch('additionalRooms') || []).includes(room)}
-                      onCheckedChange={() => toggleAdditionalRoom(room)}
-                    />
-                    <span className="text-sm font-medium">
-                      {room}
-                    </span>
-                  </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Controller
+                        name={`additionalRooms.${index}.type`}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel className="text-sm">Room Type</FieldLabel>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
+                                <SelectValue placeholder="Select room type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {additionalRoomOptions.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {fieldState.invalid && (
+                              <FieldError errors={[fieldState.error]} />
+                            )}
+                          </Field>
+                        )}
+                      />
+                      
+                      <div className="flex gap-2">
+                        <Controller
+                          name={`additionalRooms.${index}.count`}
+                          control={control}
+                          render={({ field, fieldState }) => (
+                            <Field data-invalid={fieldState.invalid} className="flex-1">
+                              <FieldLabel className="text-sm">Count</FieldLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                disabled={!room.type}
+                              >
+                                <SelectTrigger className="h-10 text-sm border-2 focus:border-orange-500">
+                                  <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {[1, 2, 3, 4, 5].map((num) => (
+                                    <SelectItem key={num} value={String(num)}>
+                                      {num}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                              )}
+                            </Field>
+                          )}
+                        />
+                        
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const currentRooms = watch('additionalRooms');
+                            setValue(
+                              'additionalRooms',
+                              currentRooms.filter((_, i) => i !== index),
+                              { shouldValidate: true }
+                            );
+                          }}
+                          className="mt-6 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             </Field>
