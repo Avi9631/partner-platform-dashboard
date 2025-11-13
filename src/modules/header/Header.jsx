@@ -37,8 +37,7 @@ export default function Header() {
 
           {/* Logo */}
           <a
-            className="text-2xl sm:text-3xl font-medium text-shadow-lg
- "
+            className="text-lg sm:text-2xl md:text-3xl font-medium text-shadow-lg"
             href="/"
             style={{
               fontFamily: "Nosifer",
@@ -49,12 +48,13 @@ export default function Header() {
         </div>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-4 ml-4">
+        {/* <div className="hidden md:flex items-center gap-4 ml-4">
           <NavigationMenuDemo />
-        </div>
+        </div> */}
 
         {/* Right-side user menu */}
         <div className="hidden md:flex items-center gap-2 ml-auto">
+           <NavigationMenuDemo />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Avatar className="w-10 h-10 cursor-pointer shadow-sm hover:shadow-xl">

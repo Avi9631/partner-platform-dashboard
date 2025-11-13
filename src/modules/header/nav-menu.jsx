@@ -69,47 +69,6 @@ function NavigationMenuDemo({ orientation }) {
           </Link>
         </NavigationMenuItem>
 
-        <NavigationMenuItem
-          className={
-            orientation === "vertical" ? "w-full" : "flex-1 sm:flex-none"
-          }
-        >
-          <NavigationMenuTrigger
-            className={cn(
-              "w-full justify-center px-2",
-              ["/list-property-v2", "/list-project", "/list-developer"].includes(
-                location.pathname
-              ) && "bg-secondary"
-            )}
-          >
-            MANAGE LISTING
-          </NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[200px] gap-3 p-4">
-              <ListItem
-                title="Property"
-                onClick={() => handleNavigate("/list-property-v2")}
-                className="cursor-pointer"
-              >
-              </ListItem>
-              <ListItem
-                title="Project"
-                onClick={() => handleNavigate("/list-project")}
-                className="cursor-pointer"
-              >
-              </ListItem>
-              <ListItem
-                title="Developer"
-                onClick={() => handleNavigate("/list-developer")}
-                className="cursor-pointer"
-              >
-              </ListItem>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-
-
-
       </NavigationMenuList>
     </NavigationMenu>
   );

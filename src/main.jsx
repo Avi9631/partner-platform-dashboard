@@ -10,6 +10,7 @@ import SignIn from "./pages/SignIn.jsx";
 import ListPropertyV2 from "./modules/ListPropertyV2.jsx";
 import ListProjectV2Page from "./modules/ListProjectV2.jsx";
 import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
+import Dashboard from "./Dashboard.jsx";
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ), 
         children: [
+  {
+        index: true,
+        element: < Dashboard/>,
+      },
           {
             path: "list-developer",
             element: <ListDeveloperV2Page />,

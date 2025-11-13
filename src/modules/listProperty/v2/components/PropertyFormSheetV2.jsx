@@ -71,14 +71,14 @@ function PropertyFormContentV2({ open, onOpenChange }) {
   );
 }
 
-export default function PropertyFormSheetV2({ open, onOpenChange }) {
+export default function PropertyFormSheetV2({ open, onOpenChange, initialDraftId }) {
   // Don't render provider if not open (prevents HMR issues)
   if (!open) {
     return null;
   }
   
   return (
-    <PropertyFormProviderV2 onClose={onOpenChange}>
+    <PropertyFormProviderV2 onClose={onOpenChange} initialDraftId={initialDraftId}>
       <PropertyFormContentV2 open={open} onOpenChange={onOpenChange} />
     </PropertyFormProviderV2>
   );

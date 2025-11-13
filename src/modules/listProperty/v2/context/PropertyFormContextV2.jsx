@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { useForm, FormProvider as RHFFormProvider } from 'react-hook-form';
 import { getTotalVisibleSteps } from '../config/stepConfiguration';
+import { draftApi } from '@/services/draftService';
 
 const PropertyFormContextV2 = createContext(null);
 
@@ -16,10 +17,12 @@ export const usePropertyFormV2 = () => {
   return context;
 };
 
-export const PropertyFormProviderV2 = ({ children, onClose }) => {
+export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [propertyType, setPropertyType] = useState(null);
   const [completedSteps, setCompletedSteps] = useState(new Set());
+  const [draftId, setDraftId] = useState(initialDraftId || null);
+  const [isCreatingDraft, setIsCreatingDraft] = useState(false);
   
   // Store saved form data from all steps as JSON (empty initially, populated on save)
   const [formData, setFormData] = useState({});
@@ -49,11 +52,37 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     }));
   }, []);
 
+  // Save draft to backend
+  const saveDraft = useCallback(async (updatedData) => {
+    if (!draftId) {
+      console.warn('No draft ID available, skipping save');
+      return;
+    }
+
+    try {
+      const response = await draftApi.updateListingDraft(draftId, {
+        formData: updatedData || formData,
+        status: 'draft',
+      });
+      
+      if (response.success) {
+        console.log('Draft saved successfully');
+      }
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+      // Don't throw error, just log it
+    }
+  }, [draftId, formData]);
+
   // Navigate to next step with "Save & Continue"
-  const saveAndContinue = useCallback((stepData) => {
+  const saveAndContinue = useCallback(async (stepData) => {
     // Update form data in context
     if (stepData) {
       updateFormData(stepData);
+      
+      // Save to backend if we have a draft ID
+      const updatedFormData = { ...formData, ...stepData };
+      await saveDraft(updatedFormData);
     }
     
     // Mark current step as completed
@@ -63,7 +92,7 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     if (currentStep < totalSteps - 1) {
       setCurrentStep(currentStep + 1);
     }
-  }, [currentStep, getTotalSteps, updateFormData]);
+  }, [currentStep, getTotalSteps, updateFormData, formData, saveDraft]);
 
   // Navigate to previous step
   const previousStep = useCallback(() => {
@@ -84,6 +113,8 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     setCurrentStep(0);
     setPropertyType(null);
     setCompletedSteps(new Set());
+    setDraftId(null);
+    setIsCreatingDraft(false);
   }, [methods]);
 
   // Check if a step is completed
@@ -129,6 +160,9 @@ export const PropertyFormProviderV2 = ({ children, onClose }) => {
     formData, // JSON object updated only on save & continue
     updateFormData, // Method to update form data
     formDataWithType, // Form data with propertyType for step configuration
+    draftId, // Current draft ID
+    saveDraft, // Function to save draft
+    isCreatingDraft, // Loading state for draft creation
   };
 
   return (

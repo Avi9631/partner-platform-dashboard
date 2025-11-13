@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   PlusCircle, MapPin, Home, Calendar, DollarSign, 
@@ -17,6 +17,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { draftApi } from '@/services/draftService';
+import { useToast } from '@/components/hooks/use-toast';
 
 export default function ListPropertyV2Page() {
   const [showForm, setShowForm] = useState(false);
@@ -24,15 +26,98 @@ export default function ListPropertyV2Page() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentDraftId, setCurrentDraftId] = useState(null);
+  const [isCreatingDraft, setIsCreatingDraft] = useState(false);
+  const { toast } = useToast();
 
-  // Mock data - Replace with actual API call
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setListings(mockListings);
+  // Fetch listing drafts from API
+  const fetchListings = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await draftApi.getUserListingDrafts();
+      
+      if (response.success && response.data) {
+        // Transform API data to match our component structure
+        const transformedListings = response.data.map(draft => ({
+          id: draft.id,
+          title: draft.formData?.title || 'Untitled Property',
+          location: draft.formData?.location || 'Location not set',
+          propertyType: draft.formData?.propertyType || 'Not specified',
+          bedrooms: draft.formData?.bedrooms,
+          bathrooms: draft.formData?.bathrooms,
+          area: draft.formData?.area,
+          price: draft.formData?.price || 'Price not set',
+          priceUnit: draft.formData?.priceUnit || '',
+          status: draft.status || 'draft',
+          image: draft.formData?.image || null,
+          views: draft.views || 0,
+          createdAt: new Date(draft.createdAt).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+          }),
+        }));
+        setListings(transformedListings);
+      } else {
+        setListings([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch listings:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load your listings. Please try again.',
+        variant: 'destructive',
+      });
+      setListings([]);
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [toast]);
+
+  const handleFormClose = (isOpen) => {
+    setShowForm(isOpen);
+    if (!isOpen) {
+      // Reset draft ID and refresh listings when form closes
+      setCurrentDraftId(null);
+      fetchListings();
+    }
+  };
+
+  const handleListNewProperty = async () => {
+    try {
+      setIsCreatingDraft(true);
+      const response = await draftApi.createListingDraft({
+        status: 'draft',
+        formData: {},
+      });
+
+      console.log(response);
+      
+      if (response.success && response.data?.draftId) {
+        setCurrentDraftId(response.data?.data?.draftId);
+        setShowForm(true);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to create draft. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create draft:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create draft. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCreatingDraft(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
 
   const filteredListings = listings.filter(listing => {
     const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -53,11 +138,21 @@ export default function ListPropertyV2Page() {
             </div>
             <Button
               size="lg"
-              onClick={() => setShowForm(true)}
-              className="h-12 px-8 text-sm font-bold bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:scale-105 transition-all duration-300 self-start md:self-auto"
+              onClick={handleListNewProperty}
+              disabled={isCreatingDraft}
+              className="h-12 px-8 text-sm font-bold bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:scale-105 transition-all duration-300 self-start md:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <PlusCircle className="w-5 h-5 mr-2" />
-              List New Property
+              {isCreatingDraft ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Creating Draft...
+                </>
+              ) : (
+                <>
+                  <PlusCircle className="w-5 h-5 mr-2" />
+                  List New Property
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -140,7 +235,7 @@ export default function ListPropertyV2Page() {
             <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
           </div>
         ) : filteredListings.length === 0 ? (
-          <EmptyState searchQuery={searchQuery} onAddNew={() => setShowForm(true)} />
+          <EmptyState searchQuery={searchQuery} onAddNew={handleListNewProperty} isCreating={isCreatingDraft} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
@@ -152,7 +247,7 @@ export default function ListPropertyV2Page() {
         )}
       </div>
 
-      <PropertyFormSheetV2 open={showForm} onOpenChange={setShowForm} />
+      <PropertyFormSheetV2 open={showForm} onOpenChange={handleFormClose} initialDraftId={currentDraftId} />
     </div>
   );
 }
@@ -345,7 +440,7 @@ function PropertyCard({ listing, index }) {
 }
 
 // Empty State Component
-function EmptyState({ searchQuery, onAddNew }) {
+function EmptyState({ searchQuery, onAddNew, isCreating }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -367,106 +462,24 @@ function EmptyState({ searchQuery, onAddNew }) {
         <Button
           size="lg"
           onClick={onAddNew}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
+          disabled={isCreating}
+          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <PlusCircle className="w-5 h-5 mr-2" />
-          List Your First Property
+          {isCreating ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            <>
+              <PlusCircle className="w-5 h-5 mr-2" />
+              List Your First Property
+            </>
+          )}
         </Button>
       )}
     </motion.div>
   );
 }
 
-// Mock Data
-const mockListings = [
-  {
-    id: 1,
-    title: 'Luxury 3BHK Apartment with Sea View',
-    location: 'Bandra West, Mumbai',
-    propertyType: 'Apartment',
-    bedrooms: 3,
-    bathrooms: 2,
-    area: '1500 sq.ft',
-    price: '₹2.5 Cr',
-    priceUnit: '',
-    status: 'published',
-    image: null,
-    views: 234,
-    createdAt: 'Jan 15, 2025',
-  },
-  {
-    id: 2,
-    title: 'Modern Villa in Gated Community',
-    location: 'Whitefield, Bangalore',
-    propertyType: 'Villa',
-    bedrooms: 4,
-    bathrooms: 3,
-    area: '2500 sq.ft',
-    price: '₹1.8 Cr',
-    priceUnit: '',
-    status: 'published',
-    image: null,
-    views: 456,
-    createdAt: 'Jan 10, 2025',
-  },
-  {
-    id: 3,
-    title: 'Spacious Penthouse with Terrace',
-    location: 'Andheri East, Mumbai',
-    propertyType: 'Penthouse',
-    bedrooms: 5,
-    bathrooms: 4,
-    area: '3200 sq.ft',
-    price: '₹4.5 Cr',
-    priceUnit: '',
-    status: 'draft',
-    image: null,
-    views: 89,
-    createdAt: 'Jan 8, 2025',
-  },
-  {
-    id: 4,
-    title: 'Cozy 2BHK Ready to Move',
-    location: 'Powai, Mumbai',
-    propertyType: 'Apartment',
-    bedrooms: 2,
-    bathrooms: 2,
-    area: '1100 sq.ft',
-    price: '₹1.2 Cr',
-    priceUnit: '',
-    status: 'published',
-    image: null,
-    views: 567,
-    createdAt: 'Jan 5, 2025',
-  },
-  {
-    id: 5,
-    title: 'Independent House with Garden',
-    location: 'Koramangala, Bangalore',
-    propertyType: 'Independent House',
-    bedrooms: 3,
-    bathrooms: 2,
-    area: '1800 sq.ft',
-    price: '₹95 Lac',
-    priceUnit: '',
-    status: 'draft',
-    image: null,
-    views: 123,
-    createdAt: 'Jan 3, 2025',
-  },
-  {
-    id: 6,
-    title: 'Studio Apartment Near Metro',
-    location: 'Goregaon West, Mumbai',
-    propertyType: 'Studio',
-    bedrooms: null,
-    bathrooms: 1,
-    area: '450 sq.ft',
-    price: '₹65 Lac',
-    priceUnit: '',
-    status: 'published',
-    image: null,
-    views: 789,
-    createdAt: 'Dec 28, 2024',
-  },
-];
+
