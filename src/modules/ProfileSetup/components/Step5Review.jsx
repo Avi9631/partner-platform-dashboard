@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from "../../../components/ui/avatar";
 import { FileCheck, User } from "lucide-react";
 
 const Step5Review = ({ formData }) => {
@@ -14,13 +13,14 @@ const Step5Review = ({ formData }) => {
 
       <div className="space-y-4 rounded-lg p-4">
         <div className="flex justify-center mb-4">
-          {formData.profileImagePreview ? (
-            <Avatar className="w-24 h-24 border-4 border-blue-200 text-xl font-semibold shadow-lg">
-              <AvatarImage src={formData.profileImagePreview} alt="Profile" />
-              <AvatarFallback>
-                {formData.firstName?.[0]}{formData.lastName?.[0]}
-              </AvatarFallback>
-            </Avatar>
+          {formData.profileVideoPreview ? (
+            <video
+              src={formData.profileVideoPreview}
+              className="w-24 h-24 rounded-full border-4 border-blue-200 shadow-lg object-cover"
+              muted
+              loop
+              autoPlay
+            />
           ) : (
             <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
               <User className="w-12 h-12 text-gray-400" />

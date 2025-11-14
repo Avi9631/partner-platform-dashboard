@@ -73,8 +73,7 @@ const Step1PersonalInfo = ({ formData, errors, handleChange }) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="INDIVIDUAL">Individual</SelectItem>
-            <SelectItem value="AGENT">Agent</SelectItem>
-            <SelectItem value="ORGANIZATION">Organization</SelectItem>
+            <SelectItem value="AGENCY">Agency</SelectItem>
           </SelectContent>
         </Select>
       </div>

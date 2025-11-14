@@ -34,12 +34,12 @@ const Step4ProfileImage = ({
       </div>
 
       <div className="flex flex-col items-center space-y-4">
-        {formData.profileImagePreview ? (
+        {formData.profileVideoPreview ? (
           // Show recorded video preview
           <div className="relative">
             <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-green-400 bg-gray-900 shadow-lg">
               <video
-                src={formData.profileImagePreview}
+                src={formData.profileVideoPreview}
                 className="w-full h-full object-cover"
                 controls
               />
@@ -108,12 +108,12 @@ const Step4ProfileImage = ({
           </div>
         )}
 
-        {errors.profileImage && (
-          <p className="text-sm text-red-500 text-center">{errors.profileImage}</p>
+        {errors.profileVideo && (
+          <p className="text-sm text-red-500 text-center">{errors.profileVideo}</p>
         )}
 
         <div className="w-full space-y-2">
-          {!formData.profileImagePreview && !isCameraActive && (
+          {!formData.profileVideoPreview && !isCameraActive && (
             <Button
               type="button"
               onClick={startCamera}
@@ -159,7 +159,7 @@ const Step4ProfileImage = ({
             </Button>
           )}
 
-          {formData.profileImagePreview && (
+          {formData.profileVideoPreview && (
             <Button
               type="button"
               onClick={retakePhoto}
