@@ -333,8 +333,8 @@ const ProfileSetup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-2xl">
+    <div className="h-screen overflow-y-auto p-0 sm:p-4">
+      <Card className="w-full min-h-screen sm:min-h-0 sm:max-w-2xl sm:mx-auto sm:rounded-lg sm:shadow-none">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
             Complete Your Profile
@@ -343,8 +343,12 @@ const ProfileSetup = () => {
             Step {currentStep} of {totalSteps}: {getStepTitle()}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+        <CardContent className="pb-8">
+          <div className="flex justify-center mb-4">
+            <div className="overflow-x-auto max-w-full scrollbar-thin">
+              <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {renderCurrentStep()}

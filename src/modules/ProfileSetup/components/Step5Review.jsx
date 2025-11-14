@@ -12,10 +12,10 @@ const Step5Review = ({ formData }) => {
         </p>
       </div>
 
-      <div className="space-y-4 bg-gray-50 rounded-lg p-4">
+      <div className="space-y-4 rounded-lg p-4">
         <div className="flex justify-center mb-4">
           {formData.profileImagePreview ? (
-            <Avatar className="w-24 h-24 border-4 border-blue-200">
+            <Avatar className="w-24 h-24 border-4 border-blue-200 text-xl font-semibold shadow-lg">
               <AvatarImage src={formData.profileImagePreview} alt="Profile" />
               <AvatarFallback>
                 {formData.firstName?.[0]}{formData.lastName?.[0]}

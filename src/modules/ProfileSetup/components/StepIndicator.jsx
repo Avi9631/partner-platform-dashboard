@@ -1,10 +1,10 @@
 const StepIndicator = ({ currentStep, totalSteps }) => {
   return (
-    <div className="flex items-center justify-center mb-8 space-x-2">
+    <div className="flex items-center mb-4 space-x-2 w-max px-2">
       {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
         <div key={step} className="flex items-center">
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
+            className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center font-semibold transition-all ${
               step === currentStep
                 ? "bg-blue-600 text-white scale-110"
                 : step < currentStep
@@ -16,7 +16,7 @@ const StepIndicator = ({ currentStep, totalSteps }) => {
           </div>
           {step < totalSteps && (
             <div
-              className={`w-12 h-1 mx-1 ${
+              className={`w-12 h-1 mx-1 shrink-0 ${
                 step < currentStep ? "bg-green-500" : "bg-gray-200"
               }`}
             />
