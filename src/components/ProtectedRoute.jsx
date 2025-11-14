@@ -2,8 +2,8 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { Spinner } from "../components/ui/spinner";
 
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+const ProtectedRoute = ({ children, requireProfileComplete = true }) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -18,6 +18,16 @@ const ProtectedRoute = ({ children }) => {
     // Redirect to signin with the current location as redirectUri
     const redirectUri = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/signin?redirectUri=${redirectUri}`} replace />;
+  }
+
+  // Check if profile is completed (skip for profile-setup page itself)
+  if (
+    requireProfileComplete &&
+    user &&
+    !user.profileCompleted &&
+    location.pathname !== "/profile-setup"
+  ) {
+    return <Navigate to="/profile-setup" replace />;
   }
 
   return children;

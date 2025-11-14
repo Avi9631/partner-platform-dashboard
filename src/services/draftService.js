@@ -28,7 +28,7 @@ export const draftApi = {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ id: draftId, ...draftData }),
+      body: JSON.stringify({ draftId: draftId, ...draftData }),
     });
     
     if (!response.ok) {

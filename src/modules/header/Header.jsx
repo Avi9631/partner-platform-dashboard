@@ -54,7 +54,7 @@ export default function Header() {
 
         {/* Right-side user menu */}
         <div className="hidden md:flex items-center gap-2 ml-auto">
-           <NavigationMenuDemo />
+           {/* <NavigationMenuDemo /> */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Avatar className="w-10 h-10 cursor-pointer shadow-sm hover:shadow-xl">
@@ -89,7 +89,7 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="p-4 w-64">
               <div className="flex flex-col gap-4 mt-4">
-                <NavigationMenuDemo orientation={"vertical"} />
+                {/* <NavigationMenuDemo orientation={"vertical"} /> */}
                 <div className="pt-4 border-t">
                   <div className="flex items-center gap-2 mb-2">
                     <Avatar className="w-8 h-8">

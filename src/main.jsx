@@ -6,10 +6,11 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "./components/ui/toaster.jsx";
 import AuthLayout from "./components/AuthLayout.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import SignIn from "./pages/SignIn.jsx";
+import SignIn from "./modules/SignIn.jsx";
+import ProfileSetup from "./modules/ProfileSetup/index.jsx";
 import ListPropertyV2 from "./modules/ListPropertyV2.jsx";
-import ListProjectV2Page from "./modules/ListProjectV2.jsx";
-import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
+// import ListProjectV2Page from "./modules/ListProjectV2.jsx";
+// import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
 import Dashboard from "./Dashboard.jsx";
 
 const router = createBrowserRouter([
@@ -20,6 +21,14 @@ const router = createBrowserRouter([
       {
         path: "signin",
         element: <SignIn />,
+      },
+      {
+        path: "profile-setup",
+        element: (
+          <ProtectedRoute requireProfileComplete={false}>
+            <ProfileSetup />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/",
@@ -33,14 +42,14 @@ const router = createBrowserRouter([
         index: true,
         element: < Dashboard/>,
       },
-          {
-            path: "list-developer",
-            element: <ListDeveloperV2Page />,
-          },
-          {
-            path: "list-project",
-            element: <ListProjectV2Page />,  
-          },
+          // {
+          //   path: "list-developer",
+          //   element: <ListDeveloperV2Page />,
+          // },
+          // {
+          //   path: "list-project",
+          //   element: <ListProjectV2Page />,  
+          // },
           {
             path: "list-property",
             element: <ListPropertyV2 />,  
