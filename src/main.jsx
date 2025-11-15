@@ -16,6 +16,7 @@ import MyProfile from "./pages/MyProfile.jsx";
 import EditProfile from "./pages/EditProfile.jsx";
 import MyBusiness from "./pages/MyBusiness.jsx";
 import EditBusiness from "./pages/EditBusiness.jsx";
+import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
 
 const router = createBrowserRouter([
   {
@@ -46,10 +47,10 @@ const router = createBrowserRouter([
         index: true,
         element: < Dashboard/>,
       },
-          // {
-          //   path: "list-developer",
-          //   element: <ListDeveloperV2Page />,
-          // },
+          {
+            path: "list-developer",
+            element: <ListDeveloperV2Page />,
+          },
           // {
           //   path: "list-project",
           //   element: <ListProjectV2Page />,  

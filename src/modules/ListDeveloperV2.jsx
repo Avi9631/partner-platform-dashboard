@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   PlusCircle, MapPin, Building2, Calendar,
@@ -17,6 +17,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { developerDraftApi } from '@/services/developerDraftService';
+import { useToast } from '@/components/hooks/use-toast';
 
 export default function ListDeveloperV2Page() {
   const [showForm, setShowForm] = useState(false);
@@ -24,14 +26,93 @@ export default function ListDeveloperV2Page() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [currentDraftId, setCurrentDraftId] = useState(null);
+  const [isCreatingDraft, setIsCreatingDraft] = useState(false);
+  const { toast } = useToast();
 
-  // Mock data - Replace with actual API call
-  useEffect(() => {
-    setTimeout(() => {
-      setDevelopers(mockDevelopers);
+  // Fetch developer drafts from API
+  const fetchDevelopers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await developerDraftApi.getUserDeveloperDrafts();
+      
+      if (response.success && response.data) {
+        // Transform API data to match our component structure
+        const transformedDevelopers = response.data.map(draft => ({
+          id: draft.id,
+          name: draft.formData?.developerName || 'Untitled Developer',
+          location: `${draft.formData?.city || 'Location not set'}, ${draft.formData?.state || ''}`.trim(),
+          type: draft.formData?.developerType || 'Not specified',
+          experience: new Date().getFullYear() - (draft.formData?.establishedYear || new Date().getFullYear()),
+          projectsCount: (draft.formData?.totalProjectsCompleted || 0) + (draft.formData?.totalProjectsOngoing || 0),
+          rating: 4.5, // Default rating
+          verified: false, // Default not verified
+          established: draft.formData?.establishedYear || new Date().getFullYear(),
+          specializations: draft.formData?.specializations || [],
+          logo: draft.formData?.logo || null,
+          views: draft.views || 0,
+        }));
+        setDevelopers(transformedDevelopers);
+      } else {
+        setDevelopers([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch developers:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load your developers. Please try again.',
+        variant: 'destructive',
+      });
+      setDevelopers([]);
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [toast]);
+
+  const handleFormClose = (isOpen) => {
+    setShowForm(isOpen);
+    if (!isOpen) {
+      // Reset draft ID and refresh developers when form closes
+      setCurrentDraftId(null);
+      fetchDevelopers();
+    }
+  };
+
+  const handleAddNewDeveloper = async () => {
+    try {
+      setIsCreatingDraft(true);
+      const response = await developerDraftApi.createDeveloperDraft({
+        status: 'draft',
+        formData: {},
+      });
+
+      console.log(response);
+      
+      if (response.success && response.data?.draftId) {
+        setCurrentDraftId(response.data.draftId);
+        setShowForm(true);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to create draft. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create draft:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create draft. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCreatingDraft(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDevelopers();
+  }, [fetchDevelopers]);
 
   const filteredDevelopers = developers.filter(developer => {
     const matchesSearch = developer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -52,11 +133,21 @@ export default function ListDeveloperV2Page() {
             </div>
             <Button
               size="lg"
-              onClick={() => setShowForm(true)}
-              className="h-12 px-8 text-sm font-bold bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:scale-105 transition-all duration-300 self-start md:self-auto"
+              onClick={handleAddNewDeveloper}
+              disabled={isCreatingDraft}
+              className="h-12 px-8 text-sm font-bold bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:scale-105 transition-all duration-300 self-start md:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <PlusCircle className="w-5 h-5 mr-2" />
-              Add New Developer
+              {isCreatingDraft ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Creating Draft...
+                </>
+              ) : (
+                <>
+                  <PlusCircle className="w-5 h-5 mr-2" />
+                  Add New Developer
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -146,7 +237,7 @@ export default function ListDeveloperV2Page() {
             <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
           </div>
         ) : filteredDevelopers.length === 0 ? (
-          <EmptyState searchQuery={searchQuery} onAddNew={() => setShowForm(true)} />
+          <EmptyState searchQuery={searchQuery} onAddNew={handleAddNewDeveloper} isCreating={isCreatingDraft} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
@@ -158,7 +249,7 @@ export default function ListDeveloperV2Page() {
         )}
       </div>
 
-      <DeveloperFormSheetV2 open={showForm} onOpenChange={setShowForm} />
+      <DeveloperFormSheetV2 open={showForm} onOpenChange={handleFormClose} initialDraftId={currentDraftId} />
     </div>
   );
 }
@@ -362,7 +453,7 @@ function DeveloperCard({ developer, index }) {
 }
 
 // Empty State Component
-function EmptyState({ searchQuery, onAddNew }) {
+function EmptyState({ searchQuery, onAddNew, isCreating }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -384,10 +475,20 @@ function EmptyState({ searchQuery, onAddNew }) {
         <Button
           size="lg"
           onClick={onAddNew}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
+          disabled={isCreating}
+          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <PlusCircle className="w-5 h-5 mr-2" />
-          Add Your First Developer
+          {isCreating ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            <>
+              <PlusCircle className="w-5 h-5 mr-2" />
+              Add Your First Developer
+            </>
+          )}
         </Button>
       )}
     </motion.div>

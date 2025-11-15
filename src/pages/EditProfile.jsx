@@ -14,7 +14,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/hooks/use-toast";
 import { apiCall } from "@/lib/apiClient";
-import { ArrowLeft, Save, User, Phone, MapPin, Briefcase } from "lucide-react";
+import { ArrowLeft, Save, User, Phone, MapPin, Briefcase, AlertCircle, Info } from "lucide-react";
 import LocationPicker from "@/components/maps/LocationPicker";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
@@ -209,10 +209,10 @@ export default function EditProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen   ">
       {/* Header Section */}
       <div className="bg-gradient-to-r from-orange-600 via-orange-700 to-orange-800 text-white shadow-xl">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
@@ -230,7 +230,7 @@ export default function EditProfile() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-12">
+      <form onSubmit={handleSubmit} className=" mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-12">
         {/* Personal Information Section */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-6">
@@ -240,10 +240,11 @@ export default function EditProfile() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Personal Information</h2>
           </div>
           
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8 space-y-6">
+          <div className="  space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <Label htmlFor="firstName" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <User className="h-4 w-4" />
                   First Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -254,12 +255,16 @@ export default function EditProfile() {
                   className={`h-12 ${errors.firstName ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                 />
                 {errors.firstName && (
-                  <p className="text-sm text-red-500">{errors.firstName}</p>
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.firstName}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <Label htmlFor="lastName" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <User className="h-4 w-4" />
                   Last Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -270,13 +275,17 @@ export default function EditProfile() {
                   className={`h-12 ${errors.lastName ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                 />
                 {errors.lastName && (
-                  <p className="text-sm text-red-500">{errors.lastName}</p>
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.lastName}
+                  </p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <Phone className="h-4 w-4" />
                 Phone Number <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -288,12 +297,16 @@ export default function EditProfile() {
                 className={`h-12 ${errors.phone ? "border-red-500 focus-visible:ring-red-500" : ""}`}
               />
               {errors.phone && (
-                <p className="text-sm text-red-500">{errors.phone}</p>
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.phone}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="accountType" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              <Label htmlFor="accountType" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
                 Account Type <span className="text-red-500">*</span>
               </Label>
               <Select
@@ -315,22 +328,26 @@ export default function EditProfile() {
         {/* Location Information Section */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
-              <ArrowLeft className="w-6 h-6 text-white rotate-90" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30">
+              <MapPin className="w-6 h-6 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Location Information</h2>
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8 space-y-6">
-            <div className="bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
-              <p className="text-sm text-orange-800 dark:text-orange-200">
-                <strong>Note:</strong> Location fields are read-only and cannot be edited from this page.
-              </p>
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/30 border-2 border-orange-200 dark:border-orange-800 rounded-xl p-4">
+              <div className="flex gap-3">
+                <Info className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-orange-800 dark:text-orange-200">
+                  <strong>Note:</strong> Location fields are read-only and cannot be edited from this page. They are automatically populated based on your profile setup.
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="latitude" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <Label htmlFor="latitude" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
                   Latitude
                 </Label>
                 <Input
@@ -340,16 +357,20 @@ export default function EditProfile() {
                   placeholder="e.g., 40.7128"
                   value={formData.latitude}
                   onChange={(e) => handleChange("latitude", e.target.value)}
-                  className="h-12 bg-gray-50 dark:bg-gray-800 cursor-not-allowed"
+                  className="h-12 bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-70"
                   readOnly
                 />
                 {errors.latitude && (
-                  <p className="text-sm text-red-500">{errors.latitude}</p>
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.latitude}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="longitude" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <Label htmlFor="longitude" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
                   Longitude
                 </Label>
                 <Input
@@ -359,17 +380,21 @@ export default function EditProfile() {
                   placeholder="e.g., -74.0060"
                   value={formData.longitude}
                   onChange={(e) => handleChange("longitude", e.target.value)}
-                  className="h-12 bg-gray-50 dark:bg-gray-800 cursor-not-allowed"
+                  className="h-12 bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-70"
                   readOnly
                 />
                 {errors.longitude && (
-                  <p className="text-sm text-red-500">{errors.longitude}</p>
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.longitude}
+                  </p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              <Label htmlFor="address" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
                 Address
               </Label>
               <Textarea
@@ -378,7 +403,7 @@ export default function EditProfile() {
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
                 rows={3}
-                className="bg-gray-50 dark:bg-gray-800 cursor-not-allowed"
+                className="bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-70"
                 readOnly
               />
             </div>

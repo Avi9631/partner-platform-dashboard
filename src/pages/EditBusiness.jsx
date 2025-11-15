@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/hooks/use-toast";
 import { apiCall } from "@/lib/apiClient";
-import { ArrowLeft, Save, Building2 } from "lucide-react";
+import { ArrowLeft, Save, Building2, Mail, Phone, MapPin, FileText, AlertCircle, Info } from "lucide-react";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -178,30 +177,40 @@ export default function EditBusiness() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/business-profile")}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="flex items-center gap-3">
-          <Building2 className="h-8 w-8 text-orange-500" />
-          <h1 className="text-3xl font-bold">Edit Business Profile</h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white shadow-xl">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate("/business-profile")}
+              className="hover:bg-white/20 text-white h-10 w-10"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-1">Edit Business Profile</h1>
+              <p className="text-blue-100 text-sm md:text-base">Update your business information and details</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Business Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Business Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-12">
+        {/* Business Information Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Business Information</h2>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8 space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="agencyName">
+              <Label htmlFor="agencyName" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Business Name <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -209,15 +218,19 @@ export default function EditBusiness() {
                 placeholder="Enter your business name"
                 value={formData.agencyName}
                 onChange={(e) => handleChange("agencyName", e.target.value)}
-                className={errors.agencyName ? "border-red-500" : ""}
+                className={`h-12 ${errors.agencyName ? "border-red-500 focus-visible:ring-red-500" : ""}`}
               />
               {errors.agencyName && (
-                <p className="text-sm text-red-500">{errors.agencyName}</p>
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.agencyName}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="agencyRegistrationNumber">
+              <Label htmlFor="agencyRegistrationNumber" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <FileText className="h-4 w-4" />
                 Registration Number (Optional)
               </Label>
               <Input
@@ -227,22 +240,29 @@ export default function EditBusiness() {
                 onChange={(e) =>
                   handleChange("agencyRegistrationNumber", e.target.value)
                 }
+                className="h-12"
               />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                <Info className="h-3 w-3" />
                 Your official business registration or tax ID number
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Contact Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Contact Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        {/* Contact Information Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30">
+              <Mail className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Contact Information</h2>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8 space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="agencyEmail">
+              <Label htmlFor="agencyEmail" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <Mail className="h-4 w-4" />
                 Business Email <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -251,30 +271,40 @@ export default function EditBusiness() {
                 placeholder="contact@yourbusiness.com"
                 value={formData.agencyEmail}
                 onChange={(e) => handleChange("agencyEmail", e.target.value)}
-                className={errors.agencyEmail ? "border-red-500" : ""}
+                className={`h-12 ${errors.agencyEmail ? "border-red-500 focus-visible:ring-red-500" : ""}`}
               />
               {errors.agencyEmail && (
-                <p className="text-sm text-red-500">{errors.agencyEmail}</p>
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.agencyEmail}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="agencyPhone">Business Phone (Optional)</Label>
+              <Label htmlFor="agencyPhone" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                Business Phone (Optional)
+              </Label>
               <Input
                 id="agencyPhone"
                 type="tel"
                 placeholder="+1 (555) 123-4567"
                 value={formData.agencyPhone}
                 onChange={(e) => handleChange("agencyPhone", e.target.value)}
-                className={errors.agencyPhone ? "border-red-500" : ""}
+                className={`h-12 ${errors.agencyPhone ? "border-red-500 focus-visible:ring-red-500" : ""}`}
               />
               {errors.agencyPhone && (
-                <p className="text-sm text-red-500">{errors.agencyPhone}</p>
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.agencyPhone}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="agencyAddress">
+              <Label htmlFor="agencyAddress" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
                 Business Address <span className="text-red-500">*</span>
               </Label>
               <Textarea
@@ -283,63 +313,61 @@ export default function EditBusiness() {
                 value={formData.agencyAddress}
                 onChange={(e) => handleChange("agencyAddress", e.target.value)}
                 rows={4}
-                className={errors.agencyAddress ? "border-red-500" : ""}
+                className={`${errors.agencyAddress ? "border-red-500 focus-visible:ring-red-500" : ""}`}
               />
               {errors.agencyAddress && (
-                <p className="text-sm text-red-500">{errors.agencyAddress}</p>
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.agencyAddress}
+                </p>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Information Notice */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-6">
-            <div className="flex gap-3">
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 border-2 border-blue-200 dark:border-blue-800 rounded-2xl p-6">
+            <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-blue-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                  <Info className="h-5 w-5 text-white" />
+                </div>
               </div>
-              <div className="text-sm text-blue-800">
-                <p className="font-medium mb-1">Verification Required</p>
-                <p>
-                  Your business profile will be submitted for verification after
-                  saving. You&apos;ll be notified once the verification process is
-                  complete.
+              <div className="flex-1">
+                <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Verification Required</p>
+                <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+                  Your business profile will be submitted for verification after saving. You&apos;ll be notified once the verification process is complete. This ensures the authenticity and credibility of all business profiles on our platform.
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 justify-end">
+        <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
           <Button
             type="button"
             variant="outline"
             onClick={() => navigate("/business-profile")}
             disabled={saving}
+            className="h-12 px-8 text-base font-semibold"
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={saving}>
+          <Button 
+            type="submit" 
+            disabled={saving}
+            className="h-12 px-10 text-base font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/30 disabled:opacity-50"
+          >
             {saving ? (
               <>
                 <Spinner size="sm" className="mr-2" />
-                Saving...
+                Saving Changes...
               </>
             ) : (
               <>
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-5 w-5 mr-2" />
                 Save Changes
               </>
             )}
