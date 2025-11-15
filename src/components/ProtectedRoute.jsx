@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children, requireProfileComplete = true }) => {
     return <Navigate to={`/signin?redirectUri=${redirectUri}`} replace />;
   }
 
-  console.log("ProtectedRoute - User:", user, "Profile Completed:", user?.profileCompleted, "Require Profile Complete:", requireProfileComplete, "Current Path:", location.pathname);
+  console.log("ProtectedRoute - User:", user, "Profile Completed:", user?.profileCompleted, "Verification Status:", user?.verificationStatus, "Require Profile Complete:", requireProfileComplete, "Current Path:", location.pathname);
 
   // Check if profile is completed (skip for profile-setup page itself)
   if (
@@ -29,6 +29,7 @@ const ProtectedRoute = ({ children, requireProfileComplete = true }) => {
     !user.profileCompleted &&
     location.pathname !== "/profile-setup"
   ) {
+    // Redirect to profile-setup for both 'initial' and 'pending' verification status
     return <Navigate to="/profile-setup" replace />;
   } else if (
     !requireProfileComplete &&

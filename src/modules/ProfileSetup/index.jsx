@@ -35,6 +35,9 @@ const ProfileSetup = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [workflowId, setWorkflowId] = useState(null);
 
+  // If verification is pending, show only the success screen
+  const isVerificationPending = user?.verificationStatus === 'PENDING';
+
   const [formData, setFormData] = useState({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
@@ -469,12 +472,12 @@ const ProfileSetup = () => {
     }
   };
 
-  // Show success screen after submission
-  if (isSubmitted) {
+  // Show success screen if verification is pending or after submission
+  if (isVerificationPending || isSubmitted) {
     return (
       <div className="h-screen overflow-y-auto p-0 sm:p-4">
         <div className="w-full min-h-screen sm:min-h-0 sm:max-w-2xl sm:mx-auto">
-          <SubmissionSuccess onGoHome={handleGoHome} workflowId={workflowId} />
+          <SubmissionSuccess onGoHome={handleGoHome} workflowId={workflowId || user?.workflowId} />
         </div>
       </div>
     );
