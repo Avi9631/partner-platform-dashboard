@@ -12,6 +12,10 @@ import ListPropertyV2 from "./modules/ListPropertyV2.jsx";
 // import ListProjectV2Page from "./modules/ListProjectV2.jsx";
 // import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
 import Dashboard from "./Dashboard.jsx";
+import MyProfile from "./pages/MyProfile.jsx";
+import EditProfile from "./pages/EditProfile.jsx";
+import MyBusiness from "./pages/MyBusiness.jsx";
+import EditBusiness from "./pages/EditBusiness.jsx";
 
 const router = createBrowserRouter([
   {
@@ -57,6 +61,22 @@ const router = createBrowserRouter([
           {
             path: "list-property-v2",
             element: <ListPropertyV2 />,  
+          },
+          {
+            path: "profile",
+            element: <MyProfile />,
+          },
+          {
+            path: "edit-profile",
+            element: <EditProfile />,
+          },
+          {
+            path: "business-profile",
+            element: <MyBusiness />,
+          },
+          {
+            path: "edit-business",
+            element: <EditBusiness />,
           },
         ],
       },

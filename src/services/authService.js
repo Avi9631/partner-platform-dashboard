@@ -1,35 +1,23 @@
+import { apiFetch, apiCall } from "../lib/apiClient";
+
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 export const authApi = {
   // Check authentication status
   checkStatus: async () => {
-    const response = await fetch(`${backendUrl}/auth/status`, {
-      credentials: "include",
-    });
-    if (!response.ok) {
-      throw new Error("Not authenticated");
-    }
-    return response.json();
+    return apiCall(`${backendUrl}/auth/status`);
   },
 
   // Refresh access token
   refreshToken: async () => {
-    const response = await fetch(`${backendUrl}/auth/refresh-token`, {
+    return apiCall(`${backendUrl}/auth/refresh-token`, {
       method: "POST",
-      credentials: "include",
     });
-    if (!response.ok) {
-      throw new Error("Token refresh failed");
-    }
-    return response.json();
   },
 
   // Logout
   logout: async () => {
-    const response = await fetch(`${backendUrl}/auth/logout`, {
-      credentials: "include",
-    });
-    return response;
+    return apiFetch(`${backendUrl}/auth/logout`);
   },
 
   // Get Google OAuth URL

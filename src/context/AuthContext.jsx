@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../lib/apiClient";
 
 export const AuthContext = createContext(null);
 
@@ -13,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       // Call backend logout endpoint
-      await fetch(`${backendUrl}/auth/logout`, {
+      await apiFetch(`${backendUrl}/auth/logout`, {
         credentials: "include",
       });
     } catch (error) {
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }) => {
   // Check authentication status on mount and periodically
   const checkAuthStatus = useCallback(async () => {
     try {
-      const response = await fetch(`${backendUrl}/auth/status`, {
+      const response = await apiFetch(`${backendUrl}/auth/status`, {
         credentials: "include",
       });
 
@@ -52,36 +53,21 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkAuthStatus();
 
-    // Check auth status every 5 minutes
+    // Check auth status every 5 minutes to detect session changes
+    // (e.g., logout from another tab, server-side session invalidation)
     const interval = setInterval(checkAuthStatus, 5 * 60 * 1000);
 
-    return () => clearInterval(interval);
-  }, [checkAuthStatus]);
+    // Listen for logout events from apiClient
+    const handleLogout = () => {
+      logout();
+    };
+    window.addEventListener("auth:logout", handleLogout);
 
-  // Auto-refresh token before it expires
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    // Refresh token every 25 minutes (before 30 min expiry)
-    const refreshInterval = setInterval(async () => {
-      try {
-        const response = await fetch(`${backendUrl}/auth/refresh-token`, {
-          method: "POST",
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          // Token refresh failed, logout user
-          logout();
-        }
-      } catch (error) {
-        console.error("Token refresh failed:", error);
-        logout();
-      }
-    }, 25 * 60 * 1000);
-
-    return () => clearInterval(refreshInterval);
-  }, [isAuthenticated, backendUrl, logout]);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("auth:logout", handleLogout);
+    };
+  }, [checkAuthStatus, logout]);
 
   const value = {
     user,

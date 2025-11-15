@@ -8,14 +8,6 @@ import {
 import NavigationMenuDemo from "./nav-menu.jsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -55,28 +47,61 @@ export default function Header() {
         {/* Right-side user menu */}
         <div className="hidden md:flex items-center gap-2 ml-auto">
            {/* <NavigationMenuDemo /> */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <Sheet>
+            <SheetTrigger asChild>
               <Avatar className="w-10 h-10 cursor-pointer shadow-sm hover:shadow-xl">
                 <AvatarFallback className="text-lg sm:text-lg bg-black text-white font-bold">
                   {getInitials(user?.userEmail)}
                 </AvatarFallback>
               </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">My Account</span>
-                  <span className="text-xs text-gray-500">{user?.userEmail}</span>
+            </SheetTrigger>
+            <SheetContent side="right" className="p-6 w-80">
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col items-center gap-3 pb-4 border-b">
+                  <Avatar className="w-16 h-16">
+                    <AvatarFallback className="text-2xl bg-black text-white font-bold">
+                      {getInitials(user?.userEmail)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col items-center">
+                    <span className="text-sm font-medium">My Account</span>
+                    <span className="text-xs text-gray-500">{user?.userEmail}</span>
+                  </div>
                 </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      window.location.href = '/profile';
+                    }}
+                  >
+                    My Profile
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      window.location.href = '/business-profile';
+                    }}
+                  >
+                    My Business Profile
+                  </Button>
+                  
+                  <Button
+                    onClick={logout}
+                    variant="destructive"
+                    className="w-full justify-start mt-4"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         {/* Mobile Hamburger */}
@@ -91,7 +116,7 @@ export default function Header() {
               <div className="flex flex-col gap-4 mt-4">
                 {/* <NavigationMenuDemo orientation={"vertical"} /> */}
                 <div className="pt-4 border-t">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-4">
                     <Avatar className="w-8 h-8">
                       <AvatarFallback className="text-sm bg-black text-white font-bold">
                         {getInitials(user?.userEmail)}
@@ -99,14 +124,37 @@ export default function Header() {
                     </Avatar>
                     <span className="text-sm text-gray-600">{user?.userEmail}</span>
                   </div>
-                  <Button
-                    onClick={logout}
-                    variant="destructive"
-                    className="w-full mt-2"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </Button>
+                  
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        window.location.href = '/profile';
+                      }}
+                    >
+                      My Profile
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        window.location.href = '/business-profile';
+                      }}
+                    >
+                      My Business Profile
+                    </Button>
+                    
+                    <Button
+                      onClick={logout}
+                      variant="destructive"
+                      className="w-full mt-2"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </Button>
+                  </div>
                 </div>
               </div>
             </SheetContent>
