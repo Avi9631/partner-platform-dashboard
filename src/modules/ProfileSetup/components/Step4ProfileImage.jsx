@@ -37,7 +37,7 @@ const Step4ProfileImage = ({
         {formData.profileVideoPreview ? (
           // Show recorded video preview
           <div className="relative">
-            <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-green-400 bg-gray-900 shadow-lg">
+            <div className="w-64 h-64 rounded-lg overflow-hidden border-4 border-green-400 bg-gray-900 shadow-lg">
               <video
                 src={formData.profileVideoPreview}
                 className="w-full h-full object-cover"
@@ -45,15 +45,16 @@ const Step4ProfileImage = ({
               />
             </div>
             <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-              <span className="bg-green-500 text-white text-xs px-3 py-1 rounded-full">
-                ✓ Recorded
+              <span className="bg-green-500 text-white text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                <Video className="w-3 h-3" />
+                Video Recorded
               </span>
             </div>
           </div>
         ) : isCameraActive ? (
-          // Show live camera feed in circular frame
+          // Show live camera feed
           <div className="relative">
-            <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-blue-400 bg-gray-900 shadow-lg">
+            <div className="w-64 h-64 rounded-lg overflow-hidden border-4 border-blue-400 bg-gray-900 shadow-lg">
               <video
                 ref={videoRef}
                 autoPlay
@@ -76,7 +77,7 @@ const Step4ProfileImage = ({
             <div className="mt-3 text-center">
               {!isRecording ? (
                 <p className="text-xs text-blue-600 bg-blue-50 inline-block px-3 py-1 rounded-full border border-blue-200">
-                  {cameraLoading ? "Loading camera..." : "Position yourself in the circle"}
+                  {cameraLoading ? "Loading camera..." : "Position yourself in the frame"}
                 </p>
               ) : (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-full max-w-sm">
@@ -97,8 +98,8 @@ const Step4ProfileImage = ({
           </div>
         ) : (
           // Show placeholder when camera is not active
-          <div className="w-48 h-48 rounded-full bg-gray-100 flex items-center justify-center border-4 border-gray-200">
-            <User className="w-24 h-24 text-gray-400" />
+          <div className="w-64 h-64 rounded-lg bg-gray-100 flex items-center justify-center border-4 border-gray-200">
+            <User className="w-32 h-32 text-gray-400" />
           </div>
         )}
 
@@ -134,9 +135,14 @@ const Step4ProfileImage = ({
             </Button>
           )}
 
-          {isCameraActive && !isRecording && (
+          {isCameraActive && !isRecording && !formData.profileVideoPreview && (
             <>
-              <Button type="button" onClick={startRecording} className="w-full bg-red-600 hover:bg-red-700">
+              <Button
+                type="button"
+                onClick={startRecording}
+                className="w-full bg-red-600 hover:bg-red-700"
+                disabled={cameraLoading}
+              >
                 <Video className="mr-2 h-4 w-4" />
                 Start Recording
               </Button>
@@ -153,7 +159,11 @@ const Step4ProfileImage = ({
           )}
 
           {isRecording && (
-            <Button type="button" onClick={stopRecording} className="w-full bg-green-600 hover:bg-green-700">
+            <Button
+              type="button"
+              onClick={stopRecording}
+              className="w-full bg-green-600 hover:bg-green-700"
+            >
               <Video className="mr-2 h-4 w-4" />
               Stop Recording
             </Button>
@@ -172,15 +182,22 @@ const Step4ProfileImage = ({
           )}
         </div>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 w-full">
-          <p className="text-xs text-gray-600 text-center mb-2">
-            <strong>Instructions:</strong>
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 w-full space-y-2">
+          <p className="text-xs font-semibold text-gray-700 text-center">
+            Video Requirements:
           </p>
           <ul className="text-xs text-gray-600 space-y-1">
             <li>• Ensure your face is clearly visible and well-lit</li>
             <li>• Follow the head movement instructions during recording</li>
             <li>• Recording will be approximately 5-10 seconds</li>
           </ul>
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 w-full">
+          <p className="text-xs text-yellow-800 text-center">
+            <strong>Privacy Notice:</strong> This video is used only for verification 
+            purposes and will be stored securely according to our privacy policy.
+          </p>
         </div>
       </div>
     </div>

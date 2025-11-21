@@ -211,7 +211,7 @@ const response = await fetch(`${backendUrl}/partnerBusiness/register`, {
   businessAddress: TEXT,
   businessEmail: STRING(100),
   businessPhone: JSONB, // Array of phone objects
-  verificationStatus: ENUM('PENDING', 'VERIFIED', 'REJECTED'),
+  verificationStatus: ENUM('PENDING', 'APPROVED', 'REJECTED'),
   ownerVideoUrl: STRING, // Path to stored video
   // ... timestamp fields
 }

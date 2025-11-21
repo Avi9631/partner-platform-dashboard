@@ -206,7 +206,7 @@ Based on `PartnerBusiness.entity.js`, the backend expects:
   businessAddress: TEXT,
   businessEmail: STRING(100),
   businessPhone: JSONB, // Stores array of phone objects
-  verificationStatus: ENUM('PENDING', 'VERIFIED', 'REJECTED'),
+  verificationStatus: ENUM('PENDING', 'APPROVED', 'REJECTED'),
   ownerVideoUrl: STRING, // Path to stored verification video
   // ... other fields
 }
