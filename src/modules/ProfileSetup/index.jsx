@@ -15,7 +15,6 @@ import { Loader2, FileCheck } from "lucide-react";
 // Import step components
 import StepIndicator from "./components/StepIndicator";
 import Step1PersonalInfo from "./components/Step1PersonalInfo";
-import Step2AgencyInfo from "./components/Step2AgencyInfo";
 import Step2PhoneVerification from "./components/Step2PhoneVerification";
 import Step3Location from "./components/Step3Location";
 import Step4ProfileImage from "./components/Step4ProfileImage";
@@ -42,17 +41,10 @@ const ProfileSetup = () => {
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
     phone: user?.phone || "",
-    accountType: user?.accountType || "INDIVIDUAL",
+    // accountType: user?.accountType || "INDIVIDUAL",
     phoneVerified: false,
     otp: "",
     generatedOtp: "",
-    // Agency fields
-    agencyName: "",
-    agencyRegistrationNumber: "",
-    agencyAddress: "",
-    agencyEmail: "",
-    agencyPhone: "",
-    agencyWebsite: "",
     location: {
       latitude: null,
       longitude: null,
@@ -64,8 +56,7 @@ const ProfileSetup = () => {
   const [errors, setErrors] = useState({});
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-  const isAgency = formData.accountType === "AGENCY";
-  const totalSteps = isAgency ? 5 : 4;
+  const totalSteps = 4;
 
   // Custom hooks
   const camera = useCamera(toast);
@@ -89,34 +80,8 @@ const ProfileSetup = () => {
       }
     }
 
-    // Agency Information Step (only for AGENCY account type)
-    if (step === 2 && isAgency) {
-      if (!formData.agencyName?.trim()) {
-        newErrors.agencyName = "Agency name is required";
-      }
-      if (!formData.agencyRegistrationNumber?.trim()) {
-        newErrors.agencyRegistrationNumber = "Registration number is required";
-      }
-      if (!formData.agencyAddress?.trim()) {
-        newErrors.agencyAddress = "Agency address is required";
-      }
-      if (!formData.agencyEmail?.trim()) {
-        newErrors.agencyEmail = "Agency email is required";
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.agencyEmail)) {
-        newErrors.agencyEmail = "Invalid email format";
-      }
-      if (!formData.agencyPhone?.trim()) {
-        newErrors.agencyPhone = "Agency phone is required";
-      } else if (!/^[+]?[\d\s\-()]+$/.test(formData.agencyPhone)) {
-        newErrors.agencyPhone = "Invalid phone number format";
-      }
-      if (formData.agencyWebsite?.trim() && !/^https?:\/\/.+/.test(formData.agencyWebsite)) {
-        newErrors.agencyWebsite = "Invalid website URL";
-      }
-    }
-
     // Phone Verification Step
-    const phoneVerificationStep = isAgency ? 3 : 2;
+    const phoneVerificationStep = 2;
     if (step === phoneVerificationStep) {
       if (!formData.phoneVerified) {
         newErrors.otp = "Please verify your phone number";
@@ -124,7 +89,7 @@ const ProfileSetup = () => {
     }
 
     // Location Step
-    const locationStep = isAgency ? 4 : 3;
+    const locationStep = 3;
     if (step === locationStep) {
       if (!formData.location.latitude || !formData.location.longitude) {
         newErrors.location = "Please capture your current location";
@@ -132,7 +97,7 @@ const ProfileSetup = () => {
     }
 
     // Profile Video Step
-    const profileVideoStep = isAgency ? 5 : 4;
+    const profileVideoStep = 4;
     if (step === profileVideoStep) {
       if (!formData.profileVideo) {
         newErrors.profileVideo = "Please record a verification video";
@@ -147,15 +112,6 @@ const ProfileSetup = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-
-    // Reset to step 1 if account type changes and user is past step 1
-    if (field === "accountType" && currentStep > 1) {
-      setCurrentStep(1);
-      toast({
-        title: "Account Type Changed",
-        description: "Please review all steps with your new account type.",
-      });
     }
   };
 
@@ -172,8 +128,7 @@ const ProfileSetup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const finalStep = isAgency ? 5 : 4;
-    if (!validateStep(finalStep)) {
+    if (!validateStep(4)) {
       return;
     }
 
@@ -184,23 +139,11 @@ const ProfileSetup = () => {
       submitData.append("firstName", formData.firstName);
       submitData.append("lastName", formData.lastName);
       submitData.append("phone", formData.phone);
-      submitData.append("accountType", formData.accountType);
+      // submitData.append("accountType", formData.accountType);
       submitData.append("latitude", formData.location.latitude);
       submitData.append("longitude", formData.location.longitude);
       submitData.append("address", formData.location.address);
       submitData.append("completeProfile", "true");
-
-      // Add agency data if account type is AGENCY
-      if (isAgency) {
-        submitData.append("agencyName", formData.agencyName);
-        submitData.append("agencyRegistrationNumber", formData.agencyRegistrationNumber);
-        submitData.append("agencyAddress", formData.agencyAddress);
-        submitData.append("agencyEmail", formData.agencyEmail);
-        submitData.append("agencyPhone", formData.agencyPhone);
-        if (formData.agencyWebsite) {
-          submitData.append("agencyWebsite", formData.agencyWebsite);
-        }
-      }
 
       if (formData.profileVideo) {
         submitData.append("profileVideo", formData.profileVideo);
@@ -319,156 +262,73 @@ const ProfileSetup = () => {
   };
 
   const getStepTitle = () => {
-    if (isAgency) {
-      switch (currentStep) {
-        case 1:
-          return "Personal Information";
-        case 2:
-          return "Agency Information";
-        case 3:
-          return "Phone Verification";
-        case 4:
-          return "Location";
-        case 5:
-          return "Profile Image";
-        default:
-          return "";
-      }
-    } else {
-      switch (currentStep) {
-        case 1:
-          return "Personal Information";
-        case 2:
-          return "Phone Verification";
-        case 3:
-          return "Location";
-        case 4:
-          return "Profile Image";
-        default:
-          return "";
-      }
+    switch (currentStep) {
+      case 1:
+        return "Personal Information";
+      case 2:
+        return "Phone Verification";
+      case 3:
+        return "Location";
+      case 4:
+        return "Profile Image";
+      default:
+        return "";
     }
   };
 
   const renderCurrentStep = () => {
-    if (isAgency) {
-      // Agency flow: Personal Info -> Agency Info -> Phone -> Location -> Profile Image
-      switch (currentStep) {
-        case 1:
-          return (
-            <Step1PersonalInfo
-              formData={formData}
-              errors={errors}
-              handleChange={handleChange}
-            />
-          );
-        case 2:
-          return (
-            <Step2AgencyInfo
-              formData={formData}
-              errors={errors}
-              handleChange={handleChange}
-            />
-          );
-        case 3:
-          return (
-            <Step2PhoneVerification
-              formData={formData}
-              errors={errors}
-              otpSent={phoneVerification.otpSent}
-              otpLoading={phoneVerification.otpLoading}
-              handleChange={handleChange}
-              sendOtp={handleSendOtp}
-              verifyOtp={handleVerifyOtp}
-              resendOtp={handleResendOtp}
-            />
-          );
-        case 4:
-          return (
-            <Step3Location
-              formData={formData}
-              errors={errors}
-              locationLoading={location.locationLoading}
-              captureLocation={handleCaptureLocation}
-            />
-          );
-        case 5:
-          return (
-            <Step4ProfileImage
-              formData={formData}
-              errors={errors}
-              isCameraActive={camera.isCameraActive}
-              cameraLoading={camera.cameraLoading}
-              cameraError={camera.cameraError}
-              isRecording={camera.isRecording}
-              recordingTime={camera.recordingTime}
-              videoRef={camera.videoRef}
-              canvasRef={camera.canvasRef}
-              startCamera={camera.startCamera}
-              stopCamera={camera.stopCamera}
-              startRecording={handleStartRecording}
-              stopRecording={handleStopRecording}
-              retakePhoto={handleRetakePhoto}
-            />
-          );
-        default:
-          return null;
-      }
-    } else {
-      // Individual flow: Personal Info -> Phone -> Location -> Profile Image
-      switch (currentStep) {
-        case 1:
-          return (
-            <Step1PersonalInfo
-              formData={formData}
-              errors={errors}
-              handleChange={handleChange}
-            />
-          );
-        case 2:
-          return (
-            <Step2PhoneVerification
-              formData={formData}
-              errors={errors}
-              otpSent={phoneVerification.otpSent}
-              otpLoading={phoneVerification.otpLoading}
-              handleChange={handleChange}
-              sendOtp={handleSendOtp}
-              verifyOtp={handleVerifyOtp}
-              resendOtp={handleResendOtp}
-            />
-          );
-        case 3:
-          return (
-            <Step3Location
-              formData={formData}
-              errors={errors}
-              locationLoading={location.locationLoading}
-              captureLocation={handleCaptureLocation}
-            />
-          );
-        case 4:
-          return (
-            <Step4ProfileImage
-              formData={formData}
-              errors={errors}
-              isCameraActive={camera.isCameraActive}
-              cameraLoading={camera.cameraLoading}
-              cameraError={camera.cameraError}
-              isRecording={camera.isRecording}
-              recordingTime={camera.recordingTime}
-              videoRef={camera.videoRef}
-              canvasRef={camera.canvasRef}
-              startCamera={camera.startCamera}
-              stopCamera={camera.stopCamera}
-              startRecording={handleStartRecording}
-              stopRecording={handleStopRecording}
-              retakePhoto={handleRetakePhoto}
-            />
-          );
-        default:
-          return null;
-      }
+    switch (currentStep) {
+      case 1:
+        return (
+          <Step1PersonalInfo
+            formData={formData}
+            errors={errors}
+            handleChange={handleChange}
+          />
+        );
+      case 2:
+        return (
+          <Step2PhoneVerification
+            formData={formData}
+            errors={errors}
+            otpSent={phoneVerification.otpSent}
+            otpLoading={phoneVerification.otpLoading}
+            handleChange={handleChange}
+            sendOtp={handleSendOtp}
+            verifyOtp={handleVerifyOtp}
+            resendOtp={handleResendOtp}
+          />
+        );
+      case 3:
+        return (
+          <Step3Location
+            formData={formData}
+            errors={errors}
+            locationLoading={location.locationLoading}
+            captureLocation={handleCaptureLocation}
+          />
+        );
+      case 4:
+        return (
+          <Step4ProfileImage
+            formData={formData}
+            errors={errors}
+            isCameraActive={camera.isCameraActive}
+            cameraLoading={camera.cameraLoading}
+            cameraError={camera.cameraError}
+            isRecording={camera.isRecording}
+            recordingTime={camera.recordingTime}
+            videoRef={camera.videoRef}
+            canvasRef={camera.canvasRef}
+            startCamera={camera.startCamera}
+            stopCamera={camera.stopCamera}
+            startRecording={handleStartRecording}
+            stopRecording={handleStopRecording}
+            retakePhoto={handleRetakePhoto}
+          />
+        );
+      default:
+        return null;
     }
   };
 

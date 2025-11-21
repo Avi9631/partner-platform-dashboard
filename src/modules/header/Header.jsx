@@ -80,15 +80,27 @@ export default function Header() {
                     My Profile
                   </Button>
                   
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      window.location.href = '/business-profile';
-                    }}
-                  >
-                    My Business Profile
-                  </Button>
+                  {user?.accountType === 'BUSINESS' ? (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        window.location.href = '/business-profile';
+                      }}
+                    >
+                      My Business Profile
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200"
+                      onClick={() => {
+                        window.location.href = '/upgrade-to-business';
+                      }}
+                    >
+                      Upgrade to Business Account
+                    </Button>
+                  )}
                   
                   <Button
                     onClick={logout}
@@ -136,15 +148,27 @@ export default function Header() {
                       My Profile
                     </Button>
                     
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => {
-                        window.location.href = '/business-profile';
-                      }}
-                    >
-                      My Business Profile
-                    </Button>
+                    {user?.accountType === 'BUSINESS' ? (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          window.location.href = '/business-profile';
+                        }}
+                      >
+                        My Business Profile
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200"
+                        onClick={() => {
+                          window.location.href = '/upgrade-to-business';
+                        }}
+                      >
+                        Upgrade to Business Account
+                      </Button>
+                    )}
                     
                     <Button
                       onClick={logout}

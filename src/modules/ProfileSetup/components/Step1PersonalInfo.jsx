@@ -60,7 +60,7 @@ const Step1PersonalInfo = ({ formData, errors, handleChange }) => {
         )}
       </div>
 
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label htmlFor="accountType">
           Account Type <span className="text-red-500">*</span>
         </Label>
@@ -73,10 +73,10 @@ const Step1PersonalInfo = ({ formData, errors, handleChange }) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="INDIVIDUAL">Individual</SelectItem>
-            <SelectItem value="AGENCY">Agency</SelectItem>
+            <SelectItem value="BUSINESS">Agency</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </div> */}
     </div>
   );
 };

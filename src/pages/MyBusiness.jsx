@@ -43,7 +43,7 @@ export default function MyBusiness() {
         const userData = userResponse.data.user;
         setUser(userData);
 
-        if (userData.accountType === "AGENCY" && userResponse.data.business) {
+        if (userData.accountType === "BUSINESS" && userResponse.data.business) {
           setBusiness(userResponse.data.business);
         }
       } catch (error) {
@@ -101,7 +101,7 @@ export default function MyBusiness() {
   }
 
   // If not an agency account
-  if (!user || user.accountType !== "AGENCY") {
+  if (!user || user.accountType !== "BUSINESS") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center p-4">
         <div className="max-w-2xl w-full">

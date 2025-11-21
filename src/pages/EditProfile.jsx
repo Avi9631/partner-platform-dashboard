@@ -318,7 +318,7 @@ export default function EditProfile() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="INDIVIDUAL">Individual</SelectItem>
-                  <SelectItem value="AGENCY">Agency</SelectItem>
+                  <SelectItem value="BUSINESS">Agency</SelectItem>
                 </SelectContent>
               </Select>
             </div>

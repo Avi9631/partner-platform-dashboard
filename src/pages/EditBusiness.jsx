@@ -42,7 +42,7 @@ export default function EditBusiness() {
         const userData = userResponse.data.user;
         setUser(userData);
 
-        if (userData.accountType !== "AGENCY") {
+        if (userData.accountType !== "BUSINESS") {
           toast({
             variant: "destructive",
             title: "Access Denied",
@@ -140,7 +140,7 @@ export default function EditBusiness() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          accountType: "AGENCY",
+          accountType: "BUSINESS",
           ...formData,
         }),
       });
@@ -172,7 +172,7 @@ export default function EditBusiness() {
   }
 
   // If not an agency account (shouldn't reach here due to redirect in useEffect)
-  if (!user || user.accountType !== "AGENCY") {
+  if (!user || user.accountType !== "BUSINESS") {
     return null;
   }
 
