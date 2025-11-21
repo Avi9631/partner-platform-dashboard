@@ -45,15 +45,17 @@ export const useCamera = (toast) => {
       console.log("Video ref current:", videoRef.current);
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        const videoElement = videoRef.current; // Store reference locally
+        videoElement.srcObject = stream;
         streamRef.current = stream;
 
         console.log("Stream assigned to video element");
 
         // Wait for video to be ready and play
-        videoRef.current.onloadedmetadata = () => {
+        const handleLoadedMetadata = () => {
           console.log("Video metadata loaded");
-          videoRef.current
+          // Use local reference instead of ref
+          videoElement
             .play()
             .then(() => {
               console.log("Video playing successfully");
@@ -73,6 +75,8 @@ export const useCamera = (toast) => {
               });
             });
         };
+
+        videoElement.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
       } else {
         console.error("Video ref is null - video element not mounted!");
         setCameraLoading(false);

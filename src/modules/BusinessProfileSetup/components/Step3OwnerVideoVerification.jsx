@@ -1,0 +1,209 @@
+import { Button } from "../../../components/ui/button";
+import { Loader2, Video, VideoOff, RefreshCw, User, IdCard, ArrowRight, ArrowLeft } from "lucide-react";
+
+const Step3OwnerVideoVerification = ({
+  formData,
+  errors,
+  isCameraActive,
+  cameraLoading,
+  cameraError,
+  isRecording,
+  recordingTime,
+  videoRef,
+  canvasRef,
+  startCamera,
+  stopCamera,
+  startRecording,
+  stopRecording,
+  retakeVideo,
+}) => {
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="text-center mb-6">
+        <IdCard className="w-16 h-16 mx-auto text-blue-600 mb-4" />
+        <h3 className="text-lg font-semibold mb-2">Owner/POC Video Verification</h3>
+        <p className="text-sm text-gray-600">
+          Record a short verification video following the instructions
+        </p>
+      </div>
+
+      <div className="flex flex-col items-center space-y-4">
+        {formData.ownerVideoPreview ? (
+          // Show recorded video preview
+          <div className="relative">
+            <div className="w-64 h-64 rounded-lg overflow-hidden border-4 border-green-400 bg-gray-900 shadow-lg">
+              <video
+                src={formData.ownerVideoPreview}
+                className="w-full h-full object-cover"
+                controls
+              />
+            </div>
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+              <span className="bg-green-500 text-white text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                <Video className="w-3 h-3" />
+                Video Recorded
+              </span>
+            </div>
+          </div>
+        ) : isCameraActive ? (
+          // Show live camera feed
+          <div className="relative">
+            <div className="w-64 h-64 rounded-lg overflow-hidden border-4 border-blue-400 bg-gray-900 shadow-lg">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <canvas ref={canvasRef} className="hidden" />
+            
+            {isRecording && (
+              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                <span className="bg-red-500 text-white text-xs px-3 py-1 rounded-full flex items-center gap-1 animate-pulse">
+                  <span className="w-2 h-2 bg-white rounded-full"></span>
+                  REC {formatTime(recordingTime)}
+                </span>
+              </div>
+            )}
+            
+            <div className="mt-3 text-center">
+              {!isRecording ? (
+                <p className="text-xs text-blue-600 bg-blue-50 inline-block px-3 py-1 rounded-full border border-blue-200">
+                  {cameraLoading ? "Loading camera..." : "Position yourself in the frame"}
+                </p>
+              ) : (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-full max-w-sm">
+                  <p className="text-sm font-semibold text-blue-800 mb-2">Follow these steps:</p>
+                  <div className="space-y-2 text-xs text-blue-700">
+                    <div className="flex items-center gap-2">
+                      <ArrowRight className="w-4 h-4" />
+                      <span>1. Move your head from <strong>left to right</strong></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ArrowLeft className="w-4 h-4" />
+                      <span>2. Move your head from <strong>right to left</strong></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          // Show placeholder when camera is not active
+          <div className="w-64 h-64 rounded-lg bg-gray-100 flex items-center justify-center border-4 border-gray-200">
+            <User className="w-32 h-32 text-gray-400" />
+          </div>
+        )}
+
+        {cameraError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 w-full">
+            <p className="text-sm text-red-700 text-center">{cameraError}</p>
+          </div>
+        )}
+
+        {errors.ownerVideo && (
+          <p className="text-sm text-red-500 text-center">{errors.ownerVideo}</p>
+        )}
+
+        <div className="w-full space-y-2">
+          {!formData.ownerVideoPreview && !isCameraActive && (
+            <Button
+              type="button"
+              onClick={startCamera}
+              className="w-full"
+              disabled={cameraLoading}
+            >
+              {cameraLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Starting Camera...
+                </>
+              ) : (
+                <>
+                  <Video className="mr-2 h-4 w-4" />
+                  Start Camera
+                </>
+              )}
+            </Button>
+          )}
+
+          {isCameraActive && !isRecording && !formData.ownerVideoPreview && (
+            <>
+              <Button
+                type="button"
+                onClick={startRecording}
+                className="w-full bg-red-600 hover:bg-red-700"
+                disabled={cameraLoading}
+              >
+                <Video className="mr-2 h-4 w-4" />
+                Start Recording
+              </Button>
+              <Button
+                type="button"
+                onClick={stopCamera}
+                variant="outline"
+                className="w-full"
+              >
+                <VideoOff className="mr-2 h-4 w-4" />
+                Cancel
+              </Button>
+            </>
+          )}
+
+          {isRecording && (
+            <Button
+              type="button"
+              onClick={stopRecording}
+              className="w-full bg-green-600 hover:bg-green-700"
+            >
+              <Video className="mr-2 h-4 w-4" />
+              Stop Recording
+            </Button>
+          )}
+
+          {formData.ownerVideoPreview && (
+            <Button
+              type="button"
+              onClick={retakeVideo}
+              variant="outline"
+              className="w-full"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Record Again
+            </Button>
+          )}
+        </div>
+
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 w-full space-y-2">
+          <p className="text-xs font-semibold text-gray-700 text-center">
+            Video Requirements:
+          </p>
+          <ul className="text-xs text-gray-600 space-y-1">
+            <li>• Ensure your face is clearly visible and well-lit</li>
+            <li>• Follow the head movement instructions during recording</li>
+            <li>• Recording will be approximately 5-10 seconds</li>
+            <li>• Speak clearly if stating your name or business name</li>
+            <li>• Hold any ID document next to your face (optional)</li>
+          </ul>
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 w-full">
+          <p className="text-xs text-yellow-800 text-center">
+            <strong>Privacy Notice:</strong> This video is used only for business 
+            verification and will be stored securely according to our privacy policy.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Step3OwnerVideoVerification;
