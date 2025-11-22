@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -371,38 +377,41 @@ export default function EditBusiness() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-orange-600 via-orange-700 to-orange-800 text-white shadow-xl">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <div className="flex items-center gap-3 sm:gap-4">
+      <div className="relative bg-gradient-to-br from-orange-600 via-orange-700 to-orange-800 text-white overflow-hidden">
+        <div className="relative mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center gap-6">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => navigate("/business-profile")}
-              className="hover:bg-white/20 text-white h-10 w-10"
+              className="hover:bg-white/20 text-white h-12 w-12 rounded-xl shadow-lg backdrop-blur-sm bg-white/10 border border-white/20"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-1">Edit Business Profile</h1>
-              <p className="text-orange-100 text-sm md:text-base">Update your business information and details</p>
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-2 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">Edit Business Profile</h1>
+              <p className="text-orange-100 text-lg md:text-xl font-medium">Update your business information and details</p>
             </div>
           </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-12">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <form onSubmit={handleSubmit} className=" mx-auto space-y-8">
         {/* Business Information Section */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-orange-100 flex items-center justify-center">
-              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
+        <Card className="mb-6 overflow-hidden">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+                <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <CardTitle className="text-xl sm:text-2xl">Business Information</CardTitle>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Business Information</h2>
-          </div>
+          </CardHeader>
           
-          <div className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 space-y-6">
+          <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="agencyName" className="text-sm font-medium">
                 Business Name <span className="text-destructive">*</span>
@@ -440,19 +449,21 @@ export default function EditBusiness() {
                 Your official business registration or tax ID number
               </p>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Contact Information Section */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-orange-100 flex items-center justify-center">
-              <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
+        <Card className="mb-6 overflow-hidden">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <CardTitle className="text-xl sm:text-2xl">Contact Information</CardTitle>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Contact Information</h2>
-          </div>
+          </CardHeader>
 
-          <div className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 space-y-6">
+          <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="agencyEmail" className="text-sm font-medium flex items-center gap-2">
                 <Mail className="h-4 w-4" />
@@ -638,12 +649,12 @@ export default function EditBusiness() {
                 </p>
               )}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Information Notice */}
-        <div className="mb-6">
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <Card className="mb-6 border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800">
+          <CardContent className="p-4">
             <div className="flex gap-3">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
@@ -657,8 +668,8 @@ export default function EditBusiness() {
                 </p>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-end pt-4">
@@ -690,6 +701,7 @@ export default function EditBusiness() {
           </Button>
         </div>
       </form>
+      </div>
     </div>
   );
 }

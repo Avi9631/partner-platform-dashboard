@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -209,38 +215,41 @@ export default function EditProfile() {
   }
 
   return (
-    <div className="min-h-screen   ">
+    <div className="min-h-screen ">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-orange-600 via-orange-700 to-orange-800 text-white shadow-xl">
-        <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="flex items-center gap-4">
+      <div className="relative bg-gradient-to-br from-orange-600 via-orange-700 to-orange-800 text-white overflow-hidden">
+        <div className="relative mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center gap-6">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => navigate("/profile")}
-              className="hover:bg-white/20 text-white h-10 w-10"
+              className="hover:bg-white/20 text-white h-12 w-12 rounded-xl shadow-lg backdrop-blur-sm bg-white/10 border border-white/20"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold mb-1">Edit Profile</h1>
-              <p className="text-orange-100 text-sm md:text-base">Update your personal information and settings</p>
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-2 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">Edit Profile</h1>
+              <p className="text-orange-100 text-lg md:text-xl font-medium">Update your personal information and settings</p>
             </div>
           </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className=" mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-12">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Personal Information Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
-              <Save className="w-6 h-6 text-white" />
+        <Card className="mb-8 overflow-hidden">
+          <CardHeader className="pb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <CardTitle className="text-2xl">Personal Information</CardTitle>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Personal Information</h2>
-          </div>
+          </CardHeader>
           
-          <div className="  space-y-6">
+          <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="firstName" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
@@ -322,19 +331,21 @@ export default function EditProfile() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Location Information Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30">
-              <MapPin className="w-6 h-6 text-white" />
+        <Card className="mb-8 overflow-hidden">
+          <CardHeader className="pb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30">
+                <MapPin className="w-6 h-6 text-white" />
+              </div>
+              <CardTitle className="text-2xl">Location Information</CardTitle>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Location Information</h2>
-          </div>
+          </CardHeader>
 
-          <div className="space-y-6">
+          <CardContent className="space-y-6">
             <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/30 border-2 border-orange-200 dark:border-orange-800 rounded-xl p-4">
               <div className="flex gap-3">
                 <Info className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
@@ -407,8 +418,8 @@ export default function EditProfile() {
                 readOnly
               />
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
@@ -440,6 +451,7 @@ export default function EditProfile() {
           </Button>
         </div>
       </form>
+      </div>
     </div>
   );
 }

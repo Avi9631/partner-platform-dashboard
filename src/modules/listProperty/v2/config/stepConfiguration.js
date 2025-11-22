@@ -11,7 +11,6 @@
 
 import PropertyTypeStepV2 from '../components/steps/PropertyTypeStepV2';
 import LocationSelectionStepV2 from '../components/steps/LocationSelectionStepV2';
-import GeoTagStepV2 from '../components/steps/GeoTagStepV2';
 import BasicDetailsStepV2 from '../components/steps/BasicDetailsStepV2';
 import BasicConfigurationStepV2 from '../components/steps/BasicConfigurationStepV2';
 import AreaDetailsStepV2 from '../components/steps/AreaDetailsStepV2';
@@ -74,20 +73,12 @@ const CORE_STEPS = [
     order: 1,
   },
   {
-    id: 'geo-tag',
-    name: 'Geo Tag',
-    component: GeoTagStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: (formData) => !!formData.propertyType,
-    order: 2,
-  },
-  {
     id: 'basic-details',
     name: 'Basic Details',
     component: BasicDetailsStepV2,
     category: STEP_CATEGORIES.CORE,
     isVisible: (formData) => !!formData.propertyType,
-    order: 3,
+    order: 2,
   },
   {
     id: 'pricing',
@@ -95,7 +86,7 @@ const CORE_STEPS = [
     component: PricingStepV2,
     category: STEP_CATEGORIES.CORE,
     isVisible: (formData) => !!formData.propertyType,
-    order: 10,
+    order: 9,
   },
   {
     id: 'listing-info',
@@ -103,7 +94,7 @@ const CORE_STEPS = [
     component: ListingInfoStepV2,
     category: STEP_CATEGORIES.CORE,
     isVisible: (formData) => !!formData.propertyType,
-    order: 12,
+    order: 11,
   },
   {
     id: 'amenities',
@@ -111,7 +102,7 @@ const CORE_STEPS = [
     component: AmenitiesStepV2,
     category: STEP_CATEGORIES.CORE,
     isVisible: (formData) => !!formData.propertyType,
-    order: 13,
+    order: 12,
   },
   {
     id: 'review-submit',
@@ -119,7 +110,7 @@ const CORE_STEPS = [
     component: ReviewAndSubmitV2,
     category: STEP_CATEGORIES.CORE,
     isVisible: (formData) => !!formData.propertyType,
-    order: 14,
+    order: 13,
   },
 ];
 
@@ -133,7 +124,7 @@ const BUILDING_STEPS = [
     component: BasicConfigurationStepV2,
     category: STEP_CATEGORIES.BUILDING,
     isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-    order: 4,
+    order: 3,
   },
   {
     id: 'area-details',
@@ -141,7 +132,7 @@ const BUILDING_STEPS = [
     component: AreaDetailsStepV2,
     category: STEP_CATEGORIES.BUILDING,
     isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-    order: 5,
+    order: 4,
   },
   {
     id: 'furnishing',
@@ -149,7 +140,7 @@ const BUILDING_STEPS = [
     component: FurnishingStepV2,
     category: STEP_CATEGORIES.BUILDING,
     isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-    order: 6,
+    order: 5,
   },
   {
     id: 'parking',
@@ -157,7 +148,7 @@ const BUILDING_STEPS = [
     component: ParkingStepV2,
     category: STEP_CATEGORIES.BUILDING,
     isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-    order: 7,
+    order: 6,
   },
   {
     id: 'location-attributes',
@@ -165,7 +156,7 @@ const BUILDING_STEPS = [
     component: LocationStepV2,
     category: STEP_CATEGORIES.BUILDING,
     isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-    order: 8,
+    order: 7,
   },
   {
     id: 'floor-details',
@@ -174,7 +165,7 @@ const BUILDING_STEPS = [
     category: STEP_CATEGORIES.BUILDING,
     // Only for apartments and penthouses
     isVisible: (formData) => PROPERTY_GROUPS.APARTMENT_LIKE.includes(formData.propertyType),
-    order: 9,
+    order: 8,
   },
   {
     id: 'suitable-for',
@@ -183,7 +174,7 @@ const BUILDING_STEPS = [
     category: STEP_CATEGORIES.BUILDING,
     // Only visible for rent/lease, hidden for sale
     isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType) && formData.listingType !== 'sale',
-    order: 11,
+    order: 10,
   },
 ];
 
@@ -197,7 +188,7 @@ const LAND_STEPS = [
     component: LandAttributesStepV2,
     category: STEP_CATEGORIES.LAND,
     isVisible: (formData) => PROPERTY_GROUPS.LAND.includes(formData.propertyType),
-    order: 4,
+    order: 3,
   },
 ];
 

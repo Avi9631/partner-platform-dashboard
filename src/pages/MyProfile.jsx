@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -20,15 +19,17 @@ import {
   Edit,
   CheckCircle,
   Clock,
-  XCircle,
   User,
   Calendar,
   Shield,
-  Video,
-  Image as ImageIcon,
   Building2,
   Hash,
   Globe,
+  Video,
+  Award,
+  AlertCircle,
+  UserCheck,
+  FileText,
 } from "lucide-react";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
@@ -64,41 +65,6 @@ export default function MyProfile() {
     };
     loadProfile();
   }, [toast]);
-
-  const getVerificationBadge = (status) => {
-    const badges = {
-      INITIAL: {
-        variant: "secondary",
-        icon: Clock,
-        label: "Not Submitted",
-      },
-      PENDING: {
-        variant: "default",
-        icon: Clock,
-        label: "Pending Review",
-      },
-      APPROVED: {
-        variant: "success",
-        icon: CheckCircle,
-        label: "Verified",
-      },
-      REJECTED: {
-        variant: "destructive",
-        icon: XCircle,
-        label: "Rejected",
-      },
-    };
-
-    const badge = badges[status] || badges.INITIAL;
-    const Icon = badge.icon;
-
-    return (
-      <Badge variant={badge.variant} className="flex items-center gap-1">
-        <Icon className="h-3 w-3" />
-        {badge.label}
-      </Badge>
-    );
-  };
 
   const getInitials = (firstName, lastName) => {
     if (!firstName && !lastName) return "U";
@@ -165,16 +131,9 @@ export default function MyProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+    <div className="min-h-screen  ">
       {/* Hero Section with Profile Header */}
       <div className="relative bg-gradient-to-br from-orange-600 via-orange-700 to-orange-800 text-white overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30"></div>
-
-        {/* Gradient Orbs */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/30 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-400/20 rounded-full blur-3xl"></div>
 
         <div className="relative  mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
@@ -194,6 +153,13 @@ export default function MyProfile() {
                   </AvatarFallback>
                 )}
               </Avatar>
+              
+              {/* Verification Badge */}
+              {user.verificationStatus === 'APPROVED' && (
+                <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-2 border-4 border-white shadow-lg">
+                  <UserCheck className="h-5 w-5 text-white" />
+                </div>
+              )}
        
             </div>
 
@@ -211,18 +177,21 @@ export default function MyProfile() {
                 )}
               </div>
 
-              {/* Contact Information */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center md:items-start">
-                <div className="flex items-center gap-2 text-orange-100 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                  <Mail className="h-5 w-5" />
-                  <span className="text-base font-medium">{user.email}</span>
-                </div>
-                {user.phone && (
+              {/* Contact Information & Status */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4 items-center md:items-start">
                   <div className="flex items-center gap-2 text-orange-100 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                    <Phone className="h-5 w-5" />
-                    <span className="text-base font-medium">{user.phone}</span>
+                    <Mail className="h-5 w-5" />
+                    <span className="text-base font-medium">{user.email}</span>
                   </div>
-                )}
+                  {user.phone && (
+                    <div className="flex items-center gap-2 text-orange-100 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                      <Phone className="h-5 w-5" />
+                      <span className="text-base font-medium">{user.phone}</span>
+                    </div>
+                  )}
+                </div>
+ 
               </div>
 
               {/* Action Button */}
@@ -242,11 +211,12 @@ export default function MyProfile() {
       </div>
 
       {/* Content Sections */}
-      <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid lg:grid-cols-2 gap-6">
+    
           {/* Account Information Card */}
-          <div>
-            <div className="space-y-3 pb-6">
+          <Card className="overflow-hidden">
+            <CardHeader className="space-y-3 pb-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
                   <User className="w-6 h-6 text-white" />
@@ -258,8 +228,8 @@ export default function MyProfile() {
                   </CardDescription>
                 </div>
               </div>
-            </div>
-            <div className="space-y-6">
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="grid gap-6">
                 <InfoItem
                   icon={Shield}
@@ -274,14 +244,20 @@ export default function MyProfile() {
 
                 <InfoItem
                   icon={Hash}
-                  label="User ID"
-                  value={user.userId}
-                  className="font-mono text-sm"
+                  label="Partner ID"
+                  value={`#${user.userId.toString().padStart(6, '0')}`}
+                  className="font-mono"
+                />
+
+                <InfoItem
+                  icon={User}
+                  label="Display Name"
+                  value={user.derivedUserName?.trim() || `${user.firstName} ${user.lastName}`}
                 />
 
                 {user.nameInitial && (
                   <InfoItem
-                    icon={User}
+                    icon={Award}
                     label="Name Initial"
                     value={user.nameInitial}
                   />
@@ -291,46 +267,58 @@ export default function MyProfile() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                     <Phone className="h-4 w-4 text-orange-600" />
-                    <span>Phone Verification</span>
+                    <span>Phone</span>
                   </div>
                   <div className="pl-6">
-                    {user.phoneVerifiedAt ? (
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                        <div>
-                          <p className="text-base font-medium text-foreground">
-                            Verified
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(user.phoneVerifiedAt).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              }
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <XCircle className="h-5 w-5 text-gray-400" />
-                        <p className="text-base text-muted-foreground">
-                          Not Verified
-                        </p>
-                      </div>
-                    )}
+                     {user?.phone}
+                  </div>
+                </div>
+
+                                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <Mail className="h-4 w-4 text-orange-600" />
+                    <span>Email</span>
+                  </div>
+                  <div className="pl-6">
+                     {user?.email}
+                  </div>
+                </div>
+
+                {/* Partner Status */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <UserCheck className="h-4 w-4 text-orange-600" />
+                    <span>Partner Status</span>
+                  </div>
+                  <div className="pl-6">
+                    <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium ${
+                      user.verificationStatus === 'APPROVED' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
+                    }`}>
+                      {user.verificationStatus === 'APPROVED' ? (
+                        <>
+                          <CheckCircle className="h-4 w-4" />
+                          Active Partner
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="h-4 w-4" />
+                          Pending Verification
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
+ 
           {/* Location Information Card */}
           {(user.address || (user.latitude && user.longitude)) && (
-            <div>
-              <div className="space-y-3 pb-6">
+            <Card className="overflow-hidden">
+              <CardHeader className="space-y-3 pb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
                     <MapPin className="w-6 h-6 text-white" />
@@ -342,8 +330,8 @@ export default function MyProfile() {
                     </CardDescription>
                   </div>
                 </div>
-              </div>
-              <div className="space-y-6">
+              </CardHeader>
+              <CardContent className="space-y-6">
                 {user.address && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -378,14 +366,14 @@ export default function MyProfile() {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           )}
         </div>
 
         {/* Activity Timeline Card - Full Width */}
-        <div className="mt-12">
-          <div className="space-y-3 pb-6">
+        <Card className="mt-6 overflow-hidden">
+          <CardHeader className="space-y-3 pb-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
                 <Calendar className="w-6 h-6 text-white" />
@@ -397,8 +385,8 @@ export default function MyProfile() {
                 </CardDescription>
               </div>
             </div>
-          </div>
-          <div>
+          </CardHeader>
+          <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
               <DateInfoItem
                 icon={Calendar}
@@ -428,8 +416,8 @@ export default function MyProfile() {
                 date={user.lastLoginAt}
               />
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
