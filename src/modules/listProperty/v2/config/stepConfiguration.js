@@ -23,6 +23,8 @@ import PricingStepV2 from '../components/steps/PricingStepV2';
 import SuitableForStepV2 from '../components/steps/SuitableForStepV2';
 import ListingInfoStepV2 from '../components/steps/ListingInfoStepV2';
 import AmenitiesStepV2 from '../components/steps/AmenitiesStepV2';
+import MediaUploadStepV2 from '../components/steps/MediaUploadStepV2';
+import DocumentUploadStepV2 from '../components/steps/DocumentUploadStepV2';
 import ReviewAndSubmitV2 from '../components/steps/ReviewAndSubmitV2';
 
 // Step categories for better organization
@@ -105,12 +107,28 @@ const CORE_STEPS = [
     order: 12,
   },
   {
+    id: 'media-upload',
+    name: 'Media Upload',
+    component: MediaUploadStepV2,
+    category: STEP_CATEGORIES.CORE,
+    isVisible: (formData) => !!formData.propertyType,
+    order: 13,
+  },
+  {
+    id: 'document-upload',
+    name: 'Document Upload',
+    component: DocumentUploadStepV2,
+    category: STEP_CATEGORIES.CORE,
+    isVisible: (formData) => !!formData.propertyType,
+    order: 14,
+  },
+  {
     id: 'review-submit',
     name: 'Review & Submit',
     component: ReviewAndSubmitV2,
     category: STEP_CATEGORIES.CORE,
     isVisible: (formData) => !!formData.propertyType,
-    order: 13,
+    order: 15,
   },
 ];
 

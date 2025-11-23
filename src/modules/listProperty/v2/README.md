@@ -60,8 +60,10 @@ v2/
 │       ├── LandAttributesStepV2.jsx     # Step 2: Land details (land types)
 │       ├── PricingStepV2.jsx            # Pricing information
 │       ├── SuitableForStepV2.jsx        # Tenant preferences
-│       ├── ListingInfoStepV2.jsx        # Title and description
+│       ├── ListingInfoStepV2.jsx         # Title and description
 │       ├── AmenitiesStepV2.jsx          # Amenities and features
+│       ├── MediaUploadStepV2.jsx        # Images and videos upload
+│       ├── DocumentUploadStepV2.jsx     # Legal documents upload
 │       └── ReviewAndSubmitV2.jsx        # Final review and submit
 ├── context/
 │   └── PropertyFormContextV2.jsx        # Enhanced context with step management
@@ -119,7 +121,7 @@ function CustomComponent() {
 
 ## Step Flow
 
-### For Apartments/Penthouses (13 steps):
+### For Apartments/Penthouses (15 steps):
 1. Property Type Selection
 2. Basic Details (Location)
 3. Basic Configuration (Rooms)
@@ -132,19 +134,23 @@ function CustomComponent() {
 10. Suitable For (Tenant Preferences)
 11. Listing Information (Title/Description)
 12. Amenities & Features
-13. Review & Submit
+13. Media Upload (Images & Videos)
+14. Document Upload (Legal Documents)
+15. Review & Submit
 
-### For Other Buildings (12 steps):
+### For Other Buildings (14 steps):
 Same as above, but without Floor Details (step 8)
 
-### For Land/Plots (7 steps):
+### For Land/Plots (9 steps):
 1. Property Type Selection
 2. Basic Details (Location)
 3. Land Attributes (Plot Details)
 4. Pricing Information
 5. Listing Information
 6. Amenities & Features
-7. Review & Submit
+7. Media Upload (Images & Videos)
+8. Document Upload (Legal Documents)
+9. Review & Submit
 
 ## Key Components
 
