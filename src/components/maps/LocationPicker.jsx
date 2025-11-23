@@ -3,13 +3,13 @@ import { MapPin, Navigation, Search } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import OlaMapSearch from './OlaMapSearch';
-import OlaMapViewer from './OlaMapViewer';
+import GoogleMapSearch from './GoogleMapSearch';
+import GoogleMapViewer from './GoogleMapViewer';
 import {
   extractCityFromComponents,
   extractLocalityFromComponents,
   geocodeAddress,
-} from '@/services/olaMapsService';
+} from '@/services/googleMapsService';
 
 /**
  * LocationPicker Component
@@ -142,7 +142,7 @@ export default function LocationPicker({
       {/* Search Bar */}
       {showSearch && (
         <div className="mb-4">
-          <OlaMapSearch
+          <GoogleMapSearch
             onPlaceSelect={handlePlaceSelect}
             placeholder="Search for your property location..."
             initialValue={selectedLocation?.formattedAddress || ''}
@@ -151,7 +151,7 @@ export default function LocationPicker({
       )}
 
       {/* Map */}
-      <OlaMapViewer
+      <GoogleMapViewer
         center={mapCenter}
         zoom={15}
         marker={mapMarker}

@@ -1,251 +1,47 @@
 /**
- * Ola Maps Integration - Usage Examples
- * This file demonstrates various ways to use the Ola Maps components
+ * Google Maps Components - Usage Examples
+ * Demonstrates various ways to use the Google Maps integration
  */
 
 import { useState } from 'react';
-import { 
-  LocationPicker, 
-  OlaMapSearch, 
-  OlaMapViewer 
-} from '@/components/maps';
-import { 
-  searchPlaces, 
-  geocodeAddress, 
-  reverseGeocode,
-  getCurrentLocation 
-} from '@/services/olaMapsService';
+import { LocationPicker, GoogleMapSearch, GoogleMapViewer, MapErrorBoundary } from '@/components/maps';
 
-// ========================================
-// Example 1: Complete Location Picker
-// ========================================
-export function Example1_LocationPicker() {
-  const [location, setLocation] = useState(null);
+/**
+ * Example 1: Basic LocationPicker (Most Common Use Case)
+ * Combines search + map in a single component
+ */
+export function BasicLocationPickerExample() {
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   return (
-    <div>
-      <h2>Select Property Location</h2>
-      <LocationPicker
-        value={location}
-        onChange={(locationData) => {
-          setLocation(locationData);
-          console.log('Selected:', locationData);
-          // locationData contains: coordinates, formattedAddress, city, locality
-        }}
-        height="500px"
-        showSearch={true}
-      />
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold">Basic Location Picker</h2>
       
-      {location && (
-        <div>
-          <p>Coordinates: {location.coordinates.lat}, {location.coordinates.lng}</p>
-          <p>Address: {location.formattedAddress}</p>
-          <p>City: {location.city}</p>
+      <LocationPicker
+        onChange={(location) => {
+          setSelectedLocation(location);
+          console.log('Selected:', location);
+        }}
+        height="450px"
+      />
+
+      {selectedLocation && (
+        <div className="p-4 bg-muted rounded">
+          <h3 className="font-semibold">Selected Location:</h3>
+          <pre className="text-sm mt-2">
+            {JSON.stringify(selectedLocation, null, 2)}
+          </pre>
         </div>
       )}
     </div>
   );
 }
 
-// ========================================
-// Example 2: Search Only
-// ========================================
-export function Example2_SearchOnly() {
-  const [selectedPlace, setSelectedPlace] = useState(null);
-
-  return (
-    <div>
-      <h2>Search for a Location</h2>
-      <OlaMapSearch
-        onPlaceSelect={(place) => {
-          setSelectedPlace(place);
-          console.log('Selected place:', place);
-        }}
-        placeholder="Search for cities, landmarks, addresses..."
-      />
-      
-      {selectedPlace && (
-        <div>
-          <p>Selected: {selectedPlace.description}</p>
-          <p>Place ID: {selectedPlace.placeId}</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ========================================
-// Example 3: Map with Custom Marker
-// ========================================
-export function Example3_MapWithMarker() {
-  const [markerPosition, setMarkerPosition] = useState({
-    lat: 28.6139,
-    lng: 77.2090
-  });
-
-  return (
-    <div>
-      <h2>Interactive Map</h2>
-      <OlaMapViewer
-        center={markerPosition}
-        zoom={15}
-        marker={{
-          lat: markerPosition.lat,
-          lng: markerPosition.lng,
-          draggable: true
-        }}
-        onMarkerDragEnd={(data) => {
-          setMarkerPosition({
-            lat: data.lat,
-            lng: data.lng
-          });
-          console.log('New position:', data);
-          console.log('Address:', data.address);
-        }}
-        onMapClick={(data) => {
-          setMarkerPosition({
-            lat: data.lat,
-            lng: data.lng
-          });
-        }}
-        height="400px"
-        interactive={true}
-        showCurrentLocation={true}
-      />
-      
-      <p>Current Position: {markerPosition.lat.toFixed(6)}, {markerPosition.lng.toFixed(6)}</p>
-    </div>
-  );
-}
-
-// ========================================
-// Example 4: Using Service Functions Directly
-// ========================================
-export function Example4_ServiceFunctions() {
-  const [results, setResults] = useState([]);
-
-  const handleSearch = async () => {
-    const places = await searchPlaces('Mumbai Airport');
-    setResults(places);
-  };
-
-  const handleGeocode = async () => {
-    const result = await geocodeAddress('Connaught Place, New Delhi');
-    console.log('Coordinates:', result);
-  };
-
-  const handleReverseGeocode = async () => {
-    const address = await reverseGeocode(28.6139, 77.2090);
-    console.log('Address:', address);
-  };
-
-  const handleCurrentLocation = async () => {
-    try {
-      const location = await getCurrentLocation();
-      console.log('Current location:', location);
-    } catch (error) {
-      console.error('Location error:', error);
-    }
-  };
-
-  return (
-    <div>
-      <h2>Service Functions</h2>
-      <button onClick={handleSearch}>Search Places</button>
-      <button onClick={handleGeocode}>Geocode Address</button>
-      <button onClick={handleReverseGeocode}>Reverse Geocode</button>
-      <button onClick={handleCurrentLocation}>Get Current Location</button>
-      
-      <ul>
-        {results.map((place, index) => (
-          <li key={index}>{place.description}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-// ========================================
-// Example 5: Form Integration
-// ========================================
-export function Example5_FormIntegration() {
-  const [formData, setFormData] = useState({
-    propertyName: '',
-    city: '',
-    locality: '',
-    address: '',
-    coordinates: null,
-  });
-
-  const handleLocationChange = (locationData) => {
-    if (locationData) {
-      setFormData({
-        ...formData,
-        city: locationData.city || formData.city,
-        locality: locationData.locality || formData.locality,
-        address: locationData.formattedAddress || formData.address,
-        coordinates: locationData.coordinates,
-      });
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Send to API
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <h2>Property Listing Form</h2>
-      
-      <input
-        type="text"
-        placeholder="Property Name"
-        value={formData.propertyName}
-        onChange={(e) => setFormData({ ...formData, propertyName: e.target.value })}
-      />
-
-      <input
-        type="text"
-        placeholder="City"
-        value={formData.city}
-        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-      />
-
-      <input
-        type="text"
-        placeholder="Locality"
-        value={formData.locality}
-        onChange={(e) => setFormData({ ...formData, locality: e.target.value })}
-      />
-
-      <textarea
-        placeholder="Full Address"
-        value={formData.address}
-        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-      />
-
-      <LocationPicker
-        value={formData.coordinates ? {
-          coordinates: formData.coordinates,
-          formattedAddress: formData.address,
-          city: formData.city,
-          locality: formData.locality,
-        } : null}
-        onChange={handleLocationChange}
-        height="400px"
-      />
-
-      <button type="submit">Submit</button>
-    </form>
-  );
-}
-
-// ========================================
-// Example 6: Search and Map Combo
-// ========================================
-export function Example6_SearchAndMap() {
+/**
+ * Example 2: Separate Search and Map
+ * For custom layouts
+ */
+export function SeparateSearchMapExample() {
   const [mapCenter, setMapCenter] = useState({ lat: 28.6139, lng: 77.2090 });
   const [marker, setMarker] = useState(null);
 
@@ -255,75 +51,179 @@ export function Example6_SearchAndMap() {
       setMarker({
         lat: place.coordinates.lat,
         lng: place.coordinates.lng,
-        draggable: true
+        draggable: true,
       });
     }
   };
 
+  const handleMapInteraction = (data) => {
+    setMarker({
+      lat: data.lat,
+      lng: data.lng,
+      draggable: true,
+    });
+  };
+
   return (
-    <div>
-      <h2>Search and View on Map</h2>
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold">Separate Search & Map</h2>
       
-      <OlaMapSearch
+      <GoogleMapSearch
         onPlaceSelect={handlePlaceSelect}
         placeholder="Search for a location..."
       />
 
-      <OlaMapViewer
+      <GoogleMapViewer
         center={mapCenter}
         zoom={15}
         marker={marker}
-        onMarkerDragEnd={(data) => {
-          setMarker({
-            lat: data.lat,
-            lng: data.lng,
-            draggable: true
-          });
-        }}
-        height="500px"
-        interactive={true}
+        onMapClick={handleMapInteraction}
+        onMarkerDragEnd={handleMapInteraction}
+        height="400px"
       />
     </div>
   );
 }
 
-// ========================================
-// Example 7: Read-Only Map Display
-// ========================================
-export function Example7_ReadOnlyMap() {
-  const propertyLocation = {
-    lat: 28.6139,
-    lng: 77.2090
+/**
+ * Example 3: Map with Multiple Markers
+ * Display multiple locations at once
+ */
+export function MultipleMarkersExample() {
+  const markers = [
+    {
+      id: 1,
+      lat: 28.6139,
+      lng: 77.2090,
+      popup: 'Location 1',
+      strokeColor: '#ea580c',
+    },
+    {
+      id: 2,
+      lat: 28.6200,
+      lng: 77.2100,
+      popup: 'Location 2',
+      strokeColor: '#3b82f6',
+    },
+    {
+      id: 3,
+      lat: 28.6100,
+      lng: 77.2150,
+      popup: 'Location 3',
+      strokeColor: '#10b981',
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold">Multiple Markers</h2>
+      
+      <GoogleMapViewer
+        center={{ lat: 28.6139, lng: 77.2090 }}
+        zoom={14}
+        markers={markers}
+        interactive={false}
+        showCurrentLocation={false}
+        height="500px"
+      />
+    </div>
+  );
+}
+
+/**
+ * Example 4: With Error Boundary
+ * Wrap components in error boundary for better error handling
+ */
+export function WithErrorBoundaryExample() {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold">With Error Boundary</h2>
+      
+      <MapErrorBoundary onReset={() => console.log('Map reset')}>
+        <LocationPicker
+          onChange={(location) => console.log('Selected:', location)}
+          height="400px"
+        />
+      </MapErrorBoundary>
+    </div>
+  );
+}
+
+/**
+ * Example 5: Pre-filled Location
+ * Initialize with existing location data
+ */
+export function PrefilledLocationExample() {
+  const [location, setLocation] = useState({
+    coordinates: { lat: 28.6139, lng: 77.2090 },
+    formattedAddress: 'Connaught Place, New Delhi, Delhi, India',
+    city: 'New Delhi',
+    locality: 'Connaught Place',
+  });
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold">Pre-filled Location</h2>
+      
+      <LocationPicker
+        value={location}
+        onChange={setLocation}
+        height="400px"
+      />
+    </div>
+  );
+}
+
+/**
+ * Example 6: Using Service Functions Directly
+ */
+export function ServiceFunctionsExample() {
+  const [results, setResults] = useState(null);
+
+  const handleSearch = async () => {
+    const { searchPlaces, geocodeAddress, reverseGeocode } = await import('@/services/googleMapsService');
+    
+    // Search for places
+    const places = await searchPlaces('Connaught Place Delhi');
+    console.log('Places:', places);
+    
+    // Geocode an address
+    const geocoded = await geocodeAddress('India Gate, New Delhi');
+    console.log('Geocoded:', geocoded);
+    
+    // Reverse geocode coordinates
+    const reversed = await reverseGeocode(28.6129, 77.2295);
+    console.log('Reversed:', reversed);
+    
+    setResults({ places, geocoded, reversed });
   };
 
   return (
-    <div>
-      <h2>Property Location</h2>
-      <OlaMapViewer
-        center={propertyLocation}
-        zoom={16}
-        marker={{
-          lat: propertyLocation.lat,
-          lng: propertyLocation.lng,
-          draggable: false
-        }}
-        height="300px"
-        interactive={false}
-        showCurrentLocation={false}
-      />
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold">Service Functions</h2>
+      
+      <button
+        onClick={handleSearch}
+        className="px-4 py-2 bg-primary text-primary-foreground rounded"
+      >
+        Test Service Functions
+      </button>
+
+      {results && (
+        <pre className="text-xs bg-muted p-4 rounded overflow-auto">
+          {JSON.stringify(results, null, 2)}
+        </pre>
+      )}
     </div>
   );
 }
 
-// ========================================
 // Export all examples
-// ========================================
 export default {
-  Example1_LocationPicker,
-  Example2_SearchOnly,
-  Example3_MapWithMarker,
-  Example4_ServiceFunctions,
-  Example5_FormIntegration,
-  Example6_SearchAndMap,
-  Example7_ReadOnlyMap,
+  BasicLocationPickerExample,
+  SeparateSearchMapExample,
+  MultipleMarkersExample,
+  WithErrorBoundaryExample,
+  PrefilledLocationExample,
+  ServiceFunctionsExample,
 };

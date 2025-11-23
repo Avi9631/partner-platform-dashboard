@@ -1,30 +1,24 @@
-# Ola Maps Components
+# Google Maps Components
 
-This folder contains all Ola Maps integration components for location search, map display, and interactive marker placement.
+This folder contains all Google Maps integration components for location search, map display, and interactive marker placement.
 
 ## 📁 Files
 
-- **`OlaMapSearch.jsx`** - Autocomplete search component
-- **`OlaMapViewer.jsx`** - Interactive map display with markers
+- **`GoogleMapSearch.jsx`** - Autocomplete search component using Google Places API
+- **`GoogleMapViewer.jsx`** - Interactive map display with markers using react-google-maps
 - **`LocationPicker.jsx`** - Integrated location selector (Search + Map)
+- **`MapErrorBoundary.jsx`** - Error boundary for map components
 - **`index.js`** - Centralized exports
-- **`examples.jsx`** - Usage examples and demos
 
 ## 🚀 Quick Import
 
 ```jsx
 // Import individual components
-import { LocationPicker, OlaMapSearch, OlaMapViewer } from '@/components/maps';
+import { LocationPicker, GoogleMapSearch, GoogleMapViewer } from '@/components/maps';
 
 // Or import from specific files
 import LocationPicker from '@/components/maps/LocationPicker';
 ```
-
-## 📖 Documentation
-
-- **Full Guide:** `docs/OLA_MAPS_INTEGRATION.md`
-- **Quick Start:** `docs/OLA_MAPS_QUICK_START.md`
-- **Examples:** See `examples.jsx` in this folder
 
 ## 🎯 Most Common Usage
 
@@ -43,14 +37,15 @@ import { LocationPicker } from '@/components/maps';
 
 ## 🔧 Service Functions
 
-All API interactions are handled by `src/services/olaMapsService.js`
+All API interactions are handled by `src/services/googleMapsService.js`
 
 ```jsx
 import { 
   searchPlaces, 
   geocodeAddress, 
-  reverseGeocode 
-} from '@/services/olaMapsService';
+  reverseGeocode,
+  getCurrentLocation 
+} from '@/services/googleMapsService';
 ```
 
 ## 📝 Component Props Reference
@@ -62,37 +57,50 @@ import {
 - `height` - Map height (default: "400px")
 - `showSearch` - Show search bar (default: true)
 
-### OlaMapSearch
+### GoogleMapSearch
 - `onPlaceSelect` - Callback when place selected
 - `placeholder` - Search input placeholder
 - `initialValue` - Initial search text
 
-### OlaMapViewer
+### GoogleMapViewer
 - `center` - Map center `{ lat, lng }`
 - `zoom` - Zoom level (default: 15)
 - `marker` - Marker config `{ lat, lng, draggable }`
+- `markers` - Array of markers for multiple markers
 - `onMarkerDragEnd` - Callback when marker dragged
 - `onMapClick` - Callback when map clicked
 - `height` - Map height
 - `interactive` - Enable interactions (default: true)
 - `showCurrentLocation` - Show GPS button (default: true)
 
+### MapErrorBoundary
+- `children` - Components to wrap
+- `onReset` - Callback on error reset
+- `showDetails` - Show error stack trace (default: false)
+
 ## ✅ Features
 
-- ✅ Real-time search with autocomplete
+- ✅ Real-time search with Google Places autocomplete
 - ✅ Click-to-place markers
 - ✅ Draggable markers
 - ✅ Current location detection
 - ✅ Reverse geocoding
 - ✅ Fullscreen mode
+- ✅ Multiple markers support
 - ✅ Mobile responsive
 - ✅ Dark mode support
+- ✅ Error boundary protection
 
 ## 🔑 Setup Required
 
 Add to `.env`:
 ```env
-VITE_OLA_MAPS_API_KEY=your_api_key_here
+VITE_GOOGLE_MAPS_API_KEY=your_api_key_here
 ```
 
-Get API key from: https://maps.olakrutrim.com/
+Get API key from: https://console.cloud.google.com/
+
+### Required APIs to Enable
+- Maps JavaScript API
+- Places API
+- Geocoding API

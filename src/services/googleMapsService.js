@@ -1,22 +1,61 @@
 /**
- * Ola Maps Service
- * Provides integration with Ola Maps API for geocoding, search, and map functionalities
+ * Google Maps Service
+ * Provides integration with Google Maps API for geocoding, search, and map functionalities
+ * Uses Google Places API, Geocoding API, and Maps JavaScript API
  */
 
-// Ola Maps API Configuration
-const OLA_MAPS_CONFIG = {
-  apiKey: import.meta.env.VITE_OLA_MAPS_API_KEY || '',
-  baseUrl: 'https://api.olamaps.io/places/v1',
-  geocodeUrl: 'https://api.olamaps.io/places/v1/geocode',
-  reverseGeocodeUrl: 'https://api.olamaps.io/places/v1/reverse-geocode',
-  autocompleteUrl: 'https://api.olamaps.io/places/v1/autocomplete',
+// Google Maps API Configuration
+const GOOGLE_MAPS_CONFIG = {
+  apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+  placesApiUrl: 'https://maps.googleapis.com/maps/api/place',
+  geocodingApiUrl: 'https://maps.googleapis.com/maps/api/geocode/json',
+  libraries: ['places', 'geometry'],
 };
 
 /**
- * Search for places using Ola Maps Autocomplete API
+ * Load Google Maps JavaScript API
+ * @returns {Promise<void>}
+ */
+export const loadGoogleMapsAPI = () => {
+  return new Promise((resolve, reject) => {
+    // Check if already loaded
+    if (window.google && window.google.maps) {
+      resolve(window.google);
+      return;
+    }
+
+    // Check if script is already being loaded
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(window.google));
+      existingScript.addEventListener('error', reject);
+      return;
+    }
+
+    // Load the script
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_CONFIG.apiKey}&libraries=${GOOGLE_MAPS_CONFIG.libraries.join(',')}&callback=initGoogleMaps`;
+    script.async = true;
+    script.defer = true;
+
+    // Set up callback
+    window.initGoogleMaps = () => {
+      resolve(window.google);
+    };
+
+    script.addEventListener('error', () => {
+      reject(new Error('Failed to load Google Maps API'));
+    });
+
+    document.head.appendChild(script);
+  });
+};
+
+/**
+ * Search for places using Google Places Autocomplete API
  * @param {string} query - Search query string
  * @param {Object} options - Additional search options
- * @returns {Promise<Array>} Array of place suggestions
+ * @returns {Promise<Array>} Array of place predictions
  */
 export const searchPlaces = async (query, options = {}) => {
   try {
@@ -24,25 +63,27 @@ export const searchPlaces = async (query, options = {}) => {
       return [];
     }
 
-    const params = new URLSearchParams({
-      input: query,
-      api_key: OLA_MAPS_CONFIG.apiKey,
-      ...options,
+    // Ensure Google Maps is loaded
+    await loadGoogleMapsAPI();
+
+    return new Promise((resolve, reject) => {
+      const service = new window.google.maps.places.AutocompleteService();
+      
+      const request = {
+        input: query,
+        ...options,
+      };
+
+      service.getPlacePredictions(request, (predictions, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+          resolve(predictions || []);
+        } else if (status === window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+          resolve([]);
+        } else {
+          reject(new Error(`Places search failed: ${status}`));
+        }
+      });
     });
-
-    const response = await fetch(`${OLA_MAPS_CONFIG.autocompleteUrl}?${params}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Search failed: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.predictions || [];
   } catch (error) {
     console.error('Error searching places:', error);
     return [];
@@ -51,47 +92,32 @@ export const searchPlaces = async (query, options = {}) => {
 
 /**
  * Get place details by place_id
- * @param {string} placeId - Ola Maps place ID
+ * @param {string} placeId - Google Maps place ID
  * @returns {Promise<Object>} Place details with coordinates
  */
 export const getPlaceDetails = async (placeId) => {
   try {
-    const params = new URLSearchParams({
-      place_id: placeId,
-      api_key: OLA_MAPS_CONFIG.apiKey,
-    });
+    // Ensure Google Maps is loaded
+    await loadGoogleMapsAPI();
 
-    const response = await fetch(`${OLA_MAPS_CONFIG.baseUrl}/details?${params}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    return new Promise((resolve, reject) => {
+      // Create a temporary div for the PlacesService
+      const tempDiv = document.createElement('div');
+      const service = new window.google.maps.places.PlacesService(tempDiv);
 
-    if (!response.ok) {
-      throw new Error(`Get place details failed: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    
-    // Ola Maps API returns data in 'result' field
-    const result = data.result || data;
-    
-    // Normalize the response to ensure consistent structure
-    if (result) {
-      return {
-        formatted_address: result.formatted_address || result.name || '',
-        address_components: result.address_components || [],
-        geometry: {
-          location: {
-            lat: result.geometry?.location?.lat || result.lat,
-            lng: result.geometry?.location?.lng || result.lng,
-          }
-        }
+      const request = {
+        placeId: placeId,
+        fields: ['name', 'formatted_address', 'geometry', 'address_components', 'place_id'],
       };
-    }
-    
-    return null;
+
+      service.getDetails(request, (place, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+          resolve(place);
+        } else {
+          reject(new Error(`Get place details failed: ${status}`));
+        }
+      });
+    });
   } catch (error) {
     console.error('Error getting place details:', error);
     return null;
@@ -99,7 +125,7 @@ export const getPlaceDetails = async (placeId) => {
 };
 
 /**
- * Geocode an address to coordinates
+ * Geocode an address to coordinates using Google Geocoding API
  * @param {string} address - Address string to geocode
  * @returns {Promise<Object>} Coordinates and formatted address
  */
@@ -107,14 +133,11 @@ export const geocodeAddress = async (address) => {
   try {
     const params = new URLSearchParams({
       address: address,
-      api_key: OLA_MAPS_CONFIG.apiKey,
+      key: GOOGLE_MAPS_CONFIG.apiKey,
     });
 
-    const response = await fetch(`${OLA_MAPS_CONFIG.geocodeUrl}?${params}`, {
+    const response = await fetch(`${GOOGLE_MAPS_CONFIG.geocodingApiUrl}?${params}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -123,13 +146,14 @@ export const geocodeAddress = async (address) => {
 
     const data = await response.json();
     
-    if (data.results && data.results.length > 0) {
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
       const result = data.results[0];
       return {
         lat: result.geometry.location.lat,
         lng: result.geometry.location.lng,
         formattedAddress: result.formatted_address,
         placeId: result.place_id,
+        addressComponents: result.address_components,
       };
     }
     
@@ -141,7 +165,7 @@ export const geocodeAddress = async (address) => {
 };
 
 /**
- * Reverse geocode coordinates to address
+ * Reverse geocode coordinates to address using Google Geocoding API
  * @param {number} lat - Latitude
  * @param {number} lng - Longitude
  * @returns {Promise<Object>} Address details
@@ -150,14 +174,11 @@ export const reverseGeocode = async (lat, lng) => {
   try {
     const params = new URLSearchParams({
       latlng: `${lat},${lng}`,
-      api_key: OLA_MAPS_CONFIG.apiKey,
+      key: GOOGLE_MAPS_CONFIG.apiKey,
     });
 
-    const response = await fetch(`${OLA_MAPS_CONFIG.reverseGeocodeUrl}?${params}`, {
+    const response = await fetch(`${GOOGLE_MAPS_CONFIG.geocodingApiUrl}?${params}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -166,7 +187,7 @@ export const reverseGeocode = async (lat, lng) => {
 
     const data = await response.json();
     
-    if (data.results && data.results.length > 0) {
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
       const result = data.results[0];
       return {
         formattedAddress: result.formatted_address,
@@ -255,5 +276,6 @@ export default {
   extractCityFromComponents,
   extractLocalityFromComponents,
   getCurrentLocation,
-  config: OLA_MAPS_CONFIG,
+  loadGoogleMapsAPI,
+  config: GOOGLE_MAPS_CONFIG,
 };

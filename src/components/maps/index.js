@@ -1,8 +1,9 @@
 /**
- * Ola Maps Components - Index
- * Centralized exports for all Ola Maps related components
+ * Google Maps Components - Index
+ * Centralized exports for all Google Maps related components
  */
 
-export { default as OlaMapSearch } from './OlaMapSearch';
-export { default as OlaMapViewer } from './OlaMapViewer';
+export { default as GoogleMapSearch } from './GoogleMapSearch';
+export { default as GoogleMapViewer } from './GoogleMapViewer';
 export { default as LocationPicker } from './LocationPicker';
+export { default as MapErrorBoundary } from './MapErrorBoundary';
