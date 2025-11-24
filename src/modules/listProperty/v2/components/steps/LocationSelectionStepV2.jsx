@@ -123,7 +123,7 @@ export default function LocationSelectionStepV2() {
           </motion.div>
 
           {/* Auto-populated address preview */}
-          {form.watch('coordinates') && (
+          {/* {form.watch('coordinates') && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -148,7 +148,7 @@ export default function LocationSelectionStepV2() {
                 )}
               </div>
             </motion.div>
-          )}
+          )} */}
 
           {/* Show Exact Location Toggle */}
           <motion.div

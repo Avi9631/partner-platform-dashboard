@@ -18,6 +18,13 @@ import {
 } from '@/components/ui/field';
 import { Badge } from '@/components/ui/badge';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -136,6 +143,7 @@ export default function DocumentUploadStepV2() {
         category: '',
         title: '',
         description: '',
+        docType: '',
         uploadedAt: new Date().toISOString(),
       });
     });
@@ -357,63 +365,86 @@ function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, for
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="border-2 rounded-lg p-4 hover:border-orange-500 transition-all"
+      className="group border-2 rounded-xl overflow-hidden hover:border-orange-400 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50"
     >
-      <div className="space-y-3">
-        {/* File Info Header */}
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-xl">{getFileIcon()}</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm truncate">{document.fileName}</p>
-            <p className="text-xs text-muted-foreground">
-              {formatFileSize(document.fileSize)}
-            </p>
-          </div>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="text-red-500 hover:text-red-700 hover:bg-red-50"
-            onClick={() => onRemove(document.id)}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+      <div className="flex flex-col sm:flex-row gap-3 p-3">
+        {/* File Icon Thumbnail */}
+        <div className="w-full sm:w-28 h-28 sm:h-28 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-md">
+          <span className="text-4xl sm:text-5xl">{getFileIcon()}</span>
         </div>
 
-        {/* Metadata Inputs */}
-        <div className="space-y-2">
-          <div>
-            <FieldLabel className="text-xs">Document Title</FieldLabel>
-            <Input
-              placeholder="e.g., Sale Deed Copy"
-              value={document.title}
-              onChange={(e) => onUpdateMetadata(document.id, 'title', e.target.value)}
-              className="h-8 text-sm"
-            />
+        {/* Content */}
+        <div className="flex-1 min-w-0 space-y-2.5">
+          {/* File Info Header */}
+          <div className="flex items-start justify-between gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-xs truncate text-gray-900 dark:text-gray-100">{document.fileName}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {formatFileSize(document.fileSize)}
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200"
+              onClick={() => onRemove(document.id)}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
           </div>
-          
-          <div>
-            <FieldLabel className="text-xs flex items-center gap-1">
-              <Tags className="w-3 h-3" />
-              Category
-            </FieldLabel>
-            <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={categoryOpen}
-                  className={cn(
-                    "w-full justify-between h-8 text-sm font-normal",
-                    !document.category && "text-muted-foreground"
-                  )}
-                >
-                  {document.category || "Select or add category..."}
-                  <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
+
+          {/* Form Fields Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {/* Document Title - Full Width */}
+            <div className="sm:col-span-2">
+              <FieldLabel className="text-[10px] mb-1 font-medium">Title</FieldLabel>
+              <Input
+                placeholder="e.g., Sale Deed Copy"
+                value={document.title}
+                onChange={(e) => onUpdateMetadata(document.id, 'title', e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+            
+            {/* Doc Type Dropdown */}
+            <div>
+              <FieldLabel className="text-[10px] mb-1 font-medium flex items-center h-[14px]">Doc Type</FieldLabel>
+              <Select
+                value={document.docType}
+                onValueChange={(value) => onUpdateMetadata(document.id, 'docType', value)}
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Select..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="listing">Listing</SelectItem>
+                  <SelectItem value="project">Project</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Category Input */}
+            <div>
+              <FieldLabel className="text-[10px] mb-1 font-medium flex items-center gap-1 h-[14px]">
+                <Tags className="w-2.5 h-2.5" />
+                Category
+              </FieldLabel>
+              <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={categoryOpen}
+                    className={cn(
+                      "w-full justify-between h-8 text-xs font-normal",
+                      !document.category && "text-muted-foreground"
+                    )}
+                  >
+                    <span className="truncate">{document.category || "Select..."}</span>
+                    <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
               <PopoverContent className="w-[300px] p-0" align="start">
                 <Command shouldFilter={false}>
                   <CommandInput
@@ -472,16 +503,18 @@ function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, for
               </PopoverContent>
             </Popover>
           </div>
-          
-          <div>
-            <FieldLabel className="text-xs">Description</FieldLabel>
-            <Textarea
-              placeholder="Add relevant details about this document..."
-              value={document.description}
-              onChange={(e) => onUpdateMetadata(document.id, 'description', e.target.value)}
-              className="text-sm min-h-[60px]"
-              rows={2}
-            />
+            
+            {/* Description Input - Full Width */}
+            <div className="sm:col-span-2">
+              <FieldLabel className="text-[10px] mb-1 font-medium">Description (Optional)</FieldLabel>
+              <Textarea
+                placeholder="Add relevant details about this document..."
+                value={document.description}
+                onChange={(e) => onUpdateMetadata(document.id, 'description', e.target.value)}
+                className="text-xs min-h-[52px] resize-none"
+                rows={2}
+              />
+            </div>
           </div>
         </div>
       </div>

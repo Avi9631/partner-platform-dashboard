@@ -24,6 +24,7 @@ import SuitableForStepV2 from '../components/steps/SuitableForStepV2';
 import ListingInfoStepV2 from '../components/steps/ListingInfoStepV2';
 import AmenitiesStepV2 from '../components/steps/AmenitiesStepV2';
 import MediaUploadStepV2 from '../components/steps/MediaUploadStepV2';
+import PropertyPlanUploadStepV2 from '../components/steps/PropertyPlanUploadStepV2';
 import DocumentUploadStepV2 from '../components/steps/DocumentUploadStepV2';
 import ReviewAndSubmitV2 from '../components/steps/ReviewAndSubmitV2';
 
@@ -115,12 +116,20 @@ const CORE_STEPS = [
     order: 13,
   },
   {
+    id: 'property-plan-upload',
+    name: 'Property Plans',
+    component: PropertyPlanUploadStepV2,
+    category: STEP_CATEGORIES.CORE,
+    isVisible: (formData) => !!formData.propertyType,
+    order: 14,
+  },
+  {
     id: 'document-upload',
     name: 'Document Upload',
     component: DocumentUploadStepV2,
     category: STEP_CATEGORIES.CORE,
     isVisible: (formData) => !!formData.propertyType,
-    order: 14,
+    order: 15,
   },
   {
     id: 'review-submit',
@@ -128,7 +137,7 @@ const CORE_STEPS = [
     component: ReviewAndSubmitV2,
     category: STEP_CATEGORIES.CORE,
     isVisible: (formData) => !!formData.propertyType,
-    order: 15,
+    order: 16,
   },
 ];
 

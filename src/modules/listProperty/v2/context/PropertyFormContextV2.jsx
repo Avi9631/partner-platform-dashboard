@@ -89,10 +89,8 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId }) =>
         dataKeys: Object.keys(updatedData || formData),
       });
       
-      const response = await draftApi.updateListingDraft(draftId, {
-        draftData: updatedData || formData,
-        status: 'draft',
-      });
+      // Pass the actual form data directly, not wrapped in draftData
+      const response = await draftApi.updateListingDraft(draftId, updatedData || formData);
       
       console.log('API Response:', response);
       
