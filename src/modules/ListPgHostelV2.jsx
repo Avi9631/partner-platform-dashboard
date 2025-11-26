@@ -1,13 +1,13 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   PlusCircle, MapPin, Home, Calendar, DollarSign, 
   Edit2, Trash2, Eye, MoreVertical, Building2, 
-  Bed, Bath, Square, Search,
+  Bed, Users, Search,
   Clock, CheckCircle, XCircle, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PropertyFormSheetV2 } from '@/modules/listProperty/v2';
+import PgFormSheetV2 from '@/modules/listPg/v2/components/PgFormSheetV2';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -17,13 +17,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { draftApi } from '@/services/draftService';
 import { useToast } from '@/components/hooks/use-toast';
 
-export default function ListPropertyV2Page() {
+export default function ListPgHostelV2Page() {
   const [showForm, setShowForm] = useState(false);
   const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentDraftId, setCurrentDraftId] = useState(null);
@@ -31,39 +30,48 @@ export default function ListPropertyV2Page() {
   const [editingDraft, setEditingDraft] = useState(null);
   const { toast } = useToast();
 
-  // Fetch listing drafts from API
+  // Fetch PG/Hostel drafts from API
   const fetchListings = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await draftApi.getUserListingDrafts();
+      // TODO: Replace with actual API call to fetch PG drafts
+      // const response = await draftApi.getUserPgDrafts();
       
-      if (response.success && response.data) {
-        // Transform API data to match our component structure
-        const transformedListings = response.data.map(draft => ({
-          id: draft.draftId,
-          title: draft.draftData?.title || draft.draftData?.customPropertyName || 'Untitled Property',
-          location: draft.draftData?.location || draft.draftData?.city || 'Location not set',
-          propertyType: draft.draftData?.propertyType || 'Not specified',
-          bedrooms: draft.draftData?.bedrooms,
-          bathrooms: draft.draftData?.bathrooms,
-          area: draft.draftData?.area,
-          price: draft.draftData?.price || 'Price not set',
-          priceUnit: draft.draftData?.priceUnit || '',
-          status: draft.draftStatus?.toLowerCase() || 'draft',
-          image: draft.draftData?.mediaData?.[0]?.url || null,
-          views: draft.views || 0,
-          createdAt: new Date(draft.createdAt || draft.draft_created_at).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
-          }),
-        }));
-        setListings(transformedListings);
-      } else {
-        setListings([]);
-      }
+      // Mock data for now
+      const mockListings = [
+        {
+          id: '1',
+          title: 'Sunshine PG for Gents',
+          location: 'Koramangala, Bangalore',
+          propertyType: 'PG',
+          genderAllowed: 'Gents',
+          totalBeds: 20,
+          availableBeds: 5,
+          startingPrice: '₹8,000',
+          status: 'published',
+          image: null,
+          views: 245,
+          createdAt: 'Nov 15, 2025',
+        },
+        {
+          id: '2',
+          title: 'Comfort Hostel for Students',
+          location: 'Whitefield, Bangalore',
+          propertyType: 'Hostel',
+          genderAllowed: 'Unisex',
+          totalBeds: 50,
+          availableBeds: 12,
+          startingPrice: '₹6,500',
+          status: 'draft',
+          image: null,
+          views: 89,
+          createdAt: 'Nov 20, 2025',
+        },
+      ];
+      
+      setListings(mockListings);
     } catch (error) {
-      console.error('Failed to fetch listings:', error);
+      console.error('Failed to fetch PG listings:', error);
       toast({
         title: 'Error',
         description: 'Failed to load your listings. Please try again.',
@@ -78,34 +86,25 @@ export default function ListPropertyV2Page() {
   const handleFormClose = (isOpen) => {
     setShowForm(isOpen);
     if (!isOpen) {
-      // Reset draft ID, editing state and refresh listings when form closes
       setCurrentDraftId(null);
       setEditingDraft(null);
       fetchListings();
     }
   };
 
-  const handleListNewProperty = async () => {
+  const handleListNewPg = async () => {
     try {
       setIsCreatingDraft(true);
-      const response = await draftApi.createListingDraft({
-        status: 'draft',
-        formData: {},
-      });
-
-      console.log('Create draft response:', response);
+      // TODO: Replace with actual API call
+      // const response = await draftApi.createPgDraft({ status: 'draft' });
       
-      if (response.success && response.data?.draftId) {
-        setCurrentDraftId(response.data.draftId);
-        setEditingDraft(null); // Clear any editing state
+      // Mock: Just open the form for now
+      setTimeout(() => {
+        setCurrentDraftId(null);
+        setEditingDraft(null);
         setShowForm(true);
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to create draft. Please try again.',
-          variant: 'destructive',
-        });
-      }
+        setIsCreatingDraft(false);
+      }, 500);
     } catch (error) {
       console.error('Failed to create draft:', error);
       toast({
@@ -113,72 +112,28 @@ export default function ListPropertyV2Page() {
         description: error.message || 'Failed to create draft. Please try again.',
         variant: 'destructive',
       });
-    } finally {
       setIsCreatingDraft(false);
     }
   };
 
   const handleEditDraft = async (draftId) => {
-    try {
-      setIsCreatingDraft(true);
-      const response = await draftApi.getListingDraftById(draftId);
-      
-      if (response.success && response.data) {
-        setCurrentDraftId(draftId);
-        setEditingDraft(response.data);
-        setShowForm(true);
-        toast({
-          title: 'Draft Loaded',
-          description: 'You can now continue editing your property listing.',
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to load draft. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Failed to load draft:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to load draft. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsCreatingDraft(false);
-    }
+    // TODO: Implement edit functionality
+    toast({
+      title: 'Edit Feature',
+      description: 'Edit functionality will be implemented with API integration.',
+    });
   };
 
   const handleDeleteDraft = async (draftId) => {
-    if (!window.confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
       return;
     }
 
-    try {
-      const response = await draftApi.deleteListingDraft(draftId);
-      
-      if (response.success) {
-        toast({
-          title: 'Draft Deleted',
-          description: 'Your draft has been successfully deleted.',
-        });
-        fetchListings();
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to delete draft. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Failed to delete draft:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete draft. Please try again.',
-        variant: 'destructive',
-      });
-    }
+    // TODO: Implement delete functionality
+    toast({
+      title: 'Delete Feature',
+      description: 'Delete functionality will be implemented with API integration.',
+    });
   };
 
   useEffect(() => {
@@ -199,12 +154,12 @@ export default function ListPropertyV2Page() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold mb-2">My Properties</h1>
-              <p className="text-orange-100 text-sm md:text-base">Manage and track all your property listings</p>
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-2">My PG & Hostels</h1>
+              <p className="text-orange-100 text-sm md:text-base">Manage and track all your PG/Hostel listings</p>
             </div>
             <Button
               size="lg"
-              onClick={handleListNewProperty}
+              onClick={handleListNewPg}
               disabled={isCreatingDraft}
               className="h-12 px-8 text-sm font-bold bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:scale-105 transition-all duration-300 self-start md:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -216,7 +171,7 @@ export default function ListPropertyV2Page() {
               ) : (
                 <>
                   <PlusCircle className="w-5 h-5 mr-2" />
-                  List New Property
+                  List New PG/Hostel
                 </>
               )}
             </Button>
@@ -247,7 +202,7 @@ export default function ListPropertyV2Page() {
           />
           <StatsCard
             icon={<Eye className="w-6 h-6" />}
-            value="2.4k"
+            value={listings.reduce((sum, l) => sum + l.views, 0)}
             label="Total Views"
             color="purple"
           />
@@ -301,12 +256,12 @@ export default function ListPropertyV2Page() {
             <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
           </div>
         ) : filteredListings.length === 0 ? (
-          <EmptyState searchQuery={searchQuery} onAddNew={handleListNewProperty} isCreating={isCreatingDraft} />
+          <EmptyState searchQuery={searchQuery} onAddNew={handleListNewPg} isCreating={isCreatingDraft} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
               {filteredListings.map((listing, index) => (
-                <PropertyCard 
+                <PgCard 
                   key={listing.id} 
                   listing={listing} 
                   index={index}
@@ -319,7 +274,7 @@ export default function ListPropertyV2Page() {
         )}
       </div>
 
-      <PropertyFormSheetV2 
+      <PgFormSheetV2 
         open={showForm} 
         onOpenChange={handleFormClose} 
         initialDraftId={currentDraftId}
@@ -357,8 +312,8 @@ function StatsCard({ icon, value, label, color }) {
   );
 }
 
-// Property Card Component
-function PropertyCard({ listing, index, onEdit, onDelete }) {
+// PG Card Component
+function PgCard({ listing, index, onEdit, onDelete }) {
   const statusConfig = {
     published: { 
       color: 'green', 
@@ -464,43 +419,31 @@ function PropertyCard({ listing, index, onEdit, onDelete }) {
         </CardHeader>
 
         <CardContent className="pb-3">
-          {/* Property Type Badge */}
-          <div className="mb-3">
+          {/* Property Type & Gender Badges */}
+          <div className="flex gap-2 mb-3">
             <Badge variant="outline" className="text-xs font-medium">
               <Building2 className="w-3 h-3 mr-1" />
               {listing.propertyType}
             </Badge>
+            <Badge variant="outline" className="text-xs font-medium">
+              <Users className="w-3 h-3 mr-1" />
+              {listing.genderAllowed}
+            </Badge>
           </div>
 
-          {/* Property Details */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {listing.bedrooms && (
-              <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Bed className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{listing.bedrooms}</span>
-              </div>
-            )}
-            {listing.bathrooms && (
-              <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Bath className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{listing.bathrooms}</span>
-              </div>
-            )}
-            {listing.area && (
-              <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Square className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{listing.area}</span>
-              </div>
-            )}
+          {/* Bed Availability */}
+          <div className="flex items-center text-xs text-gray-600 dark:text-gray-400 mb-4">
+            <Bed className="w-4 h-4 mr-1" />
+            <span className="font-semibold">{listing.availableBeds}/{listing.totalBeds} beds available</span>
           </div>
 
           {/* Price */}
           <div className="flex items-baseline gap-2">
             <DollarSign className="w-5 h-5 text-orange-500" />
             <span className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">
-              {listing.price}
+              {listing.startingPrice}
             </span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">{listing.priceUnit}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">/month</span>
           </div>
         </CardContent>
 
@@ -528,15 +471,15 @@ function EmptyState({ searchQuery, onAddNew, isCreating }) {
       className="text-center py-20"
     >
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-orange-100 dark:bg-orange-900/20 mb-6">
-        <Building2 className="w-10 h-10 text-orange-500" />
+        <Home className="w-10 h-10 text-orange-500" />
       </div>
       <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-        {searchQuery ? 'No properties found' : 'No properties yet'}
+        {searchQuery ? 'No PG/Hostels found' : 'No PG/Hostels yet'}
       </h3>
       <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
         {searchQuery
           ? 'Try adjusting your search or filter to find what you\'re looking for.'
-          : 'Start by listing your first property and watch your portfolio grow.'}
+          : 'Start by listing your first PG/Hostel and grow your business.'}
       </p>
       {!searchQuery && (
         <Button
@@ -553,7 +496,7 @@ function EmptyState({ searchQuery, onAddNew, isCreating }) {
           ) : (
             <>
               <PlusCircle className="w-5 h-5 mr-2" />
-              List Your First Property
+              List Your First PG/Hostel
             </>
           )}
         </Button>
@@ -561,5 +504,3 @@ function EmptyState({ searchQuery, onAddNew, isCreating }) {
     </motion.div>
   );
 }
-
-

@@ -4,15 +4,15 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { PropertyFormProviderV2, usePropertyFormV2 } from '../context/PropertyFormContextV2';
-import { getStepComponent } from '../config/stepConfiguration';
+import { PgFormProviderV2, usePgFormV2 } from '../context/PgFormContextV2';
+import { getStepComponent } from '../config/stepConfigurationPg';
 
-function PropertyFormContentV2({ open, onOpenChange }) {
-  const context = usePropertyFormV2();
+function PgFormContentV2({ open, onOpenChange }) {
+  const context = usePgFormV2();
   
   // Safety check for context
   if (!context) {
-    console.error('PropertyFormContentV2 rendered outside of PropertyFormProviderV2');
+    console.error('PgFormContentV2 rendered outside of PgFormProviderV2');
     return null;
   }
   
@@ -51,7 +51,7 @@ function PropertyFormContentV2({ open, onOpenChange }) {
       >
         <SheetHeader className="px-4 py-3 md:px-6 md:py-3 mb-0 border-b bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-background flex-shrink-0">
           <SheetTitle className="text-lg md:text-xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent line-clamp-1">
-            List Your Property
+            List Your PG/Hostel
           </SheetTitle>
           {propertyType && (
             <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
@@ -71,19 +71,19 @@ function PropertyFormContentV2({ open, onOpenChange }) {
   );
 }
 
-export default function PropertyFormSheetV2({ open, onOpenChange, initialDraftId, editingDraft }) {
-  // Don't render provider if not open (prevents HMR issues)
+export default function PgFormSheetV2({ open, onOpenChange, initialDraftId, editingDraft }) {
+  // Don't render provider if not open
   if (!open) {
     return null;
   }
   
   return (
-    <PropertyFormProviderV2 
+    <PgFormProviderV2 
       onClose={onOpenChange} 
       initialDraftId={initialDraftId}
       editingDraft={editingDraft}
     >
-      <PropertyFormContentV2 open={open} onOpenChange={onOpenChange} />
-    </PropertyFormProviderV2>
+      <PgFormContentV2 open={open} onOpenChange={onOpenChange} />
+    </PgFormProviderV2>
   );
 }

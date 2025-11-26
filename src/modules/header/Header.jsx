@@ -127,7 +127,7 @@ export default function Header() {
             <SheetContent side="right" className="p-4 w-64">
               <div className="flex flex-col gap-4 mt-4">
                 {/* <NavigationMenuDemo orientation={"vertical"} /> */}
-                <div className="pt-4 border-t">
+                <div className="pt-4  ">
                   <div className="flex items-center gap-2 mb-4">
                     <Avatar className="w-8 h-8">
                       <AvatarFallback className="text-sm bg-black text-white font-bold">

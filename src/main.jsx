@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import SignIn from "./modules/SignIn.jsx";
 import ProfileSetup from "./modules/ProfileSetup/index.jsx";
 import ListPropertyV2 from "./modules/ListPropertyV2.jsx";
+import ListPgHostelV2 from "./modules/ListPgHostelV2.jsx";
 // import ListProjectV2Page from "./modules/ListProjectV2.jsx";
 // import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
 import Dashboard from "./Dashboard.jsx";
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
           {
             path: "list-property-v2",
             element: <ListPropertyV2 />,
+          },
+          {
+            path: "list-pg-hostel",
+            element: <ListPgHostelV2 />,
           },
           {
             path: "profile",
