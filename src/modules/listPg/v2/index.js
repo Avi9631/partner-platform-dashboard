@@ -4,8 +4,9 @@
  * Main entry point for PG/Hostel listing module
  */
 
-// Main form sheet component
+// Main form components
 export { default as PgFormSheetV2 } from './components/PgFormSheetV2';
+export { default as PgFormPageV2 } from './components/PgFormPageV2';
 
 // Context and hooks
 export { PgFormProviderV2, usePgFormV2 } from './context/PgFormContextV2';

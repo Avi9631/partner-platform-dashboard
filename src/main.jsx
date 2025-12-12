@@ -10,6 +10,7 @@ import SignIn from "./modules/SignIn.jsx";
 import ProfileSetup from "./modules/ProfileSetup/index.jsx";
 import ListPropertyV2 from "./modules/ListPropertyV2.jsx";
 import ListPgHostelV2 from "./modules/ListPgHostelV2.jsx";
+import PgFormPageV2 from "./modules/listPg/v2/components/PgFormPageV2.jsx";
 // import ListProjectV2Page from "./modules/ListProjectV2.jsx";
 // import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
 import Dashboard from "./Dashboard.jsx";
@@ -38,6 +39,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "list-pg-hostel/:draftId",
+        element: (
+          <ProtectedRoute>
+            <PgFormPageV2 />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "/",
         element: (
           <ProtectedRoute>
@@ -49,12 +58,10 @@ const router = createBrowserRouter([
             index: true,
             element: <Dashboard />,
           },
-                {
-        path: "upgrade-to-business",
-        element: (
-             <BusinessProfileSetup />
-         ),
-      },
+          {
+            path: "upgrade-to-business",
+            element: <BusinessProfileSetup />,
+          },
           {
             path: "list-developer",
             element: <ListDeveloperV2Page />,

@@ -4,13 +4,13 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 export const draftApi = {
   // Create a new listing draft
-  createListingDraft: async (draftData) => {
+  createListingDraft: async (draftType = 'PROPERTY') => {
     return apiCall(`${backendUrl}/createListingDraft`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(draftData),
+      body: JSON.stringify({ draftType }),
     });
   },
 
@@ -28,6 +28,11 @@ export const draftApi = {
       // Use FormData for file uploads
       const formData = new FormData();
       formData.append('draftId', draftId);
+      
+      // Add draftType if provided
+      if (draftData.draftType) {
+        formData.append('draftType', draftData.draftType);
+      }
 
       // Prepare metadata arrays and files
       const mediaDataMetadata = [];
@@ -118,12 +123,16 @@ export const draftApi = {
       return await response.json();
     } else {
       // No files, use regular JSON request
+      const payload = { draftId, draftData };
+      if (draftData.draftType) {
+        payload.draftType = draftData.draftType;
+      }
       return apiCall(`${backendUrl}/updateListingDraft`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ draftId, draftData }),
+        body: JSON.stringify(payload),
       });
     }
   },
@@ -151,8 +160,11 @@ export const draftApi = {
   },
 
   // Get user's listing drafts
-  getUserListingDrafts: async () => {
-    return apiCall(`${backendUrl}/listingDraft`);
+  getUserListingDrafts: async (draftType = null) => {
+    const url = draftType 
+      ? `${backendUrl}/listingDraft?draftType=${draftType}`
+      : `${backendUrl}/listingDraft`;
+    return apiCall(url);
   },
 
   // Get a listing draft by ID

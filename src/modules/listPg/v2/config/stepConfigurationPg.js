@@ -86,6 +86,22 @@ const PG_STEPS = [
     isVisible: () => true,
     order: 6,
   },
+  //   {
+  //   id: 'availability',
+  //   name: 'Availability',
+  //   component: AvailabilityPgStep,
+  //   category: STEP_CATEGORIES.DETAILS,
+  //   isVisible: () => true,
+  //   order: 7,
+  // },
+  // {
+  //   id: 'safety-compliance',
+  //   name: 'Safety & Compliance',
+  //   component: SafetyCompliancePgStep,
+  //   category: STEP_CATEGORIES.DETAILS,
+  //   isVisible: () => true,
+  //   order: 8,
+  // },
   {
     id: 'review-submit',
     name: 'Review & Submit',

@@ -94,9 +94,7 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
       console.log('No draft ID exists, creating new PG draft...');
       try {
         setIsCreatingDraft(true);
-        const createResponse = await draftApi.createPgDraft({
-          status: 'draft',
-        });
+        const createResponse = await draftApi.createListingDraft('PG');
         
         if (createResponse.success && createResponse.data?.draftId) {
           currentDraftId = createResponse.data.draftId;
@@ -117,12 +115,12 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
 
     // Update draft with actual data
     try {
-      console.log('Calling updatePgDraft API...', {
+      console.log('Calling updateListingDraft API...', {
         draftId: currentDraftId,
         dataKeys: Object.keys(updatedData || formData),
       });
       
-      const response = await draftApi.updatePgDraft(currentDraftId, updatedData || formData);
+      const response = await draftApi.updateListingDraft(currentDraftId, updatedData || formData);
       
       console.log('API Response:', response);
       

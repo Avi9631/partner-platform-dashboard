@@ -79,9 +79,6 @@ export default function BasicDetailsPgStep() {
       logger.logErrors(form.formState.errors);
     }
   }, [form.formState.errors, logger]);
-
- 
-
  
   const onSubmit = (data) => {
     logger.logSubmission(data, form.formState.errors);

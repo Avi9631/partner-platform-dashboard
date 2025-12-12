@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   PlusCircle, MapPin, Home, Calendar, DollarSign, 
@@ -7,7 +8,6 @@ import {
   Clock, CheckCircle, XCircle, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import PgFormSheetV2 from '@/modules/listPg/v2/components/PgFormSheetV2';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -18,16 +18,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/hooks/use-toast';
+import draftApi from '@/services/draftService';
 
 export default function ListPgHostelV2Page() {
-  const [showForm, setShowForm] = useState(false);
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [currentDraftId, setCurrentDraftId] = useState(null);
   const [isCreatingDraft, setIsCreatingDraft] = useState(false);
-  const [editingDraft, setEditingDraft] = useState(null);
   const { toast } = useToast();
 
   // Fetch PG/Hostel drafts from API
@@ -83,45 +82,41 @@ export default function ListPgHostelV2Page() {
     }
   }, [toast]);
 
-  const handleFormClose = (isOpen) => {
-    setShowForm(isOpen);
-    if (!isOpen) {
-      setCurrentDraftId(null);
-      setEditingDraft(null);
-      fetchListings();
-    }
-  };
-
   const handleListNewPg = async () => {
     try {
       setIsCreatingDraft(true);
-      // TODO: Replace with actual API call
-      // const response = await draftApi.createPgDraft({ status: 'draft' });
+
+      const response = await draftApi.createListingDraft( 'PG' );
       
-      // Mock: Just open the form for now
-      setTimeout(() => {
-        setCurrentDraftId(null);
-        setEditingDraft(null);
-        setShowForm(true);
-        setIsCreatingDraft(false);
-      }, 500);
+            console.log('Create draft response:', response);
+            
+            if (response.success && response.data?.draftId) {
+ // Navigate to the form page
+      navigate(`/list-pg-hostel/${response.data.draftId}`);
+            } else {
+              toast({
+                title: 'Error',
+                description: 'Failed to create draft. Please try again.',
+                variant: 'destructive',
+              });
+            }
+
+      
     } catch (error) {
-      console.error('Failed to create draft:', error);
+      console.error('Error navigating to form:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create draft. Please try again.',
+        description: 'Failed to open form. Please try again.',
         variant: 'destructive',
       });
+    } finally {
       setIsCreatingDraft(false);
     }
   };
 
   const handleEditDraft = async (draftId) => {
-    // TODO: Implement edit functionality
-    toast({
-      title: 'Edit Feature',
-      description: 'Edit functionality will be implemented with API integration.',
-    });
+    // Navigate to form page with draft ID
+    navigate(`/list-pg-hostel/new?draftId=${draftId}`);
   };
 
   const handleDeleteDraft = async (draftId) => {
@@ -129,7 +124,8 @@ export default function ListPgHostelV2Page() {
       return;
     }
 
-    // TODO: Implement delete functionality
+    // TODO: Implement delete functionality with API call
+    console.log('Deleting draft:', draftId);
     toast({
       title: 'Delete Feature',
       description: 'Delete functionality will be implemented with API integration.',
@@ -273,13 +269,6 @@ export default function ListPgHostelV2Page() {
           </div>
         )}
       </div>
-
-      <PgFormSheetV2 
-        open={showForm} 
-        onOpenChange={handleFormClose} 
-        initialDraftId={currentDraftId}
-        editingDraft={editingDraft}
-      />
     </div>
   );
 }
