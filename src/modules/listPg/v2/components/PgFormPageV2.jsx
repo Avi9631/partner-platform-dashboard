@@ -14,7 +14,7 @@ function PgFormContentV2() {
     return null;
   }
   
-  const { currentStep, resetForm, propertyType, formDataWithType } = context;
+  const { currentStep, resetForm, propertyType, formDataWithType, isLoadingDraft } = context;
 
   const handleClose = () => {
     if (window.confirm('Are you sure you want to close? All progress will be lost.')) {
@@ -75,7 +75,16 @@ function PgFormContentV2() {
       {/* Main Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="min-h-full px-4 py-4 md:px-6 md:py-6 pb-20 md:pb-24 bg-gradient-to-br from-orange-50/30 to-white dark:from-orange-950/10 dark:to-background">
-            {renderStepContent()}
+            {isLoadingDraft ? (
+              <div className="flex items-center justify-center h-full min-h-[400px]">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading draft data...</p>
+                </div>
+              </div>
+            ) : (
+              renderStepContent()
+            )}
           </div>
         </div>
     </div>

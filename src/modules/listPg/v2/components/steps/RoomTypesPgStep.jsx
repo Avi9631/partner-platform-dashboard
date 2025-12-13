@@ -148,7 +148,7 @@ export default function RoomTypesPgStep() {
     // Basic tab validation
     if (!roomData.name?.trim()) {
       errors.basic = 'Room name is required';
-    } else if (!roomData.roomSize?.trim()) {
+    } else if (!roomData.roomSize || (typeof roomData.roomSize === 'string' && !roomData.roomSize.trim()) || (typeof roomData.roomSize === 'number' && roomData.roomSize <= 0)) {
       errors.basic = 'Room size is required';
     }
     

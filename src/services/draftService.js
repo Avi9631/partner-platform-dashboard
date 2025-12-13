@@ -43,7 +43,8 @@ export const draftApi = {
       if (draftData.mediaData && Array.isArray(draftData.mediaData)) {
         draftData.mediaData.forEach((media) => {
           if (media.file instanceof File) {
-            // Add metadata (excluding file)
+            // This is a new file to upload
+            // Add metadata (excluding file and preview)
             mediaDataMetadata.push({
               title: media.title || '',
               type: media.type || 'image',
@@ -53,6 +54,20 @@ export const draftApi = {
             });
             // Add file
             formData.append('mediaData', media.file);
+          } else if (media.url) {
+            // This is already uploaded media - preserve it
+            mediaDataMetadata.push({
+              title: media.title || '',
+              type: media.type || 'image',
+              category: media.category || 'general',
+              description: media.description || '',
+              docType: media.docType || '',
+              url: media.url,
+              key: media.key,
+              originalName: media.originalName,
+              mimetype: media.mimetype,
+              uploadedAt: media.uploadedAt,
+            });
           }
         });
       }

@@ -33,7 +33,39 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
     defaultValues: {},
   });
 
-  // Load draft data when editingDraft is provided
+  // Fetch draft data from API when initialDraftId is provided
+  const fetchDraftData = useCallback(async (id) => {
+    try {
+      setIsLoadingDraft(true);
+      console.log('Fetching PG draft data for ID:', id);
+      
+      const response = await draftApi.getListingDraftById(id);
+      
+      if (response.success && response.data) {
+        console.log('PG draft data fetched successfully:', response.data);
+        
+        // Set form data from fetched draft
+        if (response.data.draftData) {
+          setFormData(response.data.draftData);
+          console.log('Form data populated from draft');
+        }
+        
+        // Mark all steps as not completed (user can edit any step)
+        setCompletedSteps(new Set());
+        
+        // Start from the first step
+        setCurrentStep(0);
+      } else {
+        console.error('Failed to fetch PG draft data:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching PG draft data:', error);
+    } finally {
+      setIsLoadingDraft(false);
+    }
+  }, []);
+
+  // Load draft data when editingDraft is provided (legacy support)
   const loadDraftData = useCallback(() => {
     if (editingDraft && editingDraft.draftData) {
       setIsLoadingDraft(true);
@@ -53,12 +85,16 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
     }
   }, [editingDraft]);
 
-  // Load draft data on mount when editingDraft changes
+  // Load draft data on mount when initialDraftId or editingDraft changes
   useEffect(() => {
-    if (editingDraft) {
+    if (initialDraftId && !editingDraft) {
+      // Fetch draft data from API when draftId is in URL
+      fetchDraftData(initialDraftId);
+    } else if (editingDraft) {
+      // Load draft data directly when provided as prop (legacy)
       loadDraftData();
     }
-  }, [editingDraft, loadDraftData]);
+  }, [initialDraftId, editingDraft, fetchDraftData, loadDraftData]);
 
   // Memoize the form data with propertyType
   const formDataWithType = useMemo(() => ({

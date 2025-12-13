@@ -115,6 +115,21 @@ export default function MediaUploadPgStepV2() {
   // Validation: At least one image is required
   const isValid = imageCount > 0;
 
+  // Helper function to check if file is duplicate
+  const isDuplicateFile = useCallback(
+    (newFile) => {
+      return mediaList.some((media) => {
+        if (!media.file) return false;
+        return (
+          media.file.name === newFile.name &&
+          media.file.size === newFile.size &&
+          media.file.lastModified === newFile.lastModified
+        );
+      });
+    },
+    [mediaList]
+  );
+
   // Handle unified media upload (images and videos)
   const handleMediaUpload = useCallback(
     (e) => {
@@ -123,6 +138,14 @@ export default function MediaUploadPgStepV2() {
       const validMedia = [];
 
       files.forEach((file) => {
+        // Check for duplicate files
+        if (isDuplicateFile(file)) {
+          newErrors.push(
+            `${file.name}: This file has already been uploaded.`
+          );
+          return;
+        }
+
         // Determine if it's an image or video
         const isImage = ACCEPTED_IMAGE_TYPES.includes(file.type);
         const isVideo = ACCEPTED_VIDEO_TYPES.includes(file.type);
@@ -174,7 +197,7 @@ export default function MediaUploadPgStepV2() {
       // Reset input
       e.target.value = "";
     },
-    [mediaList, setValue]
+    [mediaList, setValue, isDuplicateFile]
   );
 
   // Update media metadata
@@ -212,8 +235,25 @@ export default function MediaUploadPgStepV2() {
 
   // Handle form submission
   const handleContinue = () => {
+    // Remove any potential duplicates before saving
+    const uniqueMedia = mediaList.filter((media, index, self) => {
+      // Keep the item if it's the first occurrence with this combination
+      return (
+        index ===
+        self.findIndex(
+          (m) =>
+            m.file?.name === media.file?.name &&
+            m.file?.size === media.file?.size &&
+            m.file?.lastModified === media.file?.lastModified
+        )
+      );
+    });
+
+    // The backend will REPLACE (not append) the media array
+    // Send only new files (with File objects) for upload
+    // For already uploaded media (with URLs), include in metadata
     const data = {
-      mediaData: mediaList,
+      mediaData: uniqueMedia, // All media items (new files + uploaded with URLs)
     };
     saveAndContinue(data);
   };
