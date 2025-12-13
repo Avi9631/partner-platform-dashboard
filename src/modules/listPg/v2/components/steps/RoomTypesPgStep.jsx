@@ -17,7 +17,9 @@ import {
   IndianRupee,
   Edit3,
   Trash2,
-  Copy
+  Copy,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,6 +50,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+} from '@/components/ui/sheet';
 import {
   Accordion,
   AccordionContent,
@@ -100,6 +111,11 @@ export default function RoomTypesPgStep() {
   const { saveAndContinue, previousStep, formData } = usePgFormV2();
   const [showAmenitiesDialog, setShowAmenitiesDialog] = useState(false);
   const [selectedAmenitiesRoomIndex, setSelectedAmenitiesRoomIndex] = useState(0);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [editingRoomIndex, setEditingRoomIndex] = useState(null);
+  const [tempRoomData, setTempRoomData] = useState(null);
+  const [currentSheetTab, setCurrentSheetTab] = useState('basic');
+  const [sheetValidationErrors, setSheetValidationErrors] = useState({});
 
   const logger = useMemo(() => createStepLogger('Room Types PG Step V2'), []);
 
@@ -108,24 +124,7 @@ export default function RoomTypesPgStep() {
     mode: 'onChange',
     defaultValues: {
       roomTypes: formData?.roomTypes?.length > 0 ? formData.roomTypes : [
-        {
-          name: '',
-          category: 'Single sharing',
-          ac: false,
-          attachedWashroom: false,
-          balcony: false,
-          roomSize: '',
-          pricing: [],
-          availability: {
-            totalBeds: 0,
-            availableBeds: 0,
-            soldOut: false,
-            nextAvailability: 'Immediate',
-            seasonalPricing: false,
-          },
-          refundPolicy: '',
-          amenities: [],
-        }
+       
       ],
     },
   });
@@ -142,14 +141,61 @@ export default function RoomTypesPgStep() {
     }
   }, [form.formState.errors, logger]);
 
+  // Validate tab completion
+  const validateTabCompletion = (roomData) => {
+    const errors = {};
+    
+    // Basic tab validation
+    if (!roomData.name?.trim()) {
+      errors.basic = 'Room name is required';
+    } else if (!roomData.roomSize?.trim()) {
+      errors.basic = 'Room size is required';
+    }
+    
+    // Pricing tab validation
+    if (!roomData.pricing || roomData.pricing.length === 0) {
+      errors.pricing = 'At least one pricing item is required';
+    } else {
+      const hasInvalidPricing = roomData.pricing.some(p => !p.type || p.amount <= 0);
+      if (hasInvalidPricing) {
+        errors.pricing = 'All pricing items must have type and amount > 0';
+      }
+    }
+    
+    // Amenities tab validation
+    if (!roomData.amenities || roomData.amenities.length === 0) {
+      errors.amenities = 'Please select at least one amenity';
+    }
+    
+    // Availability tab validation
+    if (!roomData.availability?.totalBeds || roomData.availability.totalBeds <= 0) {
+      errors.availability = 'Total beds must be greater than 0';
+    } else if (roomData.availability.availableBeds > roomData.availability.totalBeds) {
+      errors.availability = 'Available beds cannot exceed total beds';
+    }
+    
+    return errors;
+  };
+
+  // Check if tab is complete
+  const isTabComplete = (tabName, roomData) => {
+    if (!roomData) return false;
+    const errors = validateTabCompletion(roomData);
+    return !errors[tabName];
+  };
+
+  // Check if all tabs are complete
+  const areAllTabsComplete = (roomData) => {
+    if (!roomData) return false;
+    const errors = validateTabCompletion(roomData);
+    return Object.keys(errors).length === 0;
+  };
+
   // Add new room type
   const handleAddRoomType = () => {
-    addRoomType({
+    const newRoom = {
       name: '',
       category: 'Single sharing',
-      ac: false,
-      attachedWashroom: false,
-      balcony: false,
       roomSize: '',
       pricing: [
         { type: 'Monthly Rent', amount: 0, currency: 'INR', mandatory: true },
@@ -160,10 +206,78 @@ export default function RoomTypesPgStep() {
         availableBeds: 1,
         soldOut: false,
         nextAvailability: 'Immediate',
-        seasonalPricing: false,
       },
       refundPolicy: '',
       amenities: [],
+    };
+    setTempRoomData(newRoom);
+    setEditingRoomIndex(null);
+    setCurrentSheetTab('basic');
+    setSheetValidationErrors({});
+    setIsSheetOpen(true);
+  };
+
+  // Edit room type
+  const handleEditRoomType = (index) => {
+    const roomToEdit = form.getValues(`roomTypes.${index}`);
+    setTempRoomData({ ...roomToEdit });
+    setEditingRoomIndex(index);
+    setCurrentSheetTab('basic');
+    setSheetValidationErrors(validateTabCompletion({ ...roomToEdit }));
+    setIsSheetOpen(true);
+  };
+
+  // Save room from sheet
+  const handleSaveRoomFromSheet = () => {
+    if (!tempRoomData) return;
+    
+    // Validate all tabs
+    const errors = validateTabCompletion(tempRoomData);
+    setSheetValidationErrors(errors);
+    
+    // If there are errors, switch to the first tab with error
+    if (Object.keys(errors).length > 0) {
+      const firstErrorTab = Object.keys(errors)[0];
+      setCurrentSheetTab(firstErrorTab);
+      return;
+    }
+    
+    if (editingRoomIndex !== null) {
+      // Update existing room
+      form.setValue(`roomTypes.${editingRoomIndex}`, tempRoomData);
+    } else {
+      // Add new room
+      addRoomType(tempRoomData);
+    }
+    
+    setIsSheetOpen(false);
+    setTempRoomData(null);
+    setEditingRoomIndex(null);
+    setCurrentSheetTab('basic');
+    setSheetValidationErrors({});
+  };
+
+  // Update temp room data
+  const updateTempRoomField = (fieldPath, value) => {
+    setTempRoomData(prev => {
+      const newData = { ...prev };
+      const keys = fieldPath.split('.');
+      let current = newData;
+      
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+          current[keys[i]] = {};
+        }
+        current = current[keys[i]];
+      }
+      
+      current[keys[keys.length - 1]] = value;
+      
+      // Revalidate after update
+      const errors = validateTabCompletion(newData);
+      setSheetValidationErrors(errors);
+      
+      return newData;
     });
   };
 
@@ -178,40 +292,74 @@ export default function RoomTypesPgStep() {
 
   // Add pricing item
   const addPricingItem = (roomIndex) => {
-    const currentPricing = form.getValues(`roomTypes.${roomIndex}.pricing`) || [];
-    form.setValue(`roomTypes.${roomIndex}.pricing`, [
-      ...currentPricing,
-      { type: 'Maintenance Charges', amount: 0, currency: 'INR', mandatory: true, frequency: 'monthly' }
-    ]);
+    if (isSheetOpen && tempRoomData) {
+      // Working with sheet data
+      const currentPricing = tempRoomData.pricing || [];
+      updateTempRoomField('pricing', [
+        ...currentPricing,
+        { type: 'Maintenance Charges', amount: 0, currency: 'INR', mandatory: true, frequency: 'monthly' }
+      ]);
+    } else {
+      // Working with form data
+      const currentPricing = form.getValues(`roomTypes.${roomIndex}.pricing`) || [];
+      form.setValue(`roomTypes.${roomIndex}.pricing`, [
+        ...currentPricing,
+        { type: 'Maintenance Charges', amount: 0, currency: 'INR', mandatory: true, frequency: 'monthly' }
+      ]);
+    }
   };
 
   // Remove pricing item
   const removePricingItem = (roomIndex, pricingIndex) => {
-    const currentPricing = form.getValues(`roomTypes.${roomIndex}.pricing`) || [];
-    form.setValue(
-      `roomTypes.${roomIndex}.pricing`, 
-      currentPricing.filter((_, i) => i !== pricingIndex)
-    );
+    if (isSheetOpen && tempRoomData) {
+      // Working with sheet data
+      const currentPricing = tempRoomData.pricing || [];
+      updateTempRoomField('pricing', currentPricing.filter((_, i) => i !== pricingIndex));
+    } else {
+      // Working with form data
+      const currentPricing = form.getValues(`roomTypes.${roomIndex}.pricing`) || [];
+      form.setValue(
+        `roomTypes.${roomIndex}.pricing`, 
+        currentPricing.filter((_, i) => i !== pricingIndex)
+      );
+    }
   };
 
   // Toggle room amenity
   const toggleAmenity = (roomIndex, amenityName) => {
-    const currentAmenities = form.getValues(`roomTypes.${roomIndex}.amenities`) || [];
-    const existingIndex = currentAmenities.findIndex(a => a.name === amenityName);
-    
-    if (existingIndex >= 0) {
-      // Remove amenity
-      form.setValue(
-        `roomTypes.${roomIndex}.amenities`,
-        currentAmenities.filter((_, i) => i !== existingIndex)
-      );
+    if (isSheetOpen && tempRoomData) {
+      // Working with sheet data
+      const currentAmenities = tempRoomData.amenities || [];
+      const existingIndex = currentAmenities.findIndex(a => a.name === amenityName);
+      
+      if (existingIndex >= 0) {
+        updateTempRoomField('amenities', currentAmenities.filter((_, i) => i !== existingIndex));
+      } else {
+        const amenityData = ROOM_AMENITIES.find(a => a.name === amenityName);
+        updateTempRoomField('amenities', [
+          ...currentAmenities,
+          { name: amenityName, available: true }
+        ]);
+      }
     } else {
-      // Add amenity
-      const amenityData = ROOM_AMENITIES.find(a => a.name === amenityName);
-      form.setValue(
-        `roomTypes.${roomIndex}.amenities`,
-        [...currentAmenities, { name: amenityName, available: true, icon: amenityData?.icon }]
-      );
+      // Working with form data
+      const currentAmenities = form.getValues(`roomTypes.${roomIndex}.amenities`) || [];
+      const existingIndex = currentAmenities.findIndex(a => a.name === amenityName);
+      
+      if (existingIndex >= 0) {
+        // Remove amenity
+        form.setValue(
+          `roomTypes.${roomIndex}.amenities`,
+          currentAmenities.filter((_, i) => i !== existingIndex)
+        );
+      } else {
+        // Add amenity
+        const amenityData = ROOM_AMENITIES.find(a => a.name === amenityName);
+        form.setValue(
+          `roomTypes.${roomIndex}.amenities`,
+          [...currentAmenities, { name: amenityName, available: true, icon: amenityData?.icon }]
+        );
+      }
     }
   };
 
@@ -281,17 +429,17 @@ export default function RoomTypesPgStep() {
                 </Button>
               </div>
             ) : (
-              <Accordion type="single" collapsible className="w-full">
+              <div className="grid grid-cols-1 gap-4">
                 {roomTypes.map((roomType, index) => {
                   const roomData = form.watch(`roomTypes.${index}`);
                   const hasErrors = form.formState.errors.roomTypes?.[index];
                   
                   return (
-                    <AccordionItem key={roomType.id} value={`room-${index}`} className="border rounded-lg mb-3">
-                      <AccordionTrigger className={`px-3 md:px-4 py-3 hover:no-underline ${
-                        hasErrors ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''
-                      }`}>
-                        <div className="flex items-center justify-between w-full pr-2 md:pr-4">
+                    <Card key={roomType.id} className={`${
+                      hasErrors ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''
+                    }`}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                             <div className="flex items-center gap-2">
                               <Bed className="w-4 md:w-5 h-4 md:h-5 text-orange-600" />
@@ -299,630 +447,51 @@ export default function RoomTypesPgStep() {
                                 {roomData?.name || `Room Type ${index + 1}`}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={roomData?.ac ? 'default' : 'secondary'} className="text-xs">
-                                {roomData?.ac ? 'AC' : 'Non-AC'}
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                {roomData?.category}
-                              </Badge>
-                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {roomData?.category}
+                            </Badge>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className="hidden sm:flex items-center gap-1">
-                              {roomData?.ac && <Snowflake className="w-3 h-3 text-blue-500" />}
-                              {roomData?.attachedWashroom && <Droplets className="w-3 h-3 text-blue-500" />}
-                              {roomData?.balcony && <MapPin className="w-3 h-3 text-green-500" />}
-                            </div>
-                            <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleEditRoomType(index)}
+                              className="h-8 w-8 p-0"
+                              title="Edit"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => duplicateRoomType(index)}
+                              className="h-8 w-8 p-0"
+                              title="Duplicate"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                            {roomTypes.length > 1 && (
                               <Button
                                 type="button"
                                 size="sm"
                                 variant="ghost"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  duplicateRoomType(index);
-                                }}
-                                className="h-6 md:h-7 w-6 md:w-7 p-0"
-                                title="Duplicate"
+                                onClick={() => removeRoomType(index)}
+                                className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                                title="Delete"
                               >
-                                <Copy className="w-3 h-3" />
+                                <Trash2 className="w-4 h-4" />
                               </Button>
-                              {roomTypes.length > 1 && (
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    removeRoomType(index);
-                                  }}
-                                  className="h-6 md:h-7 w-6 md:w-7 p-0 text-red-500 hover:text-red-700"
-                                  title="Delete"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              )}
-                            </div>
+                            )}
                           </div>
                         </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-3 md:px-4 pb-4">
-                        <Tabs defaultValue="basic" className="w-full">
-                          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 text-xs md:text-sm h-8 md:h-10">
-                            <TabsTrigger value="basic" className="px-1 md:px-4 text-xs md:text-sm">Basic</TabsTrigger>
-                            <TabsTrigger value="pricing" className="px-1 md:px-4 text-xs md:text-sm">Pricing</TabsTrigger>
-                            <TabsTrigger value="amenities" className="px-1 md:px-4 text-xs md:text-sm">Amenities</TabsTrigger>
-                            <TabsTrigger value="availability" className="px-1 md:px-4 text-xs md:text-sm">Availability</TabsTrigger>
-                          </TabsList>
-
-                          {/* Basic Information Tab */}
-                          <TabsContent value="basic" className="mt-4 md:mt-6 space-y-4 md:space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                              <Controller
-                                name={`roomTypes.${index}.name`}
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                  <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel>
-                                      Room Name <span className="text-red-500">*</span>
-                                    </FieldLabel>
-                                    <Input
-                                      {...field}
-                                      placeholder="e.g., Single Occupancy AC"
-                                      className={`h-10 md:h-11 ${fieldState.invalid ? 'border-red-500' : ''}`}
-                                    />
-                                    {fieldState.invalid && (
-                                      <FieldError errors={[fieldState.error]} />
-                                    )}
-                                  </Field>
-                                )}
-                              />
-
-                              <Controller
-                                name={`roomTypes.${index}.category`}
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                  <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel>
-                                      Room Category <span className="text-red-500">*</span>
-                                    </FieldLabel>
-                                    <Select
-                                      value={field.value}
-                                      onValueChange={field.onChange}
-                                    >
-                                      <SelectTrigger className={`h-10 md:h-11 ${fieldState.invalid ? 'border-red-500' : ''}`}>
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="Single sharing">Single Sharing</SelectItem>
-                                        <SelectItem value="Double sharing">Double Sharing</SelectItem>
-                                        <SelectItem value="Triple sharing">Triple Sharing</SelectItem>
-                                        <SelectItem value="Four sharing">Four Sharing</SelectItem>
-                                        <SelectItem value="Six sharing">Six Sharing</SelectItem>
-                                        <SelectItem value="Private room">Private Room</SelectItem>
-                                        <SelectItem value="Studio">Studio</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    {fieldState.invalid && (
-                                      <FieldError errors={[fieldState.error]} />
-                                    )}
-                                  </Field>
-                                )}
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                              <Controller
-                                name={`roomTypes.${index}.roomSize`}
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                  <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel>
-                                      Room Size <span className="text-red-500">*</span>
-                                    </FieldLabel>
-                                    <Input
-                                      {...field}
-                                      placeholder="e.g., 120 sq.ft"
-                                      className={`h-10 md:h-11 ${fieldState.invalid ? 'border-red-500' : ''}`}
-                                    />
-                                    {fieldState.invalid && (
-                                      <FieldError errors={[fieldState.error]} />
-                                    )}
-                                  </Field>
-                                )}
-                              />
-
-                              <div className="space-y-3 md:space-y-4">
-                                <Label className="text-sm font-semibold">Room Features</Label>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-                                  <Controller
-                                    name={`roomTypes.${index}.ac`}
-                                    control={form.control}
-                                    render={({ field }) => (
-                                      <div className="flex items-center space-x-2">
-                                        <Switch
-                                          id={`ac-${index}`}
-                                          checked={field.value}
-                                          onCheckedChange={field.onChange}
-                                        />
-                                        <Label htmlFor={`ac-${index}`} className="text-xs md:text-sm">
-                                          AC
-                                        </Label>
-                                      </div>
-                                    )}
-                                  />
-
-                                  <Controller
-                                    name={`roomTypes.${index}.attachedWashroom`}
-                                    control={form.control}
-                                    render={({ field }) => (
-                                      <div className="flex items-center space-x-2">
-                                        <Switch
-                                          id={`washroom-${index}`}
-                                          checked={field.value}
-                                          onCheckedChange={field.onChange}
-                                        />
-                                        <Label htmlFor={`washroom-${index}`} className="text-xs md:text-sm">
-                                          Attached Bathroom
-                                        </Label>
-                                      </div>
-                                    )}
-                                  />
-
-                                  <Controller
-                                    name={`roomTypes.${index}.balcony`}
-                                    control={form.control}
-                                    render={({ field }) => (
-                                      <div className="flex items-center space-x-2">
-                                        <Switch
-                                          id={`balcony-${index}`}
-                                          checked={field.value}
-                                          onCheckedChange={field.onChange}
-                                        />
-                                        <Label htmlFor={`balcony-${index}`} className="text-xs md:text-sm">
-                                          Balcony
-                                        </Label>
-                                      </div>
-                                    )}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-
-                            <Controller
-                              name={`roomTypes.${index}.refundPolicy`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                  <FieldLabel>
-                                    Refund Policy <span className="text-red-500">*</span>
-                                  </FieldLabel>
-                                  <Textarea
-                                    {...field}
-                                    placeholder="e.g., 100% refund if cancelled 15 days before move-in"
-                                    className={`min-h-[60px] md:min-h-[80px] ${fieldState.invalid ? 'border-red-500' : ''}`}
-                                  />
-                                  {fieldState.invalid && (
-                                    <FieldError errors={[fieldState.error]} />
-                                  )}
-                                </Field>
-                              )}
-                            />
-                          </TabsContent>
-
-                          {/* Pricing Tab */}
-                          <TabsContent value="pricing" className="mt-4 md:mt-6 space-y-4 md:space-y-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                              <h3 className="text-base md:text-lg font-semibold">Pricing Details</h3>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => addPricingItem(index)}
-                                className="self-start sm:self-auto"
-                              >
-                                <Plus className="w-4 h-4 mr-2" />
-                                <span className="hidden sm:inline">Add Item</span>
-                                <span className="sm:hidden">Add</span>
-                              </Button>
-                            </div>
-
-                            <div className="space-y-3 md:space-y-4">
-                              {form.watch(`roomTypes.${index}.pricing`)?.map((pricingItem, pricingIndex) => (
-                                <motion.div
-                                  key={pricingIndex}
-                                  initial={{ opacity: 0, y: -10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  className="p-3 md:p-4 border-2 rounded-lg space-y-3 md:space-y-4"
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="font-medium text-sm md:text-base">Pricing Item {pricingIndex + 1}</h4>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removePricingItem(index, pricingIndex)}
-                                      className="text-red-500 hover:text-red-700 h-7 w-7 p-0"
-                                    >
-                                      <X className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                                    <Controller
-                                      name={`roomTypes.${index}.pricing.${pricingIndex}.type`}
-                                      control={form.control}
-                                      render={({ field, fieldState }) => (
-                                        <Field data-invalid={fieldState.invalid}>
-                                          <FieldLabel className="text-xs md:text-sm">Type</FieldLabel>
-                                          <Select
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                          >
-                                            <SelectTrigger className={`h-9 md:h-10 ${fieldState.invalid ? 'border-red-500' : ''}`}>
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              {PRICING_TYPES.map((type) => (
-                                                <SelectItem key={type} value={type}>{type}</SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </Field>
-                                      )}
-                                    />
-
-                                    <Controller
-                                      name={`roomTypes.${index}.pricing.${pricingIndex}.amount`}
-                                      control={form.control}
-                                      render={({ field, fieldState }) => (
-                                        <Field data-invalid={fieldState.invalid}>
-                                          <FieldLabel className="text-xs md:text-sm">Amount (₹)</FieldLabel>
-                                          <Input
-                                            {...field}
-                                            type="number"
-                                            min="0"
-                                            placeholder="0"
-                                            className={`h-9 md:h-10 ${fieldState.invalid ? 'border-red-500' : ''}`}
-                                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                          />
-                                        </Field>
-                                      )}
-                                    />
-
-                                    <Controller
-                                      name={`roomTypes.${index}.pricing.${pricingIndex}.frequency`}
-                                      control={form.control}
-                                      render={({ field }) => (
-                                        <Field>
-                                          <FieldLabel className="text-xs md:text-sm">Frequency</FieldLabel>
-                                          <Select
-                                            value={field.value || 'monthly'}
-                                            onValueChange={field.onChange}
-                                          >
-                                            <SelectTrigger className="h-9 md:h-10">
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="monthly">Monthly</SelectItem>
-                                              <SelectItem value="one_time">One Time</SelectItem>
-                                              <SelectItem value="per_unit">Per Unit</SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </Field>
-                                      )}
-                                    />
-                                  </div>
-
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                                    <Controller
-                                      name={`roomTypes.${index}.pricing.${pricingIndex}.mandatory`}
-                                      control={form.control}
-                                      render={({ field }) => (
-                                        <div className="flex items-center space-x-2">
-                                          <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                          />
-                                          <Label className="text-xs md:text-sm">Mandatory</Label>
-                                        </div>
-                                      )}
-                                    />
-
-                                    <Controller
-                                      name={`roomTypes.${index}.pricing.${pricingIndex}.refundable`}
-                                      control={form.control}
-                                      render={({ field }) => (
-                                        <div className="flex items-center space-x-2">
-                                          <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                          />
-                                          <Label className="text-xs md:text-sm">Refundable</Label>
-                                        </div>
-                                      )}
-                                    />
-                                  </div>
-
-                                  <Controller
-                                    name={`roomTypes.${index}.pricing.${pricingIndex}.note`}
-                                    control={form.control}
-                                    render={({ field }) => (
-                                      <Field>
-                                        <FieldLabel className="text-xs md:text-sm">Note (Optional)</FieldLabel>
-                                        <Input
-                                          {...field}
-                                          placeholder="Additional notes about this pricing item"
-                                          className="h-9 md:h-10"
-                                        />
-                                      </Field>
-                                    )}
-                                  />
-                                </motion.div>
-                              ))}
-
-                              {(!form.watch(`roomTypes.${index}.pricing`) || 
-                                form.watch(`roomTypes.${index}.pricing`).length === 0) && (
-                                <div className="text-center py-6 md:py-8 border-2 border-dashed rounded-lg">
-                                  <DollarSign className="w-8 md:w-12 h-8 md:h-12 mx-auto text-muted-foreground/50 mb-2" />
-                                  <p className="text-sm text-muted-foreground">No pricing items added</p>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => addPricingItem(index)}
-                                    className="mt-2"
-                                  >
-                                    Add First Pricing Item
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                          </TabsContent>
-
-                          {/* Amenities Tab */}
-                          <TabsContent value="amenities" className="mt-4 md:mt-6 space-y-4 md:space-y-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                              <h3 className="text-base md:text-lg font-semibold">Room Amenities</h3>
-                              <Dialog open={showAmenitiesDialog} onOpenChange={setShowAmenitiesDialog}>
-                                <DialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => setSelectedAmenitiesRoomIndex(index)}
-                                    className="self-start sm:self-auto"
-                                  >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    <span className="hidden sm:inline">Add Amenities</span>
-                                    <span className="sm:hidden">Add</span>
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
-                                  <DialogHeader>
-                                    <DialogTitle>Select Room Amenities</DialogTitle>
-                                  </DialogHeader>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                                    {ROOM_AMENITIES.map((amenity) => {
-                                      const isSelected = form.watch(`roomTypes.${selectedAmenitiesRoomIndex}.amenities`)
-                                        ?.some(a => a.name === amenity.name) || false;
-                                      
-                                      return (
-                                        <button
-                                          key={amenity.name}
-                                          type="button"
-                                          onClick={() => toggleAmenity(selectedAmenitiesRoomIndex, amenity.name)}
-                                          className={`p-3 text-left border-2 rounded-lg transition-all ${
-                                            isSelected
-                                              ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
-                                              : 'border-muted hover:border-orange-500/50'
-                                          }`}
-                                        >
-                                          <div className="flex items-center gap-3">
-                                            <amenity.icon className={`w-5 h-5 ${
-                                              isSelected ? 'text-orange-600' : 'text-muted-foreground'
-                                            }`} />
-                                            <span className="text-sm font-medium">{amenity.name}</span>
-                                            {isSelected && <Check className="w-4 h-4 text-orange-600 ml-auto" />}
-                                          </div>
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                              {form.watch(`roomTypes.${index}.amenities`)?.map((amenity, amenityIndex) => {
-                                const amenityData = ROOM_AMENITIES.find(a => a.name === amenity.name);
-                                const IconComponent = amenityData?.icon || Square;
-                                
-                                return (
-                                  <motion.div
-                                    key={amenityIndex}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="p-3 border-2 border-orange-200 bg-orange-50 dark:bg-orange-900/20 rounded-lg"
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <IconComponent className="w-4 h-4 text-orange-600 flex-shrink-0" />
-                                      <span className="text-sm font-medium flex-1 truncate">{amenity.name}</span>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => toggleAmenity(index, amenity.name)}
-                                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700 flex-shrink-0"
-                                      >
-                                        <X className="w-3 h-3" />
-                                      </Button>
-                                    </div>
-                                  </motion.div>
-                                );
-                              })}
-                            </div>
-
-                            {(!form.watch(`roomTypes.${index}.amenities`) || 
-                              form.watch(`roomTypes.${index}.amenities`).length === 0) && (
-                              <div className="text-center py-6 md:py-8 border-2 border-dashed rounded-lg">
-                                <Square className="w-8 md:w-12 h-8 md:h-12 mx-auto text-muted-foreground/50 mb-2" />
-                                <p className="text-sm text-muted-foreground">No amenities selected</p>
-                                <p className="text-xs text-muted-foreground">Add amenities to showcase room features</p>
-                              </div>
-                            )}
-                          </TabsContent>
-
-                          {/* Availability Tab */}
-                          <TabsContent value="availability" className="mt-4 md:mt-6 space-y-4 md:space-y-6">
-                            <h3 className="text-base md:text-lg font-semibold">Availability & Inventory</h3>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                              <Controller
-                                name={`roomTypes.${index}.availability.totalBeds`}
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                  <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel>
-                                      Total Beds <span className="text-red-500">*</span>
-                                    </FieldLabel>
-                                    <Input
-                                      {...field}
-                                      type="number"
-                                      min="1"
-                                      placeholder="5"
-                                      className={`h-10 md:h-11 ${fieldState.invalid ? 'border-red-500' : ''}`}
-                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                    />
-                                    {fieldState.invalid && (
-                                      <FieldError errors={[fieldState.error]} />
-                                    )}
-                                  </Field>
-                                )}
-                              />
-
-                              <Controller
-                                name={`roomTypes.${index}.availability.availableBeds`}
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                  <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel>
-                                      Available Beds <span className="text-red-500">*</span>
-                                    </FieldLabel>
-                                    <Input
-                                      {...field}
-                                      type="number"
-                                      min="0"
-                                      max={form.watch(`roomTypes.${index}.availability.totalBeds`) || 999}
-                                      placeholder="2"
-                                      className={`h-10 md:h-11 ${fieldState.invalid ? 'border-red-500' : ''}`}
-                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                    />
-                                    {fieldState.invalid && (
-                                      <FieldError errors={[fieldState.error]} />
-                                    )}
-                                  </Field>
-                                )}
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                              <Controller
-                                name={`roomTypes.${index}.availability.nextAvailability`}
-                                control={form.control}
-                                render={({ field }) => (
-                                  <Field>
-                                    <FieldLabel>Next Availability</FieldLabel>
-                                    <Input
-                                      {...field}
-                                      placeholder="e.g., Immediate, Next month"
-                                      className="h-10 md:h-11"
-                                    />
-                                  </Field>
-                                )}
-                              />
-
-                              <div className="space-y-4">
-                                <Controller
-                                  name={`roomTypes.${index}.availability.soldOut`}
-                                  control={form.control}
-                                  render={({ field }) => (
-                                    <div className="flex items-center space-x-2">
-                                      <Switch
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                      />
-                                      <Label className="text-sm">Currently Sold Out</Label>
-                                    </div>
-                                  )}
-                                />
-
-                                <Controller
-                                  name={`roomTypes.${index}.availability.seasonalPricing`}
-                                  control={form.control}
-                                  render={({ field }) => (
-                                    <div className="flex items-center space-x-2">
-                                      <Switch
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                      />
-                                      <Label className="text-sm">Seasonal Pricing</Label>
-                                    </div>
-                                  )}
-                                />
-                              </div>
-                            </div>
-
-                            {/* Availability Summary */}
-                            <div className="p-4 bg-muted rounded-lg">
-                              <h4 className="font-semibold mb-2">Availability Summary</h4>
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="text-muted-foreground">Total Beds:</span>
-                                  <span className="ml-2 font-medium">
-                                    {form.watch(`roomTypes.${index}.availability.totalBeds`) || 0}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Available:</span>
-                                  <span className="ml-2 font-medium">
-                                    {form.watch(`roomTypes.${index}.availability.availableBeds`) || 0}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Occupancy:</span>
-                                  <span className="ml-2 font-medium">
-                                    {(() => {
-                                      const total = form.watch(`roomTypes.${index}.availability.totalBeds`) || 0;
-                                      const available = form.watch(`roomTypes.${index}.availability.availableBeds`) || 0;
-                                      const occupied = total - available;
-                                      const percentage = total > 0 ? Math.round((occupied / total) * 100) : 0;
-                                      return `${percentage}%`;
-                                    })()}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Status:</span>
-                                  <span className={`ml-2 font-medium ${
-                                    form.watch(`roomTypes.${index}.availability.soldOut`)
-                                      ? 'text-red-600'
-                                      : 'text-green-600'
-                                  }`}>
-                                    {form.watch(`roomTypes.${index}.availability.soldOut`) 
-                                      ? 'Sold Out' 
-                                      : 'Available'
-                                    }
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </TabsContent>
-                        </Tabs>
-                      </AccordionContent>
-                    </AccordionItem>
+                      </CardHeader>
+ 
+                    </Card>
                   );
                 })}
-              </Accordion>
+              </div>
             )}
           </div>
 
@@ -935,6 +504,487 @@ export default function RoomTypesPgStep() {
           />
         </form>
       </motion.div>
+
+      {/* Room Type Sheet */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="w-full sm:max-w-2xl lg:max-w-3xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="text-xl md:text-2xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+              {editingRoomIndex !== null ? 'Edit Room Type' : 'Add New Room Type'}
+            </SheetTitle>
+            <SheetDescription>
+              Configure room details, pricing, amenities, and availability
+            </SheetDescription>
+          </SheetHeader>
+
+          {tempRoomData && (
+            <div className="mt-6">
+              <Tabs value={currentSheetTab} onValueChange={setCurrentSheetTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+                  <TabsTrigger value="basic" className="relative">
+                    <span className="flex items-center gap-1.5">
+                      Basic
+                      {isTabComplete('basic', tempRoomData) ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                      ) : sheetValidationErrors.basic ? (
+                        <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                      ) : null}
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="pricing" className="relative">
+                    <span className="flex items-center gap-1.5">
+                      Pricing
+                      {isTabComplete('pricing', tempRoomData) ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                      ) : sheetValidationErrors.pricing ? (
+                        <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                      ) : null}
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="amenities" className="relative">
+                    <span className="flex items-center gap-1.5">
+                      Amenities
+                      {isTabComplete('amenities', tempRoomData) ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                      ) : sheetValidationErrors.amenities ? (
+                        <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                      ) : null}
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="availability" className="relative">
+                    <span className="flex items-center gap-1.5">
+                      Availability
+                      {isTabComplete('availability', tempRoomData) ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                      ) : sheetValidationErrors.availability ? (
+                        <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                      ) : null}
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Basic Information Tab */}
+                <TabsContent value="basic" className="mt-6 space-y-6">
+                  {sheetValidationErrors.basic && (
+                    <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <AlertCircle className="w-4 h-4 text-red-600" />
+                      <p className="text-sm text-red-600 font-medium">{sheetValidationErrors.basic}</p>
+                    </div>
+                  )}
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Room Name <span className="text-red-500">*</span></Label>
+                      <Input
+                        value={tempRoomData.name || ''}
+                        onChange={(e) => updateTempRoomField('name', e.target.value)}
+                        placeholder="e.g., Single Occupancy AC"
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Room Category <span className="text-red-500">*</span></Label>
+                      <Select
+                        value={tempRoomData.category || 'Single sharing'}
+                        onValueChange={(value) => updateTempRoomField('category', value)}
+                      >
+                        <SelectTrigger className="mt-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Single sharing">Single Sharing</SelectItem>
+                          <SelectItem value="Double sharing">Double Sharing</SelectItem>
+                          <SelectItem value="Triple sharing">Triple Sharing</SelectItem>
+                          <SelectItem value="Four sharing">Four Sharing</SelectItem>
+                          <SelectItem value="Six sharing">Six Sharing</SelectItem>
+                          <SelectItem value="Private room">Private Room</SelectItem>
+                          <SelectItem value="Studio">Studio</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Room Size <span className="text-red-500">*</span></Label>
+                      <Input
+                        value={tempRoomData.roomSize || ''}
+                        onChange={(e) => updateTempRoomField('roomSize', e.target.value)}
+                        placeholder="e.g., 120 sq.ft"
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Refund Policy <span className="text-red-500">*</span></Label>
+                      <Textarea
+                        value={tempRoomData.refundPolicy || ''}
+                        onChange={(e) => updateTempRoomField('refundPolicy', e.target.value)}
+                        placeholder="e.g., 100% refund if cancelled 15 days before move-in"
+                        className="mt-2 min-h-[80px]"
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Pricing Tab */}
+                <TabsContent value="pricing" className="mt-6 space-y-6">
+                  {sheetValidationErrors.pricing && (
+                    <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <AlertCircle className="w-4 h-4 text-red-600" />
+                      <p className="text-sm text-red-600 font-medium">{sheetValidationErrors.pricing}</p>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Pricing Details</h3>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addPricingItem(null)}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Item
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {tempRoomData.pricing?.map((pricingItem, pricingIndex) => (
+                      <Card key={pricingIndex}>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-base">Pricing Item {pricingIndex + 1}</CardTitle>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removePricingItem(null, pricingIndex)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label>Type</Label>
+                              <Select
+                                value={pricingItem.type || 'Monthly Rent'}
+                                onValueChange={(value) => {
+                                  const updatedPricing = [...tempRoomData.pricing];
+                                  updatedPricing[pricingIndex].type = value;
+                                  updateTempRoomField('pricing', updatedPricing);
+                                }}
+                              >
+                                <SelectTrigger className="mt-2">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {PRICING_TYPES.map((type) => (
+                                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <Label>Amount (₹)</Label>
+                              <div className="relative mt-2">
+                                <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  value={pricingItem.amount || 0}
+                                  onChange={(e) => {
+                                    const updatedPricing = [...tempRoomData.pricing];
+                                    updatedPricing[pricingIndex].amount = parseInt(e.target.value) || 0;
+                                    updateTempRoomField('pricing', updatedPricing);
+                                  }}
+                                  placeholder="0"
+                                  className="pl-9"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label>Frequency</Label>
+                            <Select
+                              value={pricingItem.frequency || 'monthly'}
+                              onValueChange={(value) => {
+                                const updatedPricing = [...tempRoomData.pricing];
+                                updatedPricing[pricingIndex].frequency = value;
+                                updateTempRoomField('pricing', updatedPricing);
+                              }}
+                            >
+                              <SelectTrigger className="mt-2">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                                <SelectItem value="one_time">One Time</SelectItem>
+                                <SelectItem value="per_unit">Per Unit</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                checked={pricingItem.mandatory || false}
+                                onCheckedChange={(checked) => {
+                                  const updatedPricing = [...tempRoomData.pricing];
+                                  updatedPricing[pricingIndex].mandatory = checked;
+                                  updateTempRoomField('pricing', updatedPricing);
+                                }}
+                              />
+                              <Label>Mandatory</Label>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                checked={pricingItem.refundable || false}
+                                onCheckedChange={(checked) => {
+                                  const updatedPricing = [...tempRoomData.pricing];
+                                  updatedPricing[pricingIndex].refundable = checked;
+                                  updateTempRoomField('pricing', updatedPricing);
+                                }}
+                              />
+                              <Label>Refundable</Label>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label>Note (Optional)</Label>
+                            <Input
+                              value={pricingItem.note || ''}
+                              onChange={(e) => {
+                                const updatedPricing = [...tempRoomData.pricing];
+                                updatedPricing[pricingIndex].note = e.target.value;
+                                updateTempRoomField('pricing', updatedPricing);
+                              }}
+                              placeholder="Additional notes"
+                              className="mt-2"
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+
+                    {(!tempRoomData.pricing || tempRoomData.pricing.length === 0) && (
+                      <div className="text-center py-8 border-2 border-dashed rounded-lg">
+                        <DollarSign className="w-12 h-12 mx-auto text-muted-foreground/50 mb-2" />
+                        <p className="text-sm text-muted-foreground mb-4">No pricing items added</p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addPricingItem(null)}
+                        >
+                          Add First Pricing Item
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                {/* Amenities Tab */}
+                <TabsContent value="amenities" className="mt-6 space-y-6">
+                  {sheetValidationErrors.amenities && (
+                    <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <AlertCircle className="w-4 h-4 text-red-600" />
+                      <p className="text-sm text-red-600 font-medium">{sheetValidationErrors.amenities}</p>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Room Amenities</h3>
+                    <Badge variant="secondary">
+                      {tempRoomData.amenities?.length || 0} Selected
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {ROOM_AMENITIES.map((amenity) => {
+                      const isSelected = tempRoomData.amenities?.some(a => a.name === amenity.name) || false;
+                      const IconComponent = amenity.icon;
+                      
+                      return (
+                        <button
+                          key={amenity.name}
+                          type="button"
+                          onClick={() => toggleAmenity(null, amenity.name)}
+                          className={`p-4 text-left border-2 rounded-lg transition-all ${
+                            isSelected
+                              ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
+                              : 'border-muted hover:border-orange-500/50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <IconComponent className={`w-5 h-5 ${
+                              isSelected ? 'text-orange-600' : 'text-muted-foreground'
+                            }`} />
+                            <span className="text-sm font-medium flex-1">{amenity.name}</span>
+                            {isSelected && <Check className="w-5 h-5 text-orange-600" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+
+                {/* Availability Tab */}
+                <TabsContent value="availability" className="mt-6 space-y-6">
+                  {sheetValidationErrors.availability && (
+                    <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <AlertCircle className="w-4 h-4 text-red-600" />
+                      <p className="text-sm text-red-600 font-medium">{sheetValidationErrors.availability}</p>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Total Beds <span className="text-red-500">*</span></Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={tempRoomData.availability?.totalBeds || 0}
+                        onChange={(e) => updateTempRoomField('availability.totalBeds', parseInt(e.target.value) || 0)}
+                        placeholder="5"
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Available Beds <span className="text-red-500">*</span></Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max={tempRoomData.availability?.totalBeds || 999}
+                        value={tempRoomData.availability?.availableBeds || 0}
+                        onChange={(e) => updateTempRoomField('availability.availableBeds', parseInt(e.target.value) || 0)}
+                        placeholder="2"
+                        className="mt-2"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Next Availability</Label>
+                    <Input
+                      value={tempRoomData.availability?.nextAvailability || ''}
+                      onChange={(e) => updateTempRoomField('availability.nextAvailability', e.target.value)}
+                      placeholder="e.g., Immediate, Next month"
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <Label htmlFor="sheet-soldout">Currently Sold Out</Label>
+                      <Switch
+                        id="sheet-soldout"
+                        checked={tempRoomData.availability?.soldOut || false}
+                        onCheckedChange={(checked) => updateTempRoomField('availability.soldOut', checked)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Availability Summary */}
+                  <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200">
+                    <CardHeader>
+                      <CardTitle className="text-base">Availability Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="flex flex-col">
+                          <span className="text-muted-foreground text-xs">Total Beds</span>
+                          <span className="text-xl font-bold text-orange-600">
+                            {tempRoomData.availability?.totalBeds || 0}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-muted-foreground text-xs">Available</span>
+                          <span className="text-xl font-bold text-green-600">
+                            {tempRoomData.availability?.availableBeds || 0}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-muted-foreground text-xs">Occupancy</span>
+                          <span className="text-xl font-bold">
+                            {(() => {
+                              const total = tempRoomData.availability?.totalBeds || 0;
+                              const available = tempRoomData.availability?.availableBeds || 0;
+                              const occupied = total - available;
+                              const percentage = total > 0 ? Math.round((occupied / total) * 100) : 0;
+                              return `${percentage}%`;
+                            })()}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-muted-foreground text-xs">Status</span>
+                          <span className={`text-xl font-bold ${
+                            tempRoomData.availability?.soldOut ? 'text-red-600' : 'text-green-600'
+                          }`}>
+                            {tempRoomData.availability?.soldOut ? 'Sold Out' : 'Available'}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+
+              <SheetFooter className="mt-8 gap-3 flex-col sm:flex-row">
+                {/* Progress Indicator */}
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Completion Progress</span>
+                    <span className="font-medium">
+                      {Object.keys(['basic', 'pricing', 'amenities', 'availability']).filter(tab => 
+                        isTabComplete(tab, tempRoomData)
+                      ).length} / 4 tabs
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-300"
+                      style={{ 
+                        width: `${(Object.keys(['basic', 'pricing', 'amenities', 'availability']).filter(tab => 
+                          isTabComplete(tab, tempRoomData)
+                        ).length / 4) * 100}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsSheetOpen(false);
+                      setTempRoomData(null);
+                      setEditingRoomIndex(null);
+                      setCurrentSheetTab('basic');
+                      setSheetValidationErrors({});
+                    }}
+                    className="flex-1 sm:flex-none"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSaveRoomFromSheet}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 flex-1 sm:flex-none"
+                    disabled={!areAllTabsComplete(tempRoomData)}
+                    title={!areAllTabsComplete(tempRoomData) ? 'Please complete all tabs before saving' : ''}
+                  >
+                    <Check className="w-4 h-4 mr-2" />
+                    {editingRoomIndex !== null ? 'Update Room' : 'Add Room'}
+                  </Button>
+                </div>
+              </SheetFooter>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

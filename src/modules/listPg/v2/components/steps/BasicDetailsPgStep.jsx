@@ -46,8 +46,7 @@ export default function BasicDetailsPgStep() {
     defaultValues: {
       // Main property details
       propertyName: formData?.propertyName || formData?.title || "",
-      propertyType: formData?.propertyType || "PG / Hostel",
-      genderAllowed: formData?.genderAllowed || "Gents",
+       genderAllowed: formData?.genderAllowed || "Gents",
 
       // Description object
       description: formData?.description || "",
@@ -65,14 +64,7 @@ export default function BasicDetailsPgStep() {
     },
   });
 
-  // Watch property type to update context
-  const watchedPropertyType = form.watch("propertyType");
-  useEffect(() => {
-    if (watchedPropertyType) {
-      setPropertyType(watchedPropertyType);
-    }
-  }, [watchedPropertyType, setPropertyType]);
-
+ 
   // Log validation errors
   useEffect(() => {
     if (Object.keys(form.formState.errors).length > 0) {
@@ -140,42 +132,7 @@ export default function BasicDetailsPgStep() {
 
             {/* Property Type & Gender */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Controller
-                name="propertyType"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-orange-600" />
-                      Property Type <span className="text-red-500">*</span>
-                    </FieldLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger
-                        className={`h-11 text-sm border-2 ${
-                          fieldState.invalid ? "border-red-500" : ""
-                        }`}
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PG / Hostel">PG / Hostel</SelectItem>
-                        <SelectItem value="PG">PG (Paying Guest)</SelectItem>
-                        <SelectItem value="Hostel">Hostel</SelectItem>
-                        <SelectItem value="Co-living">
-                          Co-living Space
-                        </SelectItem>
-                        <SelectItem value="Rooms">Rooms</SelectItem>
-                        <SelectItem value="Service Apartment">
-                          Service Apartment
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
+ 
 
               <Controller
                 name="genderAllowed"

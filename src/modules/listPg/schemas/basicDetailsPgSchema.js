@@ -14,11 +14,6 @@ const basicDetailsPgSchema = z.object({
     .optional(),
 
   
-  // Type of accommodation
-  propertyType: z.enum(['PG / Hostel', 'PG', 'Hostel', 'Co-living', 'Rooms', 'Service Apartment'], {
-    required_error: 'Please select a property type',
-  }),
-  
   // Gender allowed
   genderAllowed: z.enum(['Gents', 'Ladies', 'Gents / Ladies / Unisex'], {
     required_error: 'Please select allowed gender',

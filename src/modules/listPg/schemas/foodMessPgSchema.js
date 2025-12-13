@@ -1,18 +1,49 @@
 import { z } from 'zod';
 
+// Predefined days of week for weeklyMenu
+export const DAYS_OF_WEEK = [
+  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+];
+
 /**
  * Enhanced Schema for meal items (veg/non-veg) matching JSON structure
  */
 const mealItemsSchema = z.object({
-  veg: z.array(z.string()).default([]),
-  nonVeg: z.array(z.string()).nullable().optional().default(null),
-});
+  veg: z.array(
+    z.string()
+      .trim()
+      .min(1, 'Meal item cannot be empty')
+      .max(50, 'Meal item name too long (max 50 characters)')
+  ).default([]),
+  nonVeg: z.array(
+    z.string()
+      .trim()
+      .min(1, 'Meal item cannot be empty')
+      .max(50, 'Meal item name too long (max 50 characters)')
+  ).nullable().optional().default(null),
+}).refine(
+  (data) => {
+    // At least one item (veg or nonVeg) should be present when the object is used
+    const hasVeg = data.veg && data.veg.length > 0;
+    const hasNonVeg = data.nonVeg && data.nonVeg.length > 0;
+    return hasVeg || hasNonVeg;
+  },
+  {
+    message: 'At least one veg or non-veg item must be provided for the meal',
+  }
+);
 
 /**
  * Enhanced Schema for daily menu matching JSON structure
  */
 const dailyMenuSchema = z.object({
-  day: z.string().min(1, 'Day is required'),
+  day: z.enum(
+    ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    { errorMap: () => ({ message: 'Invalid day. Must be a valid day of the week' }) }
+  ),
+  timing: z.string()
+    .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format. Use HH:MM (24-hour format)')
+    .optional(),
   breakfast: mealItemsSchema.optional(),
   lunch: mealItemsSchema.optional(),
   dinner: mealItemsSchema.optional(),
@@ -28,111 +59,32 @@ const foodMessPgSchema = z.object({
     available: z.boolean().default(false),
     
     // Meal types available (array matching JSON)
-    meals: z.array(z.enum(['Breakfast', 'Lunch', 'Dinner'])).default([]),
+    meals: z.array(z.enum(['Breakfast', 'Lunch', 'Dinner'], {
+      errorMap: () => ({ message: 'Invalid meal type. Must be Breakfast, Lunch, or Dinner' })
+    }))
+    .min(0, 'Meals array cannot be negative')
+    .max(3, 'Cannot have more than 3 meal types')
+    .default([]),
     
     // Food type matching JSON values
-    foodType: z.enum(['Veg', 'Non-veg', 'Veg & Non-veg']).default('Veg & Non-veg'),
+    foodType: z.enum(['Veg', 'Non-veg', 'Veg & Non-veg'], {
+      errorMap: () => ({ message: 'Invalid food type. Must be Veg, Non-veg, or Veg & Non-veg' })
+    }).default('Veg & Non-veg'),
     
     // Cooking policies
     cookingAllowed: z.boolean().default(false),
-    tiffinService: z.boolean().default(false),
-    roWater: z.boolean().default(false),
-    
-    // Food quality rating
-    rating: z.number()
-      .min(1, 'Rating must be between 1 and 5')
-      .max(5, 'Rating must be between 1 and 5')
-      .default(4.0),
-    
-    // Enhanced timings object matching JSON structure
-    timings: z.object({
-      breakfast: z.string().optional().default(''),
-      lunch: z.string().optional().default(''),
-      dinner: z.string().optional().default(''),
-    }).default({
-      breakfast: '',
-      lunch: '',
-      dinner: '',
-    }),
     
     // Enhanced weekly menu array matching JSON structure
-    weeklyMenu: z.array(dailyMenuSchema).default([]),
-  }).default({
-    available: false,
-    meals: [],
-    foodType: 'Veg & Non-veg',
-    cookingAllowed: false,
-    tiffinService: false,
-    roWater: false,
-    rating: 4.0,
-    timings: {
-      breakfast: '',
-      lunch: '',
-      dinner: '',
-    },
-    weeklyMenu: [],
-  }),
+    weeklyMenu: z.array(dailyMenuSchema)
+      .max(7, 'Weekly menu cannot have more than 7 days')
+      .default([]),
+  }).default({}),
 
-  // Legacy fields for backward compatibility
-  available: z.boolean().default(false),
-  
-  // Legacy meal availability
-  meals: z.array(z.string()).optional().default([]),
-  mealsAvailable: z.array(z.enum(['breakfast', 'lunch', 'dinner']))
-    .optional()
-    .default([]),
-  
-  // Legacy food type
-  foodType: z.string().optional().default('veg'),
-  foodTypeEnum: z.enum(['veg', 'non_veg', 'both']).optional(),
-  
-  // Legacy timing fields
-  breakfastTiming: z.string().optional().or(z.literal('')),
-  lunchTiming: z.string().optional().or(z.literal('')),
-  dinnerTiming: z.string().optional().or(z.literal('')),
-  
-  // Legacy timings object
-  timings: z.object({
-    breakfast: z.string().optional().or(z.literal('')),
-    lunch: z.string().optional().or(z.literal('')),
-    dinner: z.string().optional().or(z.literal('')),
-  }).optional(),
-  
-  // Legacy weekly menu
-  weeklyMenu: z.array(dailyMenuSchema).optional().default([]),
-  weeklyMenuText: z.string().optional().or(z.literal('')),
-  
-  // Legacy cooking/service policies
-  isCookingAllowed: z.boolean().default(false),
-  cookingAllowed: z.boolean().default(false),
-  
-  hasTiffinService: z.boolean().default(false),
-  tiffinService: z.boolean().default(false),
-  
-  tiffinServiceName: z.string().optional().or(z.literal('')),
-  
-  hasRoWater: z.boolean().default(false),
-  roWater: z.boolean().default(false),
-  
-  // Legacy rating fields
-  rating: z.number()
-    .min(1, 'Rating must be between 1 and 5')
-    .max(5, 'Rating must be between 1 and 5')
-    .optional(),
-  foodQualityRating: z.number()
-    .min(1, 'Rating must be between 1 and 5')
-    .max(5, 'Rating must be between 1 and 5')
-    .optional(),
 }).refine(
   (data) => {
-    // If food is available (either new or legacy format), ensure basic requirements are met
-    const isAvailable = data.foodMess?.available || data.available;
-    
-    if (isAvailable) {
-      const hasMeals = (data.foodMess?.meals && data.foodMess.meals.length > 0) || 
-                     (data.meals && data.meals.length > 0) || 
-                     (data.mealsAvailable && data.mealsAvailable.length > 0);
-      
+    // Validation 1: If food is available, ensure meals are selected
+    if (data.foodMess?.available) {
+      const hasMeals = data.foodMess.meals && data.foodMess.meals.length > 0;
       if (!hasMeals) {
         return false;
       }
@@ -145,28 +97,103 @@ const foodMessPgSchema = z.object({
   }
 ).refine(
   (data) => {
-    // Validate timings format if provided
-    const timings = data.foodMess?.timings || data.timings || {};
-    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*(AM|PM)\s*-\s*([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*(AM|PM)$/i;
-    
-    for (const [meal, timing] of Object.entries(timings)) {
-      if (timing && timing.trim() && !timeRegex.test(timing.trim())) {
-        // Allow flexible timing formats, this is just a warning
-        continue;
+    // Validation 2: Check for duplicate days in weeklyMenu (only when food is available)
+    if (data.foodMess?.available && data.foodMess?.weeklyMenu && data.foodMess.weeklyMenu.length > 0) {
+      const days = data.foodMess.weeklyMenu.map(menu => menu.day);
+      const uniqueDays = new Set(days);
+      return days.length === uniqueDays.size;
+    }
+    return true;
+  },
+  {
+    message: 'Weekly menu cannot have duplicate days',
+    path: ['foodMess', 'weeklyMenu'],
+  }
+).refine(
+  (data) => {
+    // Validation 3: Each day in weeklyMenu must have at least one meal (only when food is available)
+    if (data.foodMess?.available && data.foodMess.weeklyMenu.length > 0) {
+      for (const dayMenu of data.foodMess.weeklyMenu) {
+        const hasAtLeastOneMeal = dayMenu.breakfast || dayMenu.lunch || dayMenu.dinner;
+        if (!hasAtLeastOneMeal) {
+          return false;
+        }
       }
     }
     return true;
   },
   {
-    message: 'Timing format should be like "7:00 AM - 9:30 AM"',
-    path: ['foodMess', 'timings'],
+    message: 'Each day in the weekly menu must have at least one meal (breakfast, lunch, or dinner)',
+    path: ['foodMess', 'weeklyMenu'],
+  }
+).refine(
+  (data) => {
+    // Validation 4: Ensure selected meals match what's provided in weeklyMenu (only when food is available)
+    if (data.foodMess?.available && data.foodMess?.meals && data.foodMess.meals.length > 0 && data.foodMess.weeklyMenu.length > 0) {
+      const selectedMeals = data.foodMess.meals.map(m => m.toLowerCase());
+      
+      // If a meal type is selected, at least one day should have it
+      if (selectedMeals.includes('breakfast') && !data.foodMess.weeklyMenu.some(d => d.breakfast)) {
+        return false;
+      }
+      if (selectedMeals.includes('lunch') && !data.foodMess.weeklyMenu.some(d => d.lunch)) {
+        return false;
+      }
+      if (selectedMeals.includes('dinner') && !data.foodMess.weeklyMenu.some(d => d.dinner)) {
+        return false;
+      }
+    }
+    return true;
+  },
+  {
+    message: 'Selected meal types must have corresponding items in the weekly menu',
+    path: ['foodMess', 'weeklyMenu'],
+  }
+).refine(
+  (data) => {
+    // Validation 5: Ensure foodType matches the menu items
+    if (data.foodMess?.available && data.foodMess.weeklyMenu.length > 0) {
+      const foodType = data.foodMess.foodType;
+      let hasVeg = false;
+      let hasNonVeg = false;
+      
+      for (const dayMenu of data.foodMess.weeklyMenu) {
+        ['breakfast', 'lunch', 'dinner'].forEach(mealType => {
+          const meal = dayMenu[mealType];
+          if (meal) {
+            if (meal.veg && meal.veg.length > 0) hasVeg = true;
+            if (meal.nonVeg && meal.nonVeg.length > 0) hasNonVeg = true;
+          }
+        });
+      }
+      
+      // If foodType is 'Veg', should not have nonVeg items
+      if (foodType === 'Veg' && hasNonVeg) {
+        return false;
+      }
+      // If foodType is 'Non-veg', should have nonVeg items (edge case, unusual but handled)
+      // If foodType is 'Veg & Non-veg', can have both
+      
+    }
+    return true;
+  },
+  {
+    message: 'Food type does not match the menu items. Veg food type cannot include non-veg items',
+    path: ['foodMess', 'foodType'],
+  }
+).refine(
+  (data) => {
+    // Validation 6: If food is available and meals selected, weeklyMenu should not be empty
+    if (data.foodMess?.available && data.foodMess.meals.length > 0) {
+      return data.foodMess.weeklyMenu.length > 0;
+    }
+    return true;
+  },
+  {
+    message: 'Weekly menu must be provided when food service is available and meals are selected',
+    path: ['foodMess', 'weeklyMenu'],
   }
 );
-
-// Predefined days of week for weeklyMenu
-export const DAYS_OF_WEEK = [
-  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
-];
 
 // Sample meal items for suggestions
 export const SAMPLE_MEALS = {

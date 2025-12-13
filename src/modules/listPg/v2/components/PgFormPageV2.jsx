@@ -57,11 +57,7 @@ function PgFormContentV2() {
                 <h1 className="text-xl  font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
                   List Your PG/Hostel
                 </h1>
-                {/* {propertyType && (
-                  <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
-                    Complete each section and click &quot;Continue&quot; to progress
-                  </p>
-                )} */}
+           
               </div>
             </div>
             <Button

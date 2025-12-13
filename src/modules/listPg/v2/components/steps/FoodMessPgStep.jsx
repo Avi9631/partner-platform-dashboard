@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   ChefHat,
   Clock,
-  Star,
   Utensils,
   Coffee,
   Plus,
@@ -14,8 +13,6 @@ import {
   Calendar,
   Leaf,
   Beef,
-  Droplets,
-  Timer,
   ThumbsUp
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -73,26 +70,9 @@ export default function FoodMessPgStep() {
         meals: formData?.foodMess?.meals || [],
         foodType: formData?.foodMess?.foodType || 'Veg & Non-veg',
         cookingAllowed: formData?.foodMess?.cookingAllowed || false,
-        tiffinService: formData?.foodMess?.tiffinService || false,
-        roWater: formData?.foodMess?.roWater || false,
-        rating: formData?.foodMess?.rating || 4.0,
-        timings: {
-          breakfast: formData?.foodMess?.timings?.breakfast || '',
-          lunch: formData?.foodMess?.timings?.lunch || '',
-          dinner: formData?.foodMess?.timings?.dinner || '',
-        },
-        weeklyMenu: formData?.foodMess?.weeklyMenu || DAYS_OF_WEEK.map(day => ({
-          day,
-          breakfast: { veg: [], nonVeg: null },
-          lunch: { veg: [], nonVeg: null },
-          dinner: { veg: [], nonVeg: null },
-        })),
+        weeklyMenu: formData?.foodMess?.weeklyMenu || [],
       },
-      // Legacy fields
-      available: formData?.available || false,
-      meals: formData?.meals || [],
-      foodType: formData?.foodType || 'veg',
-      timings: formData?.timings || {},
+
     },
   });
 
@@ -114,9 +94,6 @@ export default function FoodMessPgStep() {
     if (!currentMenu || currentMenu.length === 0) {
       const defaultMenu = DAYS_OF_WEEK.map(day => ({
         day,
-        breakfast: { veg: [], nonVeg: null },
-        lunch: { veg: [], nonVeg: null },
-        dinner: { veg: [], nonVeg: null },
       }));
       form.setValue('foodMess.weeklyMenu', defaultMenu);
     }
@@ -205,7 +182,7 @@ export default function FoodMessPgStep() {
   const selectedDayIndex = DAYS_OF_WEEK.indexOf(selectedDay);
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -213,10 +190,10 @@ export default function FoodMessPgStep() {
         transition={{ duration: 0.5 }}
         className="mb-6"
       >
-        <h2 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+        <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
           Food & Mess Details
         </h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-xs md:text-sm">
           Configure food services, meal timings, and weekly menu for your property
         </p>
       </motion.div>
@@ -227,20 +204,12 @@ export default function FoodMessPgStep() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-4 md:space-y-6">
           
           {/* Food Service Availability */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ChefHat className="w-5 h-5 text-orange-600" />
-                Food Service Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              
-              {/* Food Service Toggle */}
-              <div className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors">
+          <div className="space-y-4 md:space-y-6">            
+            {/* Food Service Toggle */}
+            <div className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors bg-card">
                 <div>
                   <Label htmlFor="foodAvailable" className="text-base font-semibold cursor-pointer">
                     Food Service Available
@@ -276,10 +245,10 @@ export default function FoodMessPgStep() {
                       control={form.control}
                       render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                          <FieldLabel>
+                          <FieldLabel className="text-sm md:text-base font-semibold">
                             Available Meals <span className="text-red-500">*</span>
                           </FieldLabel>
-                          <div className="grid grid-cols-3 gap-4">
+                          <div className="grid grid-cols-3 gap-3 md:gap-4">
                             {MEAL_TYPES.map((meal) => (
                               <button
                                 key={meal}
@@ -292,18 +261,18 @@ export default function FoodMessPgStep() {
                                     field.onChange([...currentMeals, meal]);
                                   }
                                 }}
-                                className={`p-4 border-2 rounded-lg text-sm font-medium transition-all flex flex-col items-center gap-2 ${
+                                className={`p-3 md:p-4 border-2 rounded-lg text-xs md:text-sm font-medium transition-all flex flex-col items-center gap-1.5 md:gap-2 hover:scale-105 ${
                                   field.value?.includes(meal)
-                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400'
+                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 shadow-sm'
                                     : 'border-muted hover:border-orange-500/50'
                                 }`}
                               >
-                                {meal === 'Breakfast' && <Coffee className="w-5 h-5" />}
-                                {meal === 'Lunch' && <Utensils className="w-5 h-5" />}
-                                {meal === 'Dinner' && <ChefHat className="w-5 h-5" />}
-                                {meal}
+                                {meal === 'Breakfast' && <Coffee className="w-4 h-4 md:w-5 md:h-5" />}
+                                {meal === 'Lunch' && <Utensils className="w-4 h-4 md:w-5 md:h-5" />}
+                                {meal === 'Dinner' && <ChefHat className="w-4 h-4 md:w-5 md:h-5" />}
+                                <span className="text-center">{meal}</span>
                                 {field.value?.includes(meal) && (
-                                  <Check className="w-4 h-4 text-orange-600" />
+                                  <Check className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />
                                 )}
                               </button>
                             ))}
@@ -315,219 +284,87 @@ export default function FoodMessPgStep() {
                       )}
                     />
 
-                    {/* Food Type & Policies */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Controller
-                        name="foodMess.foodType"
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel>
-                              Food Type <span className="text-red-500">*</span>
-                            </FieldLabel>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <SelectTrigger className={`h-11 ${fieldState.invalid ? 'border-red-500' : ''}`}>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {FOOD_TYPE_OPTIONS.map((type) => (
-                                  <SelectItem key={type} value={type}>
-                                    <div className="flex items-center gap-2">
-                                      {type.includes('Veg') && <Leaf className="w-4 h-4 text-green-600" />}
-                                      {type.includes('Non-veg') && <Beef className="w-4 h-4 text-red-600" />}
-                                      {type}
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {fieldState.invalid && (
-                              <FieldError errors={[fieldState.error]} />
-                            )}
-                          </Field>
-                        )}
-                      />
-
-                      <Controller
-                        name="foodMess.rating"
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel className="flex items-center gap-2">
-                              <Star className="w-4 h-4 text-orange-600" />
-                              Food Quality Rating
-                            </FieldLabel>
-                            <div className="flex items-center gap-3">
-                              <Input
-                                {...field}
-                                type="number"
-                                min="1"
-                                max="5"
-                                step="0.1"
-                                className={`h-11 ${fieldState.invalid ? 'border-red-500' : ''}`}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 4.0)}
-                              />
-                              <div className="flex items-center gap-1">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`w-4 h-4 ${
-                                      star <= Math.floor(field.value)
-                                        ? 'text-yellow-400 fill-current'
-                                        : 'text-gray-300'
-                                    }`}
-                                  />
-                                ))}
-                                <span className="text-sm text-muted-foreground ml-2">
-                                  {field.value}/5
-                                </span>
-                              </div>
-                            </div>
-                            {fieldState.invalid && (
-                              <FieldError errors={[fieldState.error]} />
-                            )}
-                          </Field>
-                        )}
-                      />
-                    </div>
-
-                    {/* Food Policies */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <Controller
-                        name="foodMess.cookingAllowed"
-                        control={form.control}
-                        render={({ field }) => (
-                          <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div>
-                              <Label className="text-sm font-medium cursor-pointer">
-                                Cooking Allowed
-                              </Label>
-                              <p className="text-xs text-muted-foreground">
-                                In-room cooking permitted
-                              </p>
-                            </div>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </div>
-                        )}
-                      />
-
-                      <Controller
-                        name="foodMess.tiffinService"
-                        control={form.control}
-                        render={({ field }) => (
-                          <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div>
-                              <Label className="text-sm font-medium cursor-pointer">
-                                Tiffin Service
-                              </Label>
-                              <p className="text-xs text-muted-foreground">
-                                External tiffin delivery
-                              </p>
-                            </div>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </div>
-                        )}
-                      />
-
-                      <Controller
-                        name="foodMess.roWater"
-                        control={form.control}
-                        render={({ field }) => (
-                          <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-2">
-                              <Droplets className="w-4 h-4 text-blue-500" />
-                              <div>
-                                <Label className="text-sm font-medium cursor-pointer">
-                                  RO Water
-                                </Label>
-                                <p className="text-xs text-muted-foreground">
-                                  Purified water available
-                                </p>
-                              </div>
-                            </div>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </div>
-                        )}
-                      />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </CardContent>
-          </Card>
-
-          {/* Meal Timings */}
-          {form.watch('foodMess.available') && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-orange-600" />
-                  Meal Timings
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {['breakfast', 'lunch', 'dinner'].map((meal) => (
+                    {/* Food Type */}
                     <Controller
-                      key={meal}
-                      name={`foodMess.timings.${meal}`}
+                      name="foodMess.foodType"
                       control={form.control}
                       render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                          <FieldLabel className="flex items-center gap-2 capitalize">
-                            <Timer className="w-4 h-4 text-orange-600" />
-                            {meal} Timing
+                          <FieldLabel className="text-sm md:text-base font-semibold">
+                            Food Type <span className="text-red-500">*</span>
                           </FieldLabel>
-                          <Input
-                            {...field}
-                            placeholder="e.g., 7:00 AM - 9:30 AM"
-                            className={`h-11 ${fieldState.invalid ? 'border-red-500' : ''}`}
-                          />
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className={`h-10 md:h-11 ${fieldState.invalid ? 'border-red-500' : ''}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {FOOD_TYPE_OPTIONS.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  <div className="flex items-center gap-2">
+                                    {type.includes('Veg') && <Leaf className="w-4 h-4 text-green-600" />}
+                                    {type.includes('Non-veg') && <Beef className="w-4 h-4 text-red-600" />}
+                                    <span className="text-xs md:text-sm">{type}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           {fieldState.invalid && (
                             <FieldError errors={[fieldState.error]} />
                           )}
                         </Field>
                       )}
                     />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+
+                    {/* Food Policies */}
+                    <Controller
+                      name="foodMess.cookingAllowed"
+                      control={form.control}
+                      render={({ field }) => (
+                        <div className="flex items-center justify-between p-3 md:p-4 border-2 rounded-lg hover:border-orange-500 transition-colors">
+                          <div>
+                            <Label className="text-xs md:text-sm font-medium cursor-pointer">
+                              Cooking Allowed
+                            </Label>
+                            <p className="text-[10px] md:text-xs text-muted-foreground">
+                              In-room cooking permitted
+                            </p>
+                          </div>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </div>
+                      )}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+          </div>
 
           {/* Weekly Menu */}
           {form.watch('foodMess.available') && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-orange-600" />
-                    Weekly Menu
-                  </span>
-                  <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
+            <div className="space-y-4 md:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
+                  <h3 className="text-lg md:text-xl font-semibold">Weekly Menu</h3>
+                </div>
+                <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Quick Add
+                      <Button variant="outline" size="sm" className="self-start sm:self-auto">
+                        <Plus className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
+                        <span className="text-xs md:text-sm">Quick Add</span>
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="w-full max-w-[95vw] sm:max-w-2xl">
                       <DialogHeader>
-                        <DialogTitle>Quick Add Meal Items</DialogTitle>
+                        <DialogTitle className="text-lg md:text-xl">Quick Add Meal Items</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4">
+                      <div className="space-y-3 md:space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <Select value={selectedDay} onValueChange={setSelectedDay}>
                             <SelectTrigger>
@@ -630,13 +467,12 @@ export default function FoodMessPgStep() {
                       </div>
                     </DialogContent>
                   </Dialog>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs value={selectedDay} onValueChange={setSelectedDay}>
-                  <TabsList className="grid w-full grid-cols-7 mb-6">
+              </div>
+              
+              <Tabs value={selectedDay} onValueChange={setSelectedDay}>
+                  <TabsList className="grid w-full grid-cols-7 mb-4 md:mb-6">
                     {DAYS_OF_WEEK.map((day) => (
-                      <TabsTrigger key={day} value={day} className="text-xs">
+                      <TabsTrigger key={day} value={day} className="text-[10px] sm:text-xs px-1 sm:px-2">
                         {day.slice(0, 3)}
                       </TabsTrigger>
                     ))}
@@ -646,60 +482,63 @@ export default function FoodMessPgStep() {
                     const dayMenu = form.watch(`foodMess.weeklyMenu.${dayIndex}`);
                     
                     return (
-                      <TabsContent key={day} value={day} className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold">{day} Menu</h3>
+                      <TabsContent key={day} value={day} className="space-y-4 md:space-y-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <h3 className="text-base md:text-lg font-semibold">{day} Menu</h3>
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
                             onClick={() => addSampleMeals(dayIndex)}
+                            className="self-start sm:self-auto"
                           >
-                            <ThumbsUp className="w-4 h-4 mr-2" />
-                            Add Sample Menu
+                            <ThumbsUp className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
+                            <span className="text-xs md:text-sm">Add Sample Menu</span>
                           </Button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                           {['breakfast', 'lunch', 'dinner'].map((mealTime) => (
-                            <Card key={mealTime} className="border">
-                              <CardHeader className="pb-3">
-                                <CardTitle className="text-base capitalize flex items-center gap-2">
-                                  {mealTime === 'breakfast' && <Coffee className="w-4 h-4" />}
-                                  {mealTime === 'lunch' && <Utensils className="w-4 h-4" />}
-                                  {mealTime === 'dinner' && <ChefHat className="w-4 h-4" />}
+                            <Card key={mealTime} className="border hover:border-orange-200 transition-colors">
+                              <CardHeader className="pb-2 md:pb-3">
+                                <CardTitle className="text-sm md:text-base capitalize flex items-center gap-2">
+                                  {mealTime === 'breakfast' && <Coffee className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
+                                  {mealTime === 'lunch' && <Utensils className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
+                                  {mealTime === 'dinner' && <ChefHat className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
                                   {mealTime}
                                 </CardTitle>
                               </CardHeader>
-                              <CardContent className="space-y-3">
+                              <CardContent className="space-y-2 md:space-y-3">
                                 
                                 {/* Veg Items */}
                                 <div>
-                                  <Label className="text-xs text-green-600 flex items-center gap-1 mb-2">
+                                  <Label className="text-[10px] md:text-xs text-green-600 flex items-center gap-1 mb-1.5 md:mb-2 font-medium">
                                     <Leaf className="w-3 h-3" /> Veg Items
                                   </Label>
                                   <div className="space-y-1">
                                     {dayMenu?.[mealTime]?.veg?.map((item, itemIndex) => (
                                       <div
                                         key={itemIndex}
-                                        className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/10 rounded text-sm"
+                                        className="flex items-center justify-between p-1.5 md:p-2 bg-green-50 dark:bg-green-900/10 rounded text-xs md:text-sm border border-green-100 dark:border-green-900/30"
                                       >
-                                        <span>{item}</span>
+                                        <span className="flex-1 truncate">{item}</span>
                                         <Button
                                           type="button"
                                           variant="ghost"
                                           size="sm"
                                           onClick={() => removeMealItem(dayIndex, mealTime, 'veg', itemIndex)}
-                                          className="h-6 w-6 p-0 text-red-500"
+                                          className="h-5 w-5 md:h-6 md:w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                                         >
                                           <X className="w-3 h-3" />
                                         </Button>
                                       </div>
                                     ))}
                                     {(!dayMenu?.[mealTime]?.veg || dayMenu[mealTime].veg.length === 0) && (
-                                      <p className="text-xs text-muted-foreground italic">
-                                        No veg items added
-                                      </p>
+                                      <div className="text-center py-4 border-2 border-dashed border-green-200 rounded-lg">
+                                        <p className="text-[10px] md:text-xs text-muted-foreground italic">
+                                          No veg items added
+                                        </p>
+                                      </div>
                                     )}
                                   </div>
                                 </div>
@@ -707,31 +546,33 @@ export default function FoodMessPgStep() {
                                 {/* Non-Veg Items */}
                                 {isNonVegAllowed && (
                                   <div>
-                                    <Label className="text-xs text-red-600 flex items-center gap-1 mb-2">
+                                    <Label className="text-[10px] md:text-xs text-red-600 flex items-center gap-1 mb-1.5 md:mb-2 font-medium">
                                       <Beef className="w-3 h-3" /> Non-Veg Items
                                     </Label>
                                     <div className="space-y-1">
                                       {dayMenu?.[mealTime]?.nonVeg?.map((item, itemIndex) => (
                                         <div
                                           key={itemIndex}
-                                          className="flex items-center justify-between p-2 bg-red-50 dark:bg-red-900/10 rounded text-sm"
+                                          className="flex items-center justify-between p-1.5 md:p-2 bg-red-50 dark:bg-red-900/10 rounded text-xs md:text-sm border border-red-100 dark:border-red-900/30"
                                         >
-                                          <span>{item}</span>
+                                          <span className="flex-1 truncate">{item}</span>
                                           <Button
                                             type="button"
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => removeMealItem(dayIndex, mealTime, 'nonVeg', itemIndex)}
-                                            className="h-6 w-6 p-0 text-red-500"
+                                            className="h-5 w-5 md:h-6 md:w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                                           >
                                             <X className="w-3 h-3" />
                                           </Button>
                                         </div>
                                       ))}
                                       {(!dayMenu?.[mealTime]?.nonVeg || dayMenu[mealTime].nonVeg.length === 0) && (
-                                        <p className="text-xs text-muted-foreground italic">
-                                          No non-veg items added
-                                        </p>
+                                        <div className="text-center py-4 border-2 border-dashed border-red-200 rounded-lg">
+                                          <p className="text-[10px] md:text-xs text-muted-foreground italic">
+                                            No non-veg items added
+                                          </p>
+                                        </div>
                                       )}
                                     </div>
                                   </div>
@@ -744,8 +585,7 @@ export default function FoodMessPgStep() {
                     );
                   })}
                 </Tabs>
-              </CardContent>
-            </Card>
+            </div>
           )}
 
           {/* Save & Continue Footer */}

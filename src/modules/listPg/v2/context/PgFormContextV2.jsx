@@ -19,8 +19,7 @@ export const usePgFormV2 = () => {
 
 export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDraft }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [propertyType, setPropertyType] = useState(null); // pg, hostel, co_living, etc.
-  const [completedSteps, setCompletedSteps] = useState(new Set());
+   const [completedSteps, setCompletedSteps] = useState(new Set());
   const [draftId, setDraftId] = useState(initialDraftId || null);
   const [isCreatingDraft, setIsCreatingDraft] = useState(false);
   const [isLoadingDraft, setIsLoadingDraft] = useState(false);
@@ -42,12 +41,7 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
       
       // Set form data from draft
       setFormData(editingDraft.draftData);
-      
-      // Set property type if available
-      if (editingDraft.draftData.propertyType) {
-        setPropertyType(editingDraft.draftData.propertyType);
-      }
-      
+  
       // Mark all steps as not completed (user can edit any step)
       setCompletedSteps(new Set());
       
@@ -69,8 +63,7 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
   // Memoize the form data with propertyType
   const formDataWithType = useMemo(() => ({
     ...formData,
-    propertyType,
-  }), [formData, propertyType]);
+   }), [formData,  ]);
 
   // Get total steps
   const getTotalSteps = useCallback(() => {
@@ -193,8 +186,7 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
     setFormData({});
     methods.reset({});
     setCurrentStep(0);
-    setPropertyType(null);
-    setCompletedSteps(new Set());
+     setCompletedSteps(new Set());
     setDraftId(null);
     setIsCreatingDraft(false);
   }, [methods]);
@@ -219,8 +211,7 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
     goToStep,
     resetForm,
     getTotalSteps,
-    propertyType,
-    setPropertyType,
+ 
     completedSteps,
     isStepCompleted,
     getProgress,
