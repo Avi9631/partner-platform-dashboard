@@ -85,7 +85,7 @@ export default function ReviewAndSubmitV2() {
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto pb-32">
+    <div className="w-full max-w-7xl mx-auto pb-32">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -508,7 +508,7 @@ export default function ReviewAndSubmitV2() {
         transition={{ delay: 0.5 }}
         className="fixed bottom-0 left-72 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t-2 border-green-200 dark:border-green-900 p-6 z-50 shadow-lg"
       >
-        <div className="max-w-5xl mx-auto flex justify-between items-center">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Button
             variant="outline"
             size="lg"

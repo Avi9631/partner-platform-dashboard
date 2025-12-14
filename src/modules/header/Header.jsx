@@ -29,7 +29,7 @@ export default function Header() {
 
           {/* Logo */}
           <a
-            className="text-lg sm:text-2xl md:text-3xl font-medium text-shadow-lg"
+            className="text-lg sm:text-2xl md:text-2xl font-medium text-shadow-lg"
             href="/"
             style={{
               fontFamily: "Nosifer",

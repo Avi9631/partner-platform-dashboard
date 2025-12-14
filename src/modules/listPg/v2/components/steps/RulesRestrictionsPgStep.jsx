@@ -195,7 +195,7 @@ export default function RulesRestrictionsPgStep() {
         transition={{ duration: 0.5 }}
         className="mb-6"
       >
-        <h2 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl md:text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
           Rules & Restrictions
         </h2>
         <p className="text-muted-foreground text-sm">

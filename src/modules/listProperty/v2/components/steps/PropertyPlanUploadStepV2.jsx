@@ -214,7 +214,7 @@ export default function PropertyPlanUploadStepV2() {
   ];
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -575,7 +575,7 @@ function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, for
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           onClick={() => setShowPreview(false)}
         >
-          <div className="max-w-4xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="max-w-7xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
             <img src={plan.preview} alt={plan.title} className="w-full h-full object-contain rounded-lg" />
             <Button
               variant="secondary"

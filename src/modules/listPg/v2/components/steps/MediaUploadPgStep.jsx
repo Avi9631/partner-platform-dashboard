@@ -677,7 +677,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
           onClick={() => setShowPreview(false)}
         >
           <div
-            className="max-w-4xl max-h-[90vh] w-full"
+            className="max-w-7xl max-h-[90vh] w-full"
             onClick={(e) => e.stopPropagation()}
           >
             {isVideo ? (

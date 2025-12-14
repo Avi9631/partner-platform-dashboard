@@ -373,7 +373,7 @@ export default function RoomTypesPgStep() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+    <div className="w-full max-w-7xl mx-auto ">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -381,7 +381,7 @@ export default function RoomTypesPgStep() {
         transition={{ duration: 0.5 }}
         className="mb-6"
       >
-        <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+        <h2 className="text-xl md:text-2xl   font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
           Room Types & Pricing
         </h2>
         <p className="text-muted-foreground text-xs md:text-sm">
