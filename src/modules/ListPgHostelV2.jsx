@@ -33,42 +33,13 @@ export default function ListPgHostelV2Page() {
   const fetchListings = useCallback(async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call to fetch PG drafts
-      // const response = await draftApi.getUserPgDrafts();
+      const response = await draftApi.getUserListingDrafts('PG');
       
-      // Mock data for now
-      const mockListings = [
-        {
-          id: '1',
-          title: 'Sunshine PG for Gents',
-          location: 'Koramangala, Bangalore',
-          propertyType: 'PG',
-          genderAllowed: 'Gents',
-          totalBeds: 20,
-          availableBeds: 5,
-          startingPrice: '₹8,000',
-          status: 'published',
-          image: null,
-          views: 245,
-          createdAt: 'Nov 15, 2025',
-        },
-        {
-          id: '2',
-          title: 'Comfort Hostel for Students',
-          location: 'Whitefield, Bangalore',
-          propertyType: 'Hostel',
-          genderAllowed: 'Unisex',
-          totalBeds: 50,
-          availableBeds: 12,
-          startingPrice: '₹6,500',
-          status: 'draft',
-          image: null,
-          views: 89,
-          createdAt: 'Nov 20, 2025',
-        },
-      ];
-      
-      setListings(mockListings);
+      if (response.success && response.data) {
+        setListings(response.data);
+      } else {
+        setListings([]);
+      }
     } catch (error) {
       console.error('Failed to fetch PG listings:', error);
       toast({

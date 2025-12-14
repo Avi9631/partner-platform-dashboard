@@ -38,14 +38,7 @@ const basicDetailsPgSchema = z.object({
     .regex(/^\d{4}$/, 'Please enter a valid year (e.g., 2020)')
     .optional()
     .or(z.literal('')),
-  
-  lastRenovated: z.string()
-    .regex(/^\d{4}$/, 'Please enter a valid year')
-    .optional()
-    .or(z.literal('')),
-  
  
-
 }).refine(
   (data) => {
     // If brand managed, brand name is required

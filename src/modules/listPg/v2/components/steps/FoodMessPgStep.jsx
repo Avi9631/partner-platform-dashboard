@@ -58,6 +58,7 @@ export default function FoodMessPgStep() {
   const [newMealItem, setNewMealItem] = useState('');
   const [mealType, setMealType] = useState('veg');
   const [showMealDialog, setShowMealDialog] = useState(false);
+  const [showTimingSection, setShowTimingSection] = useState(false);
 
   const logger = useMemo(() => createStepLogger('Food & Mess PG Step V2'), []);
 
@@ -88,16 +89,19 @@ export default function FoodMessPgStep() {
     }
   }, [form.formState.errors, logger]);
 
-  // Initialize weekly menu if empty
-  useEffect(() => {
+  // Initialize weekly menu only when user interacts with it
+  const initializeWeeklyMenuIfNeeded = () => {
     const currentMenu = form.getValues('foodMess.weeklyMenu');
     if (!currentMenu || currentMenu.length === 0) {
       const defaultMenu = DAYS_OF_WEEK.map(day => ({
         day,
+        breakfastTiming: '08:00',
+        lunchTiming: '13:00',
+        dinnerTiming: '20:00',
       }));
       form.setValue('foodMess.weeklyMenu', defaultMenu);
     }
-  }, [form]);
+  };
 
   // Add meal item to specific day and meal
   const addMealItem = (dayIndex, mealType, itemType) => {
@@ -143,6 +147,14 @@ export default function FoodMessPgStep() {
     form.setValue('foodMess.weeklyMenu', updatedMenu);
   };
 
+  // Update meal timing for a specific day and meal type
+  const updateMealTiming = (dayIndex, mealType, time) => {
+    const currentMenu = form.getValues('foodMess.weeklyMenu');
+    const updatedMenu = [...currentMenu];
+    updatedMenu[dayIndex][`${mealType}Timing`] = time;
+    form.setValue('foodMess.weeklyMenu', updatedMenu);
+  };
+
   // Add sample meals for a day
   const addSampleMeals = (dayIndex) => {
     const currentMenu = form.getValues('foodMess.weeklyMenu');
@@ -170,6 +182,12 @@ export default function FoodMessPgStep() {
   };
 
   const onSubmit = (data) => {
+    // Clean up weekly menu - remove days without any meals
+    if (data.foodMess?.weeklyMenu && data.foodMess.weeklyMenu.length > 0) {
+      data.foodMess.weeklyMenu = data.foodMess.weeklyMenu.filter(dayMenu => {
+        return dayMenu.breakfast || dayMenu.lunch || dayMenu.dinner;
+      });
+    }
     logger.logSubmission(data, form.formState.errors);
     saveAndContinue(data);
   };
@@ -340,6 +358,89 @@ export default function FoodMessPgStep() {
                         </div>
                       )}
                     />
+
+                    {/* Meal Timings Section */}
+                    <Card className="border-2 border-orange-100">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
+                            <CardTitle className="text-sm md:text-base">Default Meal Timings</CardTitle>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (!showTimingSection) {
+                                initializeWeeklyMenuIfNeeded();
+                              }
+                              setShowTimingSection(!showTimingSection);
+                            }}
+                          >
+                            {showTimingSection ? 'Hide' : 'Show'}
+                          </Button>
+                        </div>
+                        <p className="text-[10px] md:text-xs text-muted-foreground">
+                          Set default serving times for each meal (applies to all days)
+                        </p>
+                      </CardHeader>
+                      {showTimingSection && (
+                        <CardContent className="space-y-3">
+                          {form.watch('foodMess.meals')?.includes('Breakfast') && (
+                            <div className="flex items-center gap-3">
+                              <Coffee className="w-4 h-4 text-orange-600" />
+                              <Label className="text-xs md:text-sm min-w-[80px]">Breakfast</Label>
+                              <Input
+                                type="time"
+                                value={form.watch('foodMess.weeklyMenu.0.breakfastTiming') || '08:00'}
+                                onChange={(e) => {
+                                  const time = e.target.value;
+                                  DAYS_OF_WEEK.forEach((_, index) => {
+                                    updateMealTiming(index, 'breakfast', time);
+                                  });
+                                }}
+                                className="max-w-[150px] text-xs md:text-sm"
+                              />
+                            </div>
+                          )}
+                          {form.watch('foodMess.meals')?.includes('Lunch') && (
+                            <div className="flex items-center gap-3">
+                              <Utensils className="w-4 h-4 text-orange-600" />
+                              <Label className="text-xs md:text-sm min-w-[80px]">Lunch</Label>
+                              <Input
+                                type="time"
+                                value={form.watch('foodMess.weeklyMenu.0.lunchTiming') || '13:00'}
+                                onChange={(e) => {
+                                  const time = e.target.value;
+                                  DAYS_OF_WEEK.forEach((_, index) => {
+                                    updateMealTiming(index, 'lunch', time);
+                                  });
+                                }}
+                                className="max-w-[150px] text-xs md:text-sm"
+                              />
+                            </div>
+                          )}
+                          {form.watch('foodMess.meals')?.includes('Dinner') && (
+                            <div className="flex items-center gap-3">
+                              <ChefHat className="w-4 h-4 text-orange-600" />
+                              <Label className="text-xs md:text-sm min-w-[80px]">Dinner</Label>
+                              <Input
+                                type="time"
+                                value={form.watch('foodMess.weeklyMenu.0.dinnerTiming') || '20:00'}
+                                onChange={(e) => {
+                                  const time = e.target.value;
+                                  DAYS_OF_WEEK.forEach((_, index) => {
+                                    updateMealTiming(index, 'dinner', time);
+                                  });
+                                }}
+                                className="max-w-[150px] text-xs md:text-sm"
+                              />
+                            </div>
+                          )}
+                        </CardContent>
+                      )}
+                    </Card>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -351,9 +452,14 @@ export default function FoodMessPgStep() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
-                  <h3 className="text-lg md:text-xl font-semibold">Weekly Menu</h3>
+                  <h3 className="text-lg md:text-xl font-semibold">Weekly Menu <span className="text-sm text-muted-foreground font-normal">(Optional)</span></h3>
                 </div>
-                <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
+                <Dialog open={showMealDialog} onOpenChange={(open) => {
+                  if (open) {
+                    initializeWeeklyMenuIfNeeded();
+                  }
+                  setShowMealDialog(open);
+                }}>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="self-start sm:self-auto">
                         <Plus className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
@@ -489,7 +595,10 @@ export default function FoodMessPgStep() {
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => addSampleMeals(dayIndex)}
+                            onClick={() => {
+                              initializeWeeklyMenuIfNeeded();
+                              addSampleMeals(dayIndex);
+                            }}
                             className="self-start sm:self-auto"
                           >
                             <ThumbsUp className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
@@ -501,12 +610,20 @@ export default function FoodMessPgStep() {
                           {['breakfast', 'lunch', 'dinner'].map((mealTime) => (
                             <Card key={mealTime} className="border hover:border-orange-200 transition-colors">
                               <CardHeader className="pb-2 md:pb-3">
-                                <CardTitle className="text-sm md:text-base capitalize flex items-center gap-2">
-                                  {mealTime === 'breakfast' && <Coffee className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
-                                  {mealTime === 'lunch' && <Utensils className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
-                                  {mealTime === 'dinner' && <ChefHat className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
-                                  {mealTime}
-                                </CardTitle>
+                                <div className="flex items-center justify-between">
+                                  <CardTitle className="text-sm md:text-base capitalize flex items-center gap-2">
+                                    {mealTime === 'breakfast' && <Coffee className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
+                                    {mealTime === 'lunch' && <Utensils className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
+                                    {mealTime === 'dinner' && <ChefHat className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
+                                    {mealTime}
+                                  </CardTitle>
+                                  {dayMenu?.[`${mealTime}Timing`] && (
+                                    <Badge variant="outline" className="text-[10px] md:text-xs flex items-center gap-1">
+                                      <Clock className="w-3 h-3" />
+                                      {dayMenu[`${mealTime}Timing`]}
+                                    </Badge>
+                                  )}
+                                </div>
                               </CardHeader>
                               <CardContent className="space-y-2 md:space-y-3">
                                 

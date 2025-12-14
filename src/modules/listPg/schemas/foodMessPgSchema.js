@@ -21,17 +21,7 @@ const mealItemsSchema = z.object({
       .min(1, 'Meal item cannot be empty')
       .max(50, 'Meal item name too long (max 50 characters)')
   ).nullable().optional().default(null),
-}).refine(
-  (data) => {
-    // At least one item (veg or nonVeg) should be present when the object is used
-    const hasVeg = data.veg && data.veg.length > 0;
-    const hasNonVeg = data.nonVeg && data.nonVeg.length > 0;
-    return hasVeg || hasNonVeg;
-  },
-  {
-    message: 'At least one veg or non-veg item must be provided for the meal',
-  }
-);
+});
 
 /**
  * Enhanced Schema for daily menu matching JSON structure
@@ -41,7 +31,13 @@ const dailyMenuSchema = z.object({
     ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
     { errorMap: () => ({ message: 'Invalid day. Must be a valid day of the week' }) }
   ),
-  timing: z.string()
+  breakfastTiming: z.string()
+    .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format. Use HH:MM (24-hour format)')
+    .optional(),
+  lunchTiming: z.string()
+    .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format. Use HH:MM (24-hour format)')
+    .optional(),
+  dinnerTiming: z.string()
     .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format. Use HH:MM (24-hour format)')
     .optional(),
   breakfast: mealItemsSchema.optional(),
@@ -84,7 +80,7 @@ const foodMessPgSchema = z.object({
   (data) => {
     // Validation 1: If food is available, ensure meals are selected
     if (data.foodMess?.available) {
-      const hasMeals = data.foodMess.meals && data.foodMess.meals.length > 0;
+      const hasMeals = data.foodMess?.meals && data.foodMess.meals.length > 0;
       if (!hasMeals) {
         return false;
       }
@@ -111,47 +107,7 @@ const foodMessPgSchema = z.object({
   }
 ).refine(
   (data) => {
-    // Validation 3: Each day in weeklyMenu must have at least one meal (only when food is available)
-    if (data.foodMess?.available && data.foodMess.weeklyMenu.length > 0) {
-      for (const dayMenu of data.foodMess.weeklyMenu) {
-        const hasAtLeastOneMeal = dayMenu.breakfast || dayMenu.lunch || dayMenu.dinner;
-        if (!hasAtLeastOneMeal) {
-          return false;
-        }
-      }
-    }
-    return true;
-  },
-  {
-    message: 'Each day in the weekly menu must have at least one meal (breakfast, lunch, or dinner)',
-    path: ['foodMess', 'weeklyMenu'],
-  }
-).refine(
-  (data) => {
-    // Validation 4: Ensure selected meals match what's provided in weeklyMenu (only when food is available)
-    if (data.foodMess?.available && data.foodMess?.meals && data.foodMess.meals.length > 0 && data.foodMess.weeklyMenu.length > 0) {
-      const selectedMeals = data.foodMess.meals.map(m => m.toLowerCase());
-      
-      // If a meal type is selected, at least one day should have it
-      if (selectedMeals.includes('breakfast') && !data.foodMess.weeklyMenu.some(d => d.breakfast)) {
-        return false;
-      }
-      if (selectedMeals.includes('lunch') && !data.foodMess.weeklyMenu.some(d => d.lunch)) {
-        return false;
-      }
-      if (selectedMeals.includes('dinner') && !data.foodMess.weeklyMenu.some(d => d.dinner)) {
-        return false;
-      }
-    }
-    return true;
-  },
-  {
-    message: 'Selected meal types must have corresponding items in the weekly menu',
-    path: ['foodMess', 'weeklyMenu'],
-  }
-).refine(
-  (data) => {
-    // Validation 5: Ensure foodType matches the menu items
+    // Validation 4: Ensure foodType matches the menu items (only when weeklyMenu is provided)
     if (data.foodMess?.available && data.foodMess.weeklyMenu.length > 0) {
       const foodType = data.foodMess.foodType;
       let hasVeg = false;
@@ -180,18 +136,6 @@ const foodMessPgSchema = z.object({
   {
     message: 'Food type does not match the menu items. Veg food type cannot include non-veg items',
     path: ['foodMess', 'foodType'],
-  }
-).refine(
-  (data) => {
-    // Validation 6: If food is available and meals selected, weeklyMenu should not be empty
-    if (data.foodMess?.available && data.foodMess.meals.length > 0) {
-      return data.foodMess.weeklyMenu.length > 0;
-    }
-    return true;
-  },
-  {
-    message: 'Weekly menu must be provided when food service is available and meals are selected',
-    path: ['foodMess', 'weeklyMenu'],
   }
 );
 

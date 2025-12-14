@@ -418,15 +418,7 @@ export default function RoomTypesPgStep() {
                 <Bed className="w-8 md:w-12 h-8 md:h-12 mx-auto text-muted-foreground/50 mb-2 md:mb-4" />
                 <p className="text-base md:text-lg font-medium text-muted-foreground mb-1 md:mb-2">No room types added yet</p>
                 <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">Start by adding your first room type</p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleAddRoomType}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add First Room Type
-                </Button>
+               
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
