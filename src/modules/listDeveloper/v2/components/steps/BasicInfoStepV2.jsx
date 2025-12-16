@@ -110,7 +110,6 @@ export default function BasicInfoStepV2() {
                   <FieldLabel className="flex items-center gap-2">
                     <Info className="w-4 h-4" />
                     Developer Type
-                    <span className="text-red-500">*</span>
                   </FieldLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger
@@ -144,7 +143,6 @@ export default function BasicInfoStepV2() {
                   <FieldLabel className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     Established Year
-                    <span className="text-red-500">*</span>
                   </FieldLabel>
                   <Input
                     {...field}

@@ -4,12 +4,14 @@ export const projectsSchema = z.object({
   totalProjectsCompleted: z.number()
     .int('Must be a whole number')
     .min(0, 'Cannot be negative')
-    .max(10000, 'Value too large'),
+    .max(10000, 'Value too large')
+    .optional(),
   
   totalProjectsOngoing: z.number()
     .int('Must be a whole number')
     .min(0, 'Cannot be negative')
-    .max(1000, 'Value too large'),
+    .max(1000, 'Value too large')
+    .optional(),
   
   totalUnitsDelivered: z.number()
     .int('Must be a whole number')
@@ -31,13 +33,13 @@ export const projectsSchema = z.object({
     'Retail',
     'IT Parks',
     'Industrial',
-  ])).min(1, 'Select at least one project type'),
+  ])).optional(),
   
  
   
   operatingStates: z.array(z.string())
-    .min(1, 'Add at least one operating state')
-    .max(35, 'Maximum 35 states'),
+    .max(35, 'Maximum 35 states')
+    .optional(),
 });
 
 export default projectsSchema;

@@ -106,7 +106,7 @@ export default function ContactInfoStepV2() {
                 control={control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel>Email <span className="text-red-500">*</span></FieldLabel>
+                    <FieldLabel>Email</FieldLabel>
                     <Input
                       {...field}
                       type="email"
@@ -127,7 +127,7 @@ export default function ContactInfoStepV2() {
                 control={control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel>Phone <span className="text-red-500">*</span></FieldLabel>
+                    <FieldLabel>Phone</FieldLabel>
                     <Input
                       {...field}
                       type="tel"

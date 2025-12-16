@@ -166,7 +166,7 @@ export default function ProjectsStepV2() {
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel>
-                      Completed Projects <span className="text-red-500">*</span>
+                      Completed Projects
                     </FieldLabel>
                     <Input
                       {...field}
@@ -191,7 +191,7 @@ export default function ProjectsStepV2() {
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel>
-                      Ongoing Projects <span className="text-red-500">*</span>
+                      Ongoing Projects
                     </FieldLabel>
                     <Input
                       {...field}
@@ -241,7 +241,7 @@ export default function ProjectsStepV2() {
             {/* Project Types */}
             <div className="space-y-3">
               <FieldLabel>
-                Project Types <span className="text-red-500">*</span>
+                Project Types
               </FieldLabel>
               <Controller
                 name="projectTypes"
@@ -282,7 +282,7 @@ export default function ProjectsStepV2() {
             {/* Operating States */}
             <div className="space-y-3">
               <FieldLabel>
-                Operating States <span className="text-red-500">*</span>
+                Operating States
                 <span className="text-xs text-gray-500 ml-2">
                   ({(operatingStates || []).length}/{INDIAN_STATES.length})
                 </span>
