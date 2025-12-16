@@ -18,7 +18,7 @@ const locationDetailsPgSchema = z.object({
   }, {
     message: 'Invalid coordinates: latitude must be between -90 and 90, longitude between -180 and 180',
   }),
-  showMapExact: z.boolean().default(false),
+  // showMapExact: z.boolean().default(false),
   city: z.string().optional(),
   locality: z.string().optional(),
   addressText: z.string().optional(),

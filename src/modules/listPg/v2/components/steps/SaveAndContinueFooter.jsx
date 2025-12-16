@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Save, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export default function SaveAndContinueFooter({
@@ -10,6 +10,8 @@ export default function SaveAndContinueFooter({
   nextLabel = 'Continue',
   backLabel = 'Back',
   isLastStep = false,
+  isLoading = false,
+  loadingText = 'Processing...',
 }) {
   return (
     <motion.div
@@ -35,14 +37,19 @@ export default function SaveAndContinueFooter({
         <Button
           type="submit"
           onClick={onSaveAndContinue}
-          // disabled={nextDisabled}
+          disabled={nextDisabled || isLoading}
           className={`h-11 px-8 text-sm font-bold shadow-lg ${
             isLastStep
               ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
               : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          {isLastStep ? (
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {loadingText}
+            </>
+          ) : isLastStep ? (
             <>
               <Save className="w-4 h-4 mr-2" />
               Submit Listing

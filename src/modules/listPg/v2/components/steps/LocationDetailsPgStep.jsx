@@ -22,7 +22,7 @@ export default function LocationDetailsPgStep() {
     mode: 'onChange',
     defaultValues: {
       coordinates: formData?.coordinates || null,
-      showMapExact: formData?.showMapExact || false,
+      // showMapExact: formData?.showMapExact || false,
       city: formData?.city || '',
       locality: formData?.locality || '',
       addressText: formData?.addressText || '',
@@ -151,7 +151,7 @@ export default function LocationDetailsPgStep() {
           )} */}
 
           {/* Show Exact Location Toggle */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -174,10 +174,10 @@ export default function LocationDetailsPgStep() {
                 </div>
               )}
             />
-          </motion.div>
+          </motion.div> */}
 
           {/* Info Box */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
@@ -187,7 +187,7 @@ export default function LocationDetailsPgStep() {
               <span className="font-semibold">💡 Tip:</span> Accurate location helps buyers find your property easily. 
               You can search by address or drag the map marker to adjust the position.
             </p>
-          </motion.div>
+          </motion.div> */}
 
           {/* Save & Continue Footer */}
           <SaveAndContinueFooter

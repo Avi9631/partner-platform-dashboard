@@ -74,7 +74,7 @@ function PgFormContentV2() {
 
       {/* Main Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="min-h-full px-4 py-4 md:px-6 md:py-6 pb-20 md:pb-24 bg-gradient-to-br from-orange-50/30 to-white dark:from-orange-950/10 dark:to-background">
+          <div className="min-h-full px-4 py-4 md:px-6 md:py-6 pb-20 md:pb-32 bg-gradient-to-br from-orange-50/30 to-white dark:from-orange-950/10 dark:to-background">
             {isLoadingDraft ? (
               <div className="flex items-center justify-center h-full min-h-[400px]">
                 <div className="text-center">

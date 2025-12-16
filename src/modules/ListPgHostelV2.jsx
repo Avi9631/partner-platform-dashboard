@@ -107,12 +107,7 @@ export default function ListPgHostelV2Page() {
     fetchListings();
   }, [fetchListings]);
 
-  const filteredListings = listings.filter(listing => {
-    const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         listing.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || listing.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+
 
   return (
     <div className="min-h-screen">
@@ -222,12 +217,12 @@ export default function ListPgHostelV2Page() {
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
           </div>
-        ) : filteredListings.length === 0 ? (
+        ) : listings.length === 0 ? (
           <EmptyState searchQuery={searchQuery} onAddNew={handleListNewPg} isCreating={isCreatingDraft} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {filteredListings.map((listing, index) => (
+              {listings.map((listing, index) => (
                 <PgCard 
                   key={listing.id} 
                   listing={listing} 

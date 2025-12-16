@@ -19,7 +19,10 @@ import {
   Trash2,
   Copy,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Image as ImageIcon,
+  Upload,
+  XCircle
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -116,6 +119,7 @@ export default function RoomTypesPgStep() {
   const [tempRoomData, setTempRoomData] = useState(null);
   const [currentSheetTab, setCurrentSheetTab] = useState('basic');
   const [sheetValidationErrors, setSheetValidationErrors] = useState({});
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   const logger = useMemo(() => createStepLogger('Room Types PG Step V2'), []);
 
@@ -156,9 +160,9 @@ export default function RoomTypesPgStep() {
     if (!roomData.pricing || roomData.pricing.length === 0) {
       errors.pricing = 'At least one pricing item is required';
     } else {
-      const hasInvalidPricing = roomData.pricing.some(p => !p.type || p.amount <= 0);
+      const hasInvalidPricing = roomData.pricing.some(p => !p.type || p.amount < 0);
       if (hasInvalidPricing) {
-        errors.pricing = 'All pricing items must have type and amount > 0';
+        errors.pricing = 'All pricing items must have type and valid amount';
       }
     }
     
@@ -209,6 +213,7 @@ export default function RoomTypesPgStep() {
       },
       refundPolicy: '',
       amenities: [],
+      images: [],
     };
     setTempRoomData(newRoom);
     setEditingRoomIndex(null);
@@ -363,9 +368,113 @@ export default function RoomTypesPgStep() {
     }
   };
 
-  const onSubmit = (data) => {
-    logger.logSubmission(data, form.formState.errors);
-    saveAndContinue(data);
+  // Handle image upload
+  const handleImageUpload = (event) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
+    const newImages = files.map(file => ({
+      url: '',
+      file: file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    if (tempRoomData) {
+      setTempRoomData(prev => ({
+        ...prev,
+        images: [...(prev.images || []), ...newImages],
+      }));
+    }
+  };
+
+  // Remove image
+  const removeImage = (imageIndex) => {
+    if (tempRoomData) {
+      const newImages = [...(tempRoomData.images || [])];
+      // Revoke the preview URL to free memory
+      if (newImages[imageIndex]?.preview) {
+        URL.revokeObjectURL(newImages[imageIndex].preview);
+      }
+      newImages.splice(imageIndex, 1);
+      setTempRoomData(prev => ({
+        ...prev,
+        images: newImages,
+      }));
+    }
+  };
+
+  // Upload images for all room types
+  const uploadRoomImages = async (roomTypes) => {
+    // This is a placeholder for actual upload logic
+    // In a real implementation, you would upload to S3 or your backend
+    // For now, we'll simulate the upload and return URLs
+    
+    const uploadedRoomTypes = await Promise.all(
+      roomTypes.map(async (room) => {
+        if (!room.images || room.images.length === 0) {
+          return { ...room, images: [] };
+        }
+
+        // Filter out images that already have URLs (already uploaded)
+        const imagesToUpload = room.images.filter(img => img.file && !img.url);
+        const alreadyUploaded = room.images.filter(img => img.url);
+
+        if (imagesToUpload.length === 0) {
+          return room; // No new images to upload
+        }
+
+        // Simulate upload - in production, replace with actual API call
+        const uploadedImages = await Promise.all(
+          imagesToUpload.map(async (img) => {
+            // TODO: Replace with actual upload to backend/S3
+            // const formData = new FormData();
+            // formData.append('file', img.file);
+            // const response = await fetch('/api/upload/room-image', {
+            //   method: 'POST',
+            //   body: formData,
+            // });
+            // const result = await response.json();
+            // return { url: result.url };
+            
+            // For now, keep the preview URL as the URL
+            return {
+              url: img.preview || '',
+              preview: img.preview,
+            };
+          })
+        );
+
+        return {
+          ...room,
+          images: [...alreadyUploaded, ...uploadedImages],
+        };
+      })
+    );
+
+    return uploadedRoomTypes;
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      setIsUploadingImages(true);
+      logger.logSubmission(data, form.formState.errors);
+      
+      // Upload all room images before saving
+      const roomTypesWithUploadedImages = await uploadRoomImages(data.roomTypes);
+      
+      // Update data with uploaded image URLs
+      const finalData = {
+        ...data,
+        roomTypes: roomTypesWithUploadedImages,
+      };
+      
+      saveAndContinue(finalData);
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      // You might want to show a toast notification here
+    } finally {
+      setIsUploadingImages(false);
+    }
   };
 
   const onError = (errors) => {
@@ -403,7 +512,8 @@ export default function RoomTypesPgStep() {
             <Button
               type="button"
               onClick={handleAddRoomType}
-              className="flex items-center gap-2 self-start sm:self-auto"
+ variant="outline"
+                                    className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Room Type</span>
@@ -478,8 +588,7 @@ export default function RoomTypesPgStep() {
                             )}
                           </div>
                         </div>
-                      </CardHeader>
- 
+                      </CardHeader> 
                     </Card>
                   );
                 })}
@@ -491,8 +600,10 @@ export default function RoomTypesPgStep() {
           <SaveAndContinueFooter
             onSaveAndContinue={form.handleSubmit(onSubmit)}
             onBack={previousStep}
-            nextDisabled={!form.formState.isValid}
+            nextDisabled={!form.formState.isValid || isUploadingImages}
             showBack={true}
+            isLoading={isUploadingImages}
+            loadingText="Uploading images..."
           />
         </form>
       </motion.div>
@@ -512,7 +623,7 @@ export default function RoomTypesPgStep() {
           {tempRoomData && (
             <div className="mt-6">
               <Tabs value={currentSheetTab} onValueChange={setCurrentSheetTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-5">
                   <TabsTrigger value="basic" className="relative">
                     <span className="flex items-center gap-1.5">
                       Basic
@@ -530,6 +641,14 @@ export default function RoomTypesPgStep() {
                         <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
                       ) : sheetValidationErrors.pricing ? (
                         <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                      ) : null}
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="images" className="relative">
+                    <span className="flex items-center gap-1.5">
+                      Images
+                      {tempRoomData.images && tempRoomData.images.length > 0 ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
                       ) : null}
                     </span>
                   </TabsTrigger>
@@ -777,6 +896,97 @@ export default function RoomTypesPgStep() {
                       </div>
                     )}
                   </div>
+                </TabsContent>
+
+                {/* Images Tab */}
+                <TabsContent value="images" className="mt-6 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Room Images</h3>
+                    <Badge variant="secondary">
+                      {tempRoomData.images?.length || 0} Images
+                    </Badge>
+                  </div>
+
+                  {/* Upload Section */}
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                    <input
+                      type="file"
+                      id="room-image-upload"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                    <label
+                      htmlFor="room-image-upload"
+                      className="cursor-pointer flex flex-col items-center gap-3"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                        <Upload className="w-6 h-6 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium mb-1">Click to upload room images</p>
+                        <p className="text-xs text-muted-foreground">PNG, JPG up to 10MB each</p>
+                      </div>
+                      <Button type="button" variant="outline" size="sm" onClick={(e) => e.preventDefault()}>
+                        <ImageIcon className="w-4 h-4 mr-2" />
+                        Choose Files
+                      </Button>
+                    </label>
+                  </div>
+
+                  {/* Image Preview Grid */}
+                  {tempRoomData.images && tempRoomData.images.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {tempRoomData.images.map((image, index) => (
+                        <div key={index} className="relative group">
+                          <div className="aspect-video rounded-lg overflow-hidden border-2 border-muted">
+                            <img
+                              src={image.preview || image.url}
+                              alt={`Room image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeImage(index)}
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </Button>
+                          <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                            Image {index + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 border-2 border-dashed rounded-lg">
+                      <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground/50 mb-2" />
+                      <p className="text-sm text-muted-foreground">No images uploaded yet</p>
+                    </div>
+                  )}
+
+                  {/* Tips */}
+                  <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start gap-3">
+                        <ImageIcon className="w-5 h-5 text-blue-600 mt-0.5" />
+                        <div className="flex-1 text-sm text-blue-900 dark:text-blue-100">
+                          <p className="font-medium mb-1">Image Tips:</p>
+                          <ul className="list-disc list-inside space-y-1 text-xs">
+                            <li>Upload high-quality images showing different angles of the room</li>
+                            <li>Include photos of bed, study area, and amenities</li>
+                            <li>Ensure good lighting for better visibility</li>
+                            <li>First image will be used as the primary thumbnail</li>
+                            <li className="font-semibold text-blue-700">Images will be uploaded when you click "Save & Continue"</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 {/* Amenities Tab */}

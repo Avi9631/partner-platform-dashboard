@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,22 @@ export default function BasicDetailsPgStep() {
     () => createStepLogger("Basic Details PG Step V2"),
     []
   );
+
+  // Popular PG/Hostel brand names
+  const brandOptions = useMemo(() => [
+    { label: "Zostel", value: "Zostel" },
+    { label: "OYO Life", value: "OYO Life" },
+    { label: "Stanza Living", value: "Stanza Living" },
+    { label: "Your Space", value: "Your Space" },
+    { label: "Settle", value: "Settle" },
+    { label: "CoHo", value: "CoHo" },
+    { label: "Zolo", value: "Zolo" },
+    { label: "NestAway", value: "NestAway" },
+    { label: "Oxfordcaps", value: "Oxfordcaps" },
+    { label: "Colive", value: "Colive" },
+    { label: "HelloWorld", value: "HelloWorld" },
+    { label: "HostelPass", value: "HostelPass" },
+  ], []);
 
   const form = useForm({
     resolver: zodResolver(basicDetailsPgSchema),
@@ -280,15 +297,22 @@ export default function BasicDetailsPgStep() {
                         <FieldLabel>
                           Brand Name <span className="text-red-500">*</span>
                         </FieldLabel>
-                        <Input
-                          {...field}
-                          placeholder="e.g., Zostel, OYO Life, Sky Living"
-                          className={`h-11 text-sm border-2 focus:border-orange-500 transition-all ${
-                            fieldState.invalid ? "border-red-500" : ""
-                          }`}
+                        <Combobox
+                          options={brandOptions}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="Select or type brand name..."
+                          searchPlaceholder="Search brand..."
+                          emptyText="No brand found."
+                          allowCustom={true}
+                          className={fieldState.invalid ? "border-red-500" : ""}
                         />
-                        {fieldState.invalid && (
+                        {fieldState.invalid ? (
                           <FieldError errors={[fieldState.error]} />
+                        ) : (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Select from the list or type a custom brand name and press Enter
+                          </p>
                         )}
                       </Field>
                     )}

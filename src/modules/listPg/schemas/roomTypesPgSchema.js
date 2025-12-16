@@ -33,6 +33,15 @@ const availabilitySchema = z.object({
 });
 
 /**
+ * Schema for room images
+ */
+const roomImageSchema = z.object({
+  url: z.string().optional(), // URL after upload (optional until uploaded)
+  file: z.any().optional(), // For file upload
+  preview: z.string().optional(), // For preview URL before upload
+});
+
+/**
  * Enhanced Schema for individual room type matching JSON structure
  */
 const roomTypeSchema = z
@@ -98,6 +107,9 @@ const roomTypeSchema = z
 
     // Room-specific amenities matching JSON structure
     amenities: z.array(roomAmenitySchema).default([]),
+
+    // Room images
+    images: z.array(roomImageSchema).default([]).optional(),
   })
   .refine(
     (room) => {

@@ -280,7 +280,7 @@ const BusinessProfileSetup = () => {
   }
 
   return (
-    <div className="h-screen overflow-y-auto p-0 sm:p-4">
+    <div className="h-screen   p-0 sm:p-4">
       <Card className="w-full min-h-screen sm:min-h-0 sm:max-w-2xl sm:mx-auto sm:rounded-lg sm:shadow-none">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">

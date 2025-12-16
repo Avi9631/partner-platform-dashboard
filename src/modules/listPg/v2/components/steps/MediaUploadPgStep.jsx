@@ -347,23 +347,7 @@ export default function MediaUploadPgStepV2() {
                   Add Images or Videos
                 </Button>
               </label>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge
-                  variant="secondary"
-                  className="bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300"
-                >
-                  <FileImage className="w-3 h-3 mr-1" />
-                  {imageCount} {imageCount === 1 ? "image" : "images"}
-                </Badge>
-                <Badge
-                  variant="secondary"
-                  className="bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300"
-                >
-                  <FileVideo className="w-3 h-3 mr-1" />
-                  {videoCount} {videoCount === 1 ? "video" : "videos"}
-                </Badge>
-                <Badge variant="secondary">Total: {mediaList.length}</Badge>
-              </div>
+            
             </div>
 
             {/* Info Banner */}
@@ -411,9 +395,7 @@ export default function MediaUploadPgStepV2() {
               </div>
             )}
           </div>
-
-          {/* Pro Tip */}
-          <ProTipV2 title="Media Best Practices" tips={mediaTips} />
+ 
         </div>
       </motion.div>
 

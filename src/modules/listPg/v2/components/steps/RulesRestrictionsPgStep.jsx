@@ -215,27 +215,10 @@ export default function RulesRestrictionsPgStep() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-orange-600" />
-              <h3 className="text-lg font-semibold">Property Rules ({ruleFields.length})</h3>
+              <h3 className="text-lg font-semibold">Property Rules </h3>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={loadSampleRules}
-              >
-                Load Sample Rules
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={exportRules}
-                disabled={ruleFields.length === 0}
-              >
-                <Copy className="w-4 h-4 mr-1" />
-                Export
-              </Button>
+             
               <Sheet open={showAddDialog} onOpenChange={(open) => {
                 setShowAddDialog(open);
                 if (!open) {
@@ -244,7 +227,9 @@ export default function RulesRestrictionsPgStep() {
                 }
               }}>
                 <SheetTrigger asChild>
-                  <Button type="button" size="sm">
+                  <Button type="button" size="sm" variant="outline"
+                                    className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950"
+>
                     <Plus className="w-4 h-4 mr-1" />
                     Add Rule
                   </Button>
@@ -512,21 +497,7 @@ export default function RulesRestrictionsPgStep() {
             </motion.div>
           )}
 
-          {/* Info Section */}
-          <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <h4 className="font-medium text-blue-800 dark:text-blue-400 mb-2">
-                Tips for Effective Rules
-              </h4>
-              <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1.5">
-                <li>• Keep rules clear and specific to avoid confusion</li>
-                <li>• Include timing details where applicable (e.g., "Quiet hours: 10 PM - 7 AM")</li>
-                <li>• Be reasonable and consider tenant comfort</li>
-                <li>• Update rules as needed based on community feedback</li>
-              </ul>
-            </div>
-          </div>
+          
 
           {/* Save & Continue Footer */}
           <SaveAndContinueFooter
