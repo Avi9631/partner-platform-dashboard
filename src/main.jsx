@@ -20,6 +20,7 @@ import MyBusiness from "./pages/MyBusiness.jsx";
 import EditBusiness from "./pages/EditBusiness.jsx";
 import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
 import BusinessProfileSetup from "./modules/BusinessProfileSetup/index.jsx";
+import { DeveloperFormPageV2 } from "./modules/listDeveloper/v2/index.js";
 
 const router = createBrowserRouter([
   {
@@ -43,6 +44,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <PgFormPageV2 />
+          </ProtectedRoute>
+        ),
+      },
+            {
+        path: "list-developer/:draftId",
+        element: (
+          <ProtectedRoute>
+            <DeveloperFormPageV2 />
           </ProtectedRoute>
         ),
       },

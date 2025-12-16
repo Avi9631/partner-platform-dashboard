@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { User, MapPin, Globe } from 'lucide-react';
+import { useForm, Controller } from 'react-hook-form';
+import { User, MapPin, Globe, Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDeveloperFormV2 } from '../../context/DeveloperFormContextV2';
 import { contactInfoSchema } from '../../../schemas/contactInfoSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
@@ -12,12 +14,14 @@ import SaveAndContinueFooter from '../SaveAndContinueFooter';
 export default function ContactInfoStepV2() {
   const { formData, saveAndContinue, previousStep } = useDeveloperFormV2();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [socialLinks, setSocialLinks] = useState(formData?.socialLinks || []);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    control,
   } = useForm({
     resolver: zodResolver(contactInfoSchema),
     defaultValues: formData || {},
@@ -28,8 +32,41 @@ export default function ContactInfoStepV2() {
       Object.keys(formData).forEach((key) => {
         setValue(key, formData[key]);
       });
+      if (formData.socialLinks) {
+        setSocialLinks(formData.socialLinks);
+      }
     }
   }, [formData, setValue]);
+
+  const addSocialLink = () => {
+    const newLink = { type: 'website', url: '' };
+    const updatedLinks = [...socialLinks, newLink];
+    setSocialLinks(updatedLinks);
+    setValue('socialLinks', updatedLinks);
+  };
+
+  const removeSocialLink = (index) => {
+    const updatedLinks = socialLinks.filter((_, i) => i !== index);
+    setSocialLinks(updatedLinks);
+    setValue('socialLinks', updatedLinks);
+  };
+
+  const updateSocialLink = (index, field, value) => {
+    const updatedLinks = [...socialLinks];
+    updatedLinks[index] = { ...updatedLinks[index], [field]: value };
+    setSocialLinks(updatedLinks);
+    setValue('socialLinks', updatedLinks);
+  };
+
+  const socialLinkTypes = [
+    { value: 'website', label: 'Website' },
+    { value: 'facebook', label: 'Facebook' },
+    { value: 'instagram', label: 'Instagram' },
+    { value: 'linkedin', label: 'LinkedIn' },
+    { value: 'youtube', label: 'YouTube' },
+    { value: 'twitter', label: 'Twitter' },
+    { value: 'other', label: 'Other' },
+  ];
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -63,142 +100,141 @@ export default function ContactInfoStepV2() {
             <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
               <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300">Primary Contact</h4>
               
-              <div className="space-y-2">
-                <Label htmlFor="primaryContactName">Name <span className="text-red-500">*</span></Label>
-                <Input
-                  id="primaryContactName"
-                  {...register('primaryContactName')}
-                  placeholder="Contact person name"
-                  className={errors.primaryContactName ? 'border-red-500' : ''}
-                />
-                {errors.primaryContactName && (
-                  <p className="text-sm text-red-500">{errors.primaryContactName.message}</p>
+    
+              <Controller
+                name="primaryContactEmail"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>Email <span className="text-red-500">*</span></FieldLabel>
+                    <Input
+                      {...field}
+                      type="email"
+                      placeholder="contact@company.com"
+                      className={`h-11 text-sm border-2 focus:border-orange-500 transition-all ${
+                        fieldState.invalid ? 'border-red-500' : ''
+                      }`}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
                 )}
-              </div>
+              />
 
-              <div className="space-y-2">
-                <Label htmlFor="primaryContactEmail">Email <span className="text-red-500">*</span></Label>
-                <Input
-                  id="primaryContactEmail"
-                  type="email"
-                  {...register('primaryContactEmail')}
-                  placeholder="contact@company.com"
-                  className={errors.primaryContactEmail ? 'border-red-500' : ''}
-                />
-                {errors.primaryContactEmail && (
-                  <p className="text-sm text-red-500">{errors.primaryContactEmail.message}</p>
+              <Controller
+                name="primaryContactPhone"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>Phone <span className="text-red-500">*</span></FieldLabel>
+                    <Input
+                      {...field}
+                      type="tel"
+                      placeholder="+91 9876543210"
+                      className={`h-11 text-sm border-2 focus:border-orange-500 transition-all ${
+                        fieldState.invalid ? 'border-red-500' : ''
+                      }`}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
                 )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="primaryContactPhone">Phone <span className="text-red-500">*</span></Label>
-                <Input
-                  id="primaryContactPhone"
-                  {...register('primaryContactPhone')}
-                  placeholder="+91 9876543210"
-                  className={errors.primaryContactPhone ? 'border-red-500' : ''}
-                />
-                {errors.primaryContactPhone && (
-                  <p className="text-sm text-red-500">{errors.primaryContactPhone.message}</p>
-                )}
-              </div>
+              />
             </div>
 
-            {/* Office Address */}
-            <div className="space-y-4">
-              <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Office Address
-              </h4>
-
-              <div className="space-y-2">
-                <Label htmlFor="officeAddress">Address <span className="text-red-500">*</span></Label>
-                <Input
-                  id="officeAddress"
-                  {...register('officeAddress')}
-                  placeholder="Street address"
-                  className={errors.officeAddress ? 'border-red-500' : ''}
-                />
-                {errors.officeAddress && (
-                  <p className="text-sm text-red-500">{errors.officeAddress.message}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City <span className="text-red-500">*</span></Label>
-                  <Input
-                    id="city"
-                    {...register('city')}
-                    placeholder="City"
-                    className={errors.city ? 'border-red-500' : ''}
-                  />
-                  {errors.city && (
-                    <p className="text-sm text-red-500">{errors.city.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="state">State <span className="text-red-500">*</span></Label>
-                  <Input
-                    id="state"
-                    {...register('state')}
-                    placeholder="State"
-                    className={errors.state ? 'border-red-500' : ''}
-                  />
-                  {errors.state && (
-                    <p className="text-sm text-red-500">{errors.state.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="pincode">Pincode <span className="text-red-500">*</span></Label>
-                <Input
-                  id="pincode"
-                  {...register('pincode')}
-                  placeholder="123456"
-                  maxLength={6}
-                  className={errors.pincode ? 'border-red-500' : ''}
-                />
-                {errors.pincode && (
-                  <p className="text-sm text-red-500">{errors.pincode.message}</p>
-                )}
-              </div>
-            </div>
+ 
 
             {/* Online Presence */}
             <div className="space-y-4">
-              <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                Online Presence
-              </h4>
-
-              <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
-                <Input
-                  id="website"
-                  type="url"
-                  {...register('website')}
-                  placeholder="https://www.company.com"
-                  className={errors.website ? 'border-red-500' : ''}
-                />
-                {errors.website && (
-                  <p className="text-sm text-red-500">{errors.website.message}</p>
-                )}
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  Online Presence
+                </h4>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addSocialLink}
+                  className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Link
+                </Button>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="linkedin">LinkedIn</Label>
-                <Input
-                  id="linkedin"
-                  type="url"
-                  {...register('linkedin')}
-                  placeholder="https://linkedin.com/company/..."
-                  className={errors.linkedin ? 'border-red-500' : ''}
-                />
-                {errors.linkedin && (
-                  <p className="text-sm text-red-500">{errors.linkedin.message}</p>
+              <div className="space-y-3">
+                {socialLinks.length === 0 ? (
+                  <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                    No links added yet. Click "Add Link" to add your social media or website URLs.
+                  </p>
+                ) : (
+                  socialLinks.map((link, index) => (
+                    <div key={index} className="flex gap-2 items-start">
+                      <div className="w-1/3">
+                        <Controller
+                          name={`socialLinks.${index}.type`}
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                updateSocialLink(index, 'type', value);
+                              }}
+                            >
+                              <SelectTrigger className={errors.socialLinks?.[index]?.type ? 'border-red-500' : ''}>
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {socialLinkTypes.map((type) => (
+                                  <SelectItem key={type.value} value={type.value}>
+                                    {type.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Controller
+                          name={`socialLinks.${index}.url`}
+                          control={control}
+                          render={({ field }) => (
+                            <>
+                              <Input
+                                type="url"
+                                value={field.value}
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+                                  updateSocialLink(index, 'url', e.target.value);
+                                }}
+                                placeholder="https://..."
+                                className={errors.socialLinks?.[index]?.url ? 'border-red-500' : ''}
+                              />
+                              {errors.socialLinks?.[index]?.url && (
+                                <p className="text-sm text-red-500 mt-1">
+                                  {errors.socialLinks[index].url.message}
+                                </p>
+                              )}
+                            </>
+                          )}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeSocialLink(index)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))
                 )}
               </div>
             </div>
@@ -207,8 +243,10 @@ export default function ContactInfoStepV2() {
       </Card>
 
       <SaveAndContinueFooter
-        onPrevious={previousStep}
-        isSubmitting={isSubmitting}
+        onBack={previousStep}
+        showBack={true}
+        isLoading={isSubmitting}
+        loadingText="Saving..."
       />
     </form>
   );

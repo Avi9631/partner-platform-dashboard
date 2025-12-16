@@ -69,14 +69,18 @@ function DeveloperFormContentV2({ open, onOpenChange }) {
   );
 }
 
-export default function DeveloperFormSheetV2({ open, onOpenChange, initialDraftId }) {
+export default function DeveloperFormSheetV2({ open, onOpenChange, initialDraftId, editingDraft }) {
   // Don't render provider if not open (prevents HMR issues)
   if (!open) {
     return null;
   }
   
   return (
-    <DeveloperFormProviderV2 onClose={onOpenChange} initialDraftId={initialDraftId}>
+    <DeveloperFormProviderV2 
+      onClose={onOpenChange} 
+      initialDraftId={initialDraftId}
+      editingDraft={editingDraft}
+    >
       <DeveloperFormContentV2 open={open} onOpenChange={onOpenChange} />
     </DeveloperFormProviderV2>
   );

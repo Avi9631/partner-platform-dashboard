@@ -3,58 +3,71 @@ import { apiCall } from "../lib/apiClient";
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 export const developerDraftApi = {
-  // Create a new developer draft
-  createDeveloperDraft: async (draftData) => {
-    return apiCall(`${backendUrl}/createDeveloperDraft`, {
+  // Create a new developer draft using unified API
+  createDeveloperDraft: async (draftData = {}) => {
+    return apiCall(`${backendUrl}/createListingDraft`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(draftData),
+      body: JSON.stringify({ 
+        draftType: 'DEVELOPER',
+        ...draftData 
+      }),
     });
   },
 
-  // Update an existing developer draft
+  // Update an existing developer draft using unified API
   updateDeveloperDraft: async (draftId, draftData) => {
-    return apiCall(`${backendUrl}/updateDeveloperDraft`, {
+    return apiCall(`${backendUrl}/updateListingDraft`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ draftId: draftId, ...draftData }),
+      body: JSON.stringify({ 
+        draftId: draftId, 
+        draftType: 'DEVELOPER',
+        ...draftData 
+      }),
     });
   },
 
-  // Delete a developer draft
+  // Delete a developer draft using unified API
   deleteDeveloperDraft: async (draftId) => {
-    return apiCall(`${backendUrl}/deleteDeveloperDraft`, {
+    return apiCall(`${backendUrl}/deleteListingDraft`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id: draftId }),
+      body: JSON.stringify({ 
+        id: draftId,
+        draftType: 'DEVELOPER'
+      }),
     });
   },
 
-  // Submit a developer draft
+  // Submit a developer draft using unified API
   submitDeveloperDraft: async (draftId) => {
-    return apiCall(`${backendUrl}/submitDeveloperDraft`, {
+    return apiCall(`${backendUrl}/submitListingDraft`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id: draftId }),
+      body: JSON.stringify({ 
+        id: draftId,
+        draftType: 'DEVELOPER'
+      }),
     });
   },
 
-  // Get user's developer drafts
+  // Get user's developer drafts using unified API
   getUserDeveloperDrafts: async () => {
-    return apiCall(`${backendUrl}/developerDraft`);
+    return apiCall(`${backendUrl}/listingDraft?draftType=DEVELOPER`);
   },
 
-  // Get a developer draft by ID
+  // Get a developer draft by ID using unified API
   getDeveloperDraftById: async (draftId) => {
-    return apiCall(`${backendUrl}/developerDraft/${draftId}`);
+    return apiCall(`${backendUrl}/listingDraft/${draftId}`);
   },
 };
 

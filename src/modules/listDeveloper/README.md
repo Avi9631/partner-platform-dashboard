@@ -107,6 +107,8 @@ ListDeveloperV2 Page
 
 ## Usage
 
+### Sheet Overlay (Sidebar)
+
 ```jsx
 import { DeveloperFormSheetV2 } from '@/modules/listDeveloper/v2';
 
@@ -140,6 +142,58 @@ function MyComponent() {
 }
 ```
 
+### Full Page View (Dedicated Route)
+
+```jsx
+import { DeveloperFormPageV2 } from '@/modules/listDeveloper/v2';
+import { Routes, Route } from 'react-router-dom';
+
+// In your routes
+<Route path="/developer/edit/:draftId" element={<DeveloperFormPageV2 />} />
+
+// Navigate with draft ID in URL
+navigate(`/developer/edit/${draftId}`);
+```
+
+### With Legacy Draft Editing
+
+```jsx
+<DeveloperFormSheetV2 
+  open={isOpen} 
+  onOpenChange={setIsOpen}
+  editingDraft={draftData}
+/>
+```
+
+### Using Context and Configuration
+
+```jsx
+import { 
+  useDeveloperFormV2,
+  getStepName,
+  isStepVisible,
+  getStepIndexById 
+} from '@/modules/listDeveloper/v2';
+
+function CustomComponent() {
+  const { 
+    formData, 
+    currentStep, 
+    isLoadingDraft,
+    draftId 
+  } = useDeveloperFormV2();
+  
+  // Get current step name
+  const stepName = getStepName(currentStep, formData);
+  
+  // Check if media step is visible
+  const showMedia = isStepVisible('media', formData);
+  
+  // Get step index by ID
+  const reviewIndex = getStepIndexById('review-submit', formData);
+}
+```
+
 ## Key Features
 
 ### ✅ Implemented
@@ -147,17 +201,22 @@ function MyComponent() {
 - Auto-save on each step
 - Form validation with Zod
 - Responsive design
-- Draft management
+- Draft management with URL-based loading
 - Review & edit functionality
 - Empty states and loading states
 - Error handling with toast notifications
+- **Draft loading from URL** (`initialDraftId` param)
+- **Legacy draft editing support** (`editingDraft` prop)
+- **Full-page variant** (`DeveloperFormPageV2`)
+- **Enhanced footer** with motion animations
+- **Loading spinner** during draft fetch
+- **Step utility functions** (`getStepName`, `isStepVisible`, `getStepIndexById`)
 
 ### 🚧 To Be Enhanced
 - File upload functionality for media
 - Rich text editor for descriptions
 - Multi-select components for arrays
 - Image preview and cropping
-- Backend API endpoints
 - Real-time validation
 - Step-by-step help tooltips
 
@@ -176,28 +235,30 @@ function MyComponent() {
 
 ```
 listDeveloper/
-├── schemas/
-│   ├── basicInfoSchema.js
-│   ├── contactInfoSchema.js
-│   ├── projectsSchema.js
-│   ├── certificationsSchema.js
-│   └── mediaSchema.js
+├── README.md                             # This documentation
+├── schemas/                              # Zod validation schemas
+│   ├── basicInfoSchema.js                # Developer name, type, established year
+│   ├── contactInfoSchema.js              # Email, phone, address
+│   ├── projectsSchema.js                 # Projects and portfolio stats
+│   ├── certificationsSchema.js           # Certifications and awards
+│   └── mediaSchema.js                    # Logo, images, documents
 └── v2/
     ├── components/
-    │   ├── DeveloperFormSheetV2.jsx
-    │   ├── SaveAndContinueFooter.jsx
+    │   ├── DeveloperFormSheetV2.jsx      # Sheet overlay container
+    │   ├── DeveloperFormPageV2.jsx       # Full-page container (NEW!)
+    │   ├── SaveAndContinueFooter.jsx     # Enhanced footer with animations
     │   └── steps/
-    │       ├── BasicInfoStepV2.jsx
-    │       ├── ContactInfoStepV2.jsx
-    │       ├── ProjectsStepV2.jsx
-    │       ├── CertificationsStepV2.jsx
-    │       ├── MediaStepV2.jsx
-    │       └── ReviewAndSubmitV2.jsx
+    │       ├── BasicInfoStepV2.jsx       # Step 1: Basic info
+    │       ├── ContactInfoStepV2.jsx     # Step 2: Contact details
+    │       ├── ProjectsStepV2.jsx        # Step 3: Projects & portfolio
+    │       ├── CertificationsStepV2.jsx  # Step 4: Certifications
+    │       ├── MediaStepV2.jsx           # Step 5: Media & documents
+    │       └── ReviewAndSubmitV2.jsx     # Step 6: Review & submit
     ├── config/
-    │   └── stepConfiguration.js
+    │   └── stepConfiguration.js          # Step definitions & utility functions
     ├── context/
-    │   └── DeveloperFormContextV2.jsx
-    └── index.js
+    │   └── DeveloperFormContextV2.jsx    # Form state with draft loading
+    └── index.js                          # Module exports
 ```
 
 ## Backend Requirements

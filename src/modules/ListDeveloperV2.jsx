@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   PlusCircle, MapPin, Building2, Calendar,
@@ -7,7 +8,6 @@ import {
   Briefcase, Home
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DeveloperFormSheetV2 } from '@/modules/listDeveloper/v2/index.js';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -21,12 +21,11 @@ import { developerDraftApi } from '@/services/developerDraftService';
 import { useToast } from '@/components/hooks/use-toast';
 
 export default function ListDeveloperV2Page() {
-  const [showForm, setShowForm] = useState(false);
+  const navigate = useNavigate();
   const [developers, setDevelopers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [currentDraftId, setCurrentDraftId] = useState(null);
   const [isCreatingDraft, setIsCreatingDraft] = useState(false);
   const { toast } = useToast();
 
@@ -69,15 +68,6 @@ export default function ListDeveloperV2Page() {
     }
   }, [toast]);
 
-  const handleFormClose = (isOpen) => {
-    setShowForm(isOpen);
-    if (!isOpen) {
-      // Reset draft ID and refresh developers when form closes
-      setCurrentDraftId(null);
-      fetchDevelopers();
-    }
-  };
-
   const handleAddNewDeveloper = async () => {
     try {
       setIsCreatingDraft(true);
@@ -89,8 +79,8 @@ export default function ListDeveloperV2Page() {
       console.log(response);
       
       if (response.success && response.data?.draftId) {
-        setCurrentDraftId(response.data.draftId);
-        setShowForm(true);
+        // Navigate to the form page with the draft ID
+        navigate(`/list-developer/${response.data.draftId}`);
       } else {
         toast({
           title: 'Error',
@@ -108,6 +98,10 @@ export default function ListDeveloperV2Page() {
     } finally {
       setIsCreatingDraft(false);
     }
+  };
+
+  const handleEditDeveloper = (draftId) => {
+    navigate(`/list-developer/${draftId}`);
   };
 
   useEffect(() => {
@@ -249,12 +243,10 @@ export default function ListDeveloperV2Page() {
         )}
       </div>
 
-      <DeveloperFormSheetV2 open={showForm} onOpenChange={handleFormClose} initialDraftId={currentDraftId} />
+      {/* <DeveloperFormSheetV2 open={showForm} onOpenChange={handleFormClose} initialDraftId={currentDraftId} /> */}
     </div>
   );
 }
-
-// Stats Card Component
 function StatsCard({ icon, value, label, color }) {
   const colorClasses = {
     blue: 'from-orange-500 to-orange-600 shadow-orange-500/20',
@@ -284,6 +276,8 @@ function StatsCard({ icon, value, label, color }) {
 
 // Developer Card Component
 function DeveloperCard({ developer, index }) {
+  const navigate = useNavigate();
+  
   const typeConfig = {
     'National Developer': { 
       color: 'blue', 
@@ -362,7 +356,7 @@ function DeveloperCard({ developer, index }) {
               <DropdownMenuContent align="start">
                 <DropdownMenuItem>
                   <Eye className="w-4 h-4 mr-2" />
-                  View Profile
+                  View Profile onClick={() => navigate(`/list-developer/${developer.id}`)}
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Edit2 className="w-4 h-4 mr-2" />

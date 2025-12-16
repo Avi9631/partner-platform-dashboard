@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm, FormProvider as RHFFormProvider } from 'react-hook-form';
 import { getTotalVisibleSteps } from '../config/stepConfiguration';
 import { developerDraftApi } from '@/services/developerDraftService';
@@ -17,11 +17,12 @@ export const useDeveloperFormV2 = () => {
   return context;
 };
 
-export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId }) => {
+export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId, editingDraft }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState(new Set());
   const [draftId, setDraftId] = useState(initialDraftId || null);
   const [isCreatingDraft, setIsCreatingDraft] = useState(false);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
   
   // Store saved form data from all steps as JSON (empty initially, populated on save)
   const [formData, setFormData] = useState({});
@@ -31,6 +32,69 @@ export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId }) =
     mode: 'onChange',
     defaultValues: {},
   });
+
+  // Fetch draft data from API when initialDraftId is provided
+  const fetchDraftData = useCallback(async (id) => {
+    try {
+      setIsLoadingDraft(true);
+      console.log('Fetching developer draft data for ID:', id);
+      
+      const response = await developerDraftApi.getDeveloperDraftById(id);
+      
+      if (response.success && response.data) {
+        console.log('Developer draft data fetched successfully:', response.data);
+        
+        // Set form data from fetched draft
+        if (response.data.formData) {
+          setFormData(response.data.formData);
+          console.log('Form data populated from draft');
+        }
+        
+        // Mark all steps as not completed (user can edit any step)
+        setCompletedSteps(new Set());
+        
+        // Start from the first step
+        setCurrentStep(0);
+      } else {
+        console.error('Failed to fetch developer draft data:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching developer draft data:', error);
+    } finally {
+      setIsLoadingDraft(false);
+    }
+  }, []);
+
+  // Load draft data when editingDraft is provided (legacy support)
+  const loadDraftData = useCallback(() => {
+    if (editingDraft && editingDraft.formData) {
+      setIsLoadingDraft(true);
+      console.log('Loading developer draft data for editing:', editingDraft);
+      
+      // Set form data from draft
+      setFormData(editingDraft.formData);
+  
+      // Mark all steps as not completed (user can edit any step)
+      setCompletedSteps(new Set());
+      
+      // Start from the first step
+      setCurrentStep(0);
+      
+      setIsLoadingDraft(false);
+      console.log('Developer draft data loaded successfully');
+    }
+  }, [editingDraft]);
+
+  // Load draft data on mount when initialDraftId or editingDraft changes
+  useEffect(() => {
+    if (initialDraftId && !editingDraft) {
+      // Fetch draft data from API when draftId is in URL
+      fetchDraftData(initialDraftId);
+    } else if (editingDraft) {
+      // Load draft data directly when provided as prop (legacy)
+      loadDraftData();
+    }
+  }, [initialDraftId, editingDraft, fetchDraftData, loadDraftData]);
 
   // Memoize the form data for step configuration
   const formDataWithType = useMemo(() => ({
@@ -59,7 +123,7 @@ export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId }) =
         setIsCreatingDraft(true);
         const createResponse = await developerDraftApi.createDeveloperDraft({
           status: 'draft',
-          formData: updatedData || formData,
+          draftData: updatedData || formData,
         });
         
         if (createResponse.success && createResponse.data?.draftId) {
@@ -166,6 +230,7 @@ export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId }) =
     setCompletedSteps(new Set());
     setDraftId(null);
     setIsCreatingDraft(false);
+    setIsLoadingDraft(false);
   }, [methods]);
 
   // Check if a step is completed
@@ -199,6 +264,7 @@ export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId }) =
     setDraftId,
     saveDraft,
     isCreatingDraft,
+    isLoadingDraft,
   };
 
   return (

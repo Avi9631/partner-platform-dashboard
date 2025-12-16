@@ -8,8 +8,6 @@
 import BasicInfoStepV2 from '../components/steps/BasicInfoStepV2';
 import ContactInfoStepV2 from '../components/steps/ContactInfoStepV2';
 import ProjectsStepV2 from '../components/steps/ProjectsStepV2';
-import CertificationsStepV2 from '../components/steps/CertificationsStepV2';
-import MediaStepV2 from '../components/steps/MediaStepV2';
 import ReviewAndSubmitV2 from '../components/steps/ReviewAndSubmitV2';
 
 // Step categories for better organization
@@ -55,29 +53,29 @@ export const STEP_CONFIG = [
     isVisible: () => true,
     order: 2,
   },
-  {
-    id: 'certifications',
-    name: 'Certifications & Awards',
-    component: CertificationsStepV2,
-    category: STEP_CATEGORIES.OPTIONAL,
-    isVisible: () => true,
-    order: 3,
-  },
-  {
-    id: 'media',
-    name: 'Media & Documents',
-    component: MediaStepV2,
-    category: STEP_CATEGORIES.OPTIONAL,
-    isVisible: () => true,
-    order: 4,
-  },
+  // {
+  //   id: 'certifications',
+  //   name: 'Certifications & Awards',
+  //   component: CertificationsStepV2,
+  //   category: STEP_CATEGORIES.OPTIONAL,
+  //   isVisible: () => true,
+  //   order: 3,
+  // },
+  // {
+  //   id: 'media',
+  //   name: 'Media & Documents',
+  //   component: MediaStepV2,
+  //   category: STEP_CATEGORIES.OPTIONAL,
+  //   isVisible: () => true,
+  //   order: 3,
+  // },
   {
     id: 'review-submit',
     name: 'Review & Submit',
     component: ReviewAndSubmitV2,
     category: STEP_CATEGORIES.CORE,
     isVisible: () => true,
-    order: 5,
+    order: 3,
   },
 ];
 
@@ -147,6 +145,7 @@ export const getStepIndexById = (stepId, formData = {}) => {
   return visibleSteps.findIndex(step => step.id === stepId);
 };
 
+// Export all utilities
 export default {
   STEP_CONFIG,
   STEP_CATEGORIES,

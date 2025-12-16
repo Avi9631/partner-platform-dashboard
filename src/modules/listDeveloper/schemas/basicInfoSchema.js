@@ -1,39 +1,34 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const basicInfoSchema = z.object({
-  developerName: z.string()
-    .min(2, 'Developer name must be at least 2 characters')
-    .max(100, 'Developer name is too long'),
-  
-  developerType: z.enum([
-    'National Developer',
-    'Regional Developer',
-    'Local Builder',
-    'Boutique Developer',
-    'Luxury Developer',
-    'Affordable Housing Developer'
-  ], {
-    required_error: 'Please select a developer type',
-  }),
-  
-  description: z.string()
-    .min(50, 'Description must be at least 50 characters')
-    .max(1000, 'Description is too long')
+  developerName: z
+    .string()
+    .min(2, "Developer name must be at least 2 characters")
+    .max(100, "Developer name is too long"),
+
+  developerType: z.enum(
+    ["International Developer", "National Developer", "Regional Developer"],
+    {
+      required_error: "Please select a developer type",
+    }
+  ),
+
+  description: z
+    .string()
+    .min(50, "Description must be at least 50 characters")
+    .max(1000, "Description is too long")
     .optional(),
-  
-  establishedYear: z.number()
-    .int('Year must be a whole number')
-    .min(1900, 'Year must be 1900 or later')
-    .max(new Date().getFullYear(), 'Year cannot be in the future'),
-  
-  registrationNumber: z.string()
-    .min(5, 'Registration number is too short')
-    .max(50, 'Registration number is too long')
-    .optional(),
-  
-  reraRegistrationNumber: z.string()
-    .min(5, 'RERA registration number is too short')
-    .max(50, 'RERA registration number is too long')
+
+  establishedYear: z
+    .number()
+    .int("Year must be a whole number")
+    .min(1900, "Year must be 1900 or later")
+    .max(new Date().getFullYear(), "Year cannot be in the future"),
+
+  registrationNumber: z
+    .string()
+    .min(5, "Registration number is too short")
+    .max(50, "Registration number is too long")
     .optional(),
 });
 
