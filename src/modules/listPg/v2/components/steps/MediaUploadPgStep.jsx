@@ -14,6 +14,8 @@ import {
   Check,
   ChevronsUpDown,
   Tags,
+  Upload,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,7 @@ import { cn } from "@/lib/utils";
 import { usePgFormV2 } from "../../context/PgFormContextV2";
 import SaveAndContinueFooter from "./SaveAndContinueFooter";
 import ProTipV2 from "../../../../listProperty/v2/components/shared/ProTipV2";
+import { uploadMultipleFiles } from "@/lib/uploadUtils";
 
 // Maximum file sizes
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -85,6 +88,8 @@ export default function MediaUploadPgStepV2() {
   // Unified media list (both images and videos)
   const [mediaList, setMediaList] = useState(formData?.mediaData || []);
   const [uploadErrors, setUploadErrors] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
 
   // Track all categories (default + user-added)
   const [allCategories, setAllCategories] = useState(() => {
@@ -132,11 +137,12 @@ export default function MediaUploadPgStepV2() {
 
   // Handle unified media upload (images and videos)
   const handleMediaUpload = useCallback(
-    (e) => {
+    async (e) => {
       const files = Array.from(e.target.files || []);
       const newErrors = [];
-      const validMedia = [];
+      const validFiles = [];
 
+      // Step 1: Validate files
       files.forEach((file) => {
         // Check for duplicate files
         if (isDuplicateFile(file)) {
@@ -169,18 +175,7 @@ export default function MediaUploadPgStepV2() {
           return;
         }
 
-        // Create preview URL
-        const previewUrl = URL.createObjectURL(file);
-
-        validMedia.push({
-          id: `media-${Date.now()}-${Math.random()}`,
-          file,
-          preview: previewUrl,
-          title: "",
-          category: "",
-          description: "",
-          type: isImage ? "image" : "video",
-        });
+        validFiles.push({ file, isImage, isVideo });
       });
 
       if (newErrors.length > 0) {
@@ -188,10 +183,92 @@ export default function MediaUploadPgStepV2() {
         setTimeout(() => setUploadErrors([]), 5000);
       }
 
-      if (validMedia.length > 0) {
-        const updatedMedia = [...mediaList, ...validMedia];
-        setMediaList(updatedMedia);
-        setValue("mediaData", updatedMedia, { shouldValidate: true });
+      if (validFiles.length === 0) {
+        e.target.value = "";
+        return;
+      }
+
+      // Step 2: Create temporary media items with previews and uploading status
+      const tempMediaItems = validFiles.map(({ file, isImage, isVideo }) => ({
+        id: `media-${Date.now()}-${Math.random()}`,
+        file,
+        preview: URL.createObjectURL(file),
+        title: "",
+        category: "",
+        description: "",
+        type: isImage ? "image" : "video",
+        uploading: true,
+        uploadProgress: 0,
+        url: null,
+        key: null,
+      }));
+
+      // Add to media list immediately to show uploading state
+      const updatedMedia = [...mediaList, ...tempMediaItems];
+      setMediaList(updatedMedia);
+
+      // Step 3: Upload files to S3
+      setIsUploading(true);
+      try {
+        // Determine folder based on first file type
+        const folder = validFiles[0].isImage
+          ? "listing-drafts/images"
+          : "listing-drafts/videos";
+
+        const uploadResults = await uploadMultipleFiles(
+          validFiles.map((v) => v.file),
+          folder,
+          (fileIndex, progress) => {
+            // Update progress for specific file
+            const mediaId = tempMediaItems[fileIndex].id;
+            setUploadProgress((prev) => ({
+              ...prev,
+              [mediaId]: progress,
+            }));
+          }
+        );
+
+        // Step 4: Update media items with upload results
+        const finalMediaItems = tempMediaItems.map((item, index) => {
+          const result = uploadResults[index];
+          if (result.success) {
+            return {
+              ...item,
+              uploading: false,
+              uploadProgress: 100,
+              url: result.url,
+              key: result.key,
+              file: null, // Remove file object after upload
+            };
+          } else {
+            newErrors.push(`${result.file.name}: ${result.error}`);
+            return null; // Remove failed uploads
+          }
+        }).filter(Boolean);
+
+        // Update media list with uploaded items
+        const finalList = [
+          ...mediaList,
+          ...finalMediaItems,
+        ];
+        setMediaList(finalList);
+        setValue("mediaData", finalList, { shouldValidate: true });
+
+        if (newErrors.length > 0) {
+          setUploadErrors(newErrors);
+          setTimeout(() => setUploadErrors([]), 5000);
+        }
+      } catch (error) {
+        console.error("Upload error:", error);
+        newErrors.push(`Upload failed: ${error.message}`);
+        setUploadErrors(newErrors);
+        setTimeout(() => setUploadErrors([]), 5000);
+
+        // Remove uploading items on error
+        setMediaList(mediaList);
+      } finally {
+        setIsUploading(false);
+        setUploadProgress({});
       }
 
       // Reset input
@@ -237,23 +314,20 @@ export default function MediaUploadPgStepV2() {
   const handleContinue = () => {
     // Remove any potential duplicates before saving
     const uniqueMedia = mediaList.filter((media, index, self) => {
-      // Keep the item if it's the first occurrence with this combination
+      // Keep the item if it's the first occurrence with this URL
       return (
         index ===
         self.findIndex(
-          (m) =>
-            m.file?.name === media.file?.name &&
-            m.file?.size === media.file?.size &&
-            m.file?.lastModified === media.file?.lastModified
+          (m) => m.url === media.url || m.key === media.key
         )
       );
     });
 
-    // The backend will REPLACE (not append) the media array
-    // Send only new files (with File objects) for upload
-    // For already uploaded media (with URLs), include in metadata
+    // Only save media that has been successfully uploaded (has URL)
+    const uploadedMedia = uniqueMedia.filter((media) => media.url);
+
     const data = {
-      mediaData: uniqueMedia, // All media items (new files + uploaded with URLs)
+      mediaData: uploadedMedia, // Only uploaded media with URLs
     };
     saveAndContinue(data);
   };
@@ -342,9 +416,19 @@ export default function MediaUploadPgStepV2() {
                   onClick={() =>
                     document.getElementById("media-upload").click()
                   }
+                  disabled={isUploading}
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Images or Videos
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Images or Videos
+                    </>
+                  )}
                 </Button>
               </label>
             
@@ -390,6 +474,7 @@ export default function MediaUploadPgStepV2() {
                     allCategories={allCategories}
                     onUpdateMetadata={updateMediaMetadata}
                     onRemove={removeMedia}
+                    uploadProgress={uploadProgress[media.id]}
                   />
                 ))}
               </div>
@@ -412,11 +497,12 @@ export default function MediaUploadPgStepV2() {
 /**
  * Media Card Component - Displays individual image/video with metadata inputs
  */
-function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
+function MediaCard({ media, allCategories, onUpdateMetadata, onRemove, uploadProgress }) {
   const [showPreview, setShowPreview] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState("");
   const isVideo = media.type === "video";
+  const isUploading = media.uploading || false;
 
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
@@ -455,26 +541,46 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
         <div className="relative w-full sm:w-28 h-28 sm:h-28 flex-shrink-0 rounded-lg overflow-hidden">
           {isVideo ? (
             <video
-              src={media.preview}
+              src={media.preview || media.url}
               className="w-full h-full object-cover"
               controls={false}
             />
           ) : (
             <img
-              src={media.preview}
+              src={media.preview || media.url}
               alt={media.title || "PG/Hostel media"}
               className="w-full h-full object-cover"
             />
           )}
 
+          {/* Upload Progress Overlay */}
+          {isUploading && (
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2">
+              <Loader2 className="w-6 h-6 text-white animate-spin" />
+              <div className="w-20 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-orange-500 transition-all duration-300"
+                  style={{ width: `${uploadProgress || 0}%` }}
+                />
+              </div>
+              <p className="text-white text-xs font-medium">
+                {uploadProgress || 0}%
+              </p>
+            </div>
+          )}
+
           {/* Overlay Actions */}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-1.5">
+          <div className={cn(
+            "absolute inset-0 bg-black/60 opacity-0 transition-all duration-200 flex items-center justify-center gap-1.5",
+            !isUploading && "group-hover:opacity-100"
+          )}>
             <Button
               type="button"
               size="sm"
               variant="secondary"
               className="h-7 w-7 sm:w-auto sm:px-2.5 p-0 sm:p-2"
               onClick={() => setShowPreview(true)}
+              disabled={isUploading}
             >
               <Eye className="w-3.5 h-3.5" />
               <span className="hidden sm:inline ml-1 text-xs">View</span>
@@ -485,6 +591,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
               variant="destructive"
               className="h-7 w-7 sm:w-auto sm:px-2.5 p-0 sm:p-2"
               onClick={() => onRemove(media.id)}
+              disabled={isUploading}
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span className="hidden sm:inline ml-1 text-xs">Delete</span>
@@ -497,16 +604,30 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
               variant="secondary"
               className={cn(
                 "backdrop-blur-md text-white text-[10px] h-5 px-2 font-medium shadow-sm",
-                isVideo ? "bg-purple-600/90" : "bg-blue-600/90"
+                isUploading
+                  ? "bg-orange-600/90"
+                  : isVideo
+                  ? "bg-purple-600/90"
+                  : "bg-blue-600/90"
               )}
             >
-              {isVideo ? "Video" : "Image"}
+              {isUploading ? "Uploading" : isVideo ? "Video" : "Image"}
             </Badge>
           </div>
         </div>
 
         {/* Metadata Inputs */}
         <div className="flex-1 min-w-0 space-y-2.5">
+          {/* Uploading Message */}
+          {isUploading && (
+            <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-md px-3 py-2 mb-2">
+              <p className="text-xs text-orange-700 dark:text-orange-400 font-medium flex items-center gap-2">
+                <Upload className="w-3.5 h-3.5" />
+                Uploading to cloud storage...
+              </p>
+            </div>
+          )}
+          
           {/* Form Fields Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {/* Title Input - Full Width */}
@@ -521,6 +642,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
                   onUpdateMetadata(media.id, "title", e.target.value)
                 }
                 className="h-8 text-xs"
+                disabled={isUploading}
               />
             </div>
 
@@ -535,7 +657,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
                   onUpdateMetadata(media.id, "docType", value)
                 }
               >
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8 text-xs" disabled={isUploading}>
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -561,6 +683,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
                       "w-full justify-between h-8 text-xs font-normal",
                       !media.category && "text-muted-foreground"
                     )}
+                    disabled={isUploading}
                   >
                     <span className="truncate">
                       {media.category || "Select..."}
@@ -646,6 +769,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
                 }
                 className="text-xs min-h-[52px] resize-none"
                 rows={2}
+                disabled={isUploading}
               />
             </div>
           </div>
@@ -664,13 +788,13 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
           >
             {isVideo ? (
               <video
-                src={media.preview}
+                src={media.preview || media.url}
                 controls
                 className="w-full h-full rounded-lg"
               />
             ) : (
               <img
-                src={media.preview}
+                src={media.preview || media.url}
                 alt={media.title}
                 className="w-full h-full object-contain rounded-lg"
               />

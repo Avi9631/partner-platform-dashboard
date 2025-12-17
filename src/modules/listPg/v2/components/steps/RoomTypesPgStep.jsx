@@ -72,6 +72,7 @@ import { usePgFormV2 } from '../../context/PgFormContextV2';
 import roomTypesPgSchema from '../../../schemas/roomTypesPgSchema';
 import SaveAndContinueFooter from './SaveAndContinueFooter';
 import { createStepLogger } from '../../../../listProperty/utils/validationLogger';
+import { uploadMultipleFiles } from '@/lib/uploadUtils';
 
 // Room amenities list matching JSON structure
 const ROOM_AMENITIES = [
@@ -120,6 +121,8 @@ export default function RoomTypesPgStep() {
   const [currentSheetTab, setCurrentSheetTab] = useState('basic');
   const [sheetValidationErrors, setSheetValidationErrors] = useState({});
   const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [uploadErrors, setUploadErrors] = useState([]);
 
   const logger = useMemo(() => createStepLogger('Room Types PG Step V2'), []);
 
@@ -369,22 +372,119 @@ export default function RoomTypesPgStep() {
   };
 
   // Handle image upload
-  const handleImageUpload = (event) => {
+  const handleImageUpload = async (event) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
-    const newImages = files.map(file => ({
-      url: '',
-      file: file,
+    const newErrors = [];
+    const validFiles = [];
+
+    // Validate files
+    files.forEach((file) => {
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        newErrors.push(`${file.name}: Invalid file type. Only images are allowed.`);
+        return;
+      }
+
+      // Check file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        newErrors.push(`${file.name}: File too large. Maximum size is 10MB.`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    if (newErrors.length > 0) {
+      setUploadErrors(newErrors);
+      setTimeout(() => setUploadErrors([]), 5000);
+    }
+
+    if (validFiles.length === 0) {
+      event.target.value = '';
+      return;
+    }
+
+    // Create temporary image items with previews
+    const tempImages = validFiles.map((file, index) => ({
+      id: `img-${Date.now()}-${index}`,
+      file,
       preview: URL.createObjectURL(file),
+      uploading: true,
+      uploadProgress: 0,
+      url: null,
     }));
 
+    // Add to tempRoomData immediately to show uploading state
     if (tempRoomData) {
       setTempRoomData(prev => ({
         ...prev,
-        images: [...(prev.images || []), ...newImages],
+        images: [...(prev.images || []), ...tempImages],
       }));
+
+      // Start upload
+      try {
+        const uploadResults = await uploadMultipleFiles(
+          validFiles,
+          'listing-drafts/room-images',
+          (fileIndex, progress) => {
+            const imageId = tempImages[fileIndex].id;
+            setUploadProgress((prev) => ({
+              ...prev,
+              [imageId]: progress,
+            }));
+          }
+        );
+
+        // Update images with upload results
+        setTempRoomData(prev => {
+          const existingImages = prev.images || [];
+          const updatedImages = existingImages.map((img) => {
+            const tempIndex = tempImages.findIndex(t => t.id === img.id);
+            if (tempIndex !== -1) {
+              const result = uploadResults[tempIndex];
+              if (result.success) {
+                return {
+                  ...img,
+                  uploading: false,
+                  uploadProgress: 100,
+                  url: result.url,
+                  file: null, // Remove file object after upload
+                };
+              } else {
+                newErrors.push(`${result.file.name}: ${result.error}`);
+                return null; // Remove failed uploads
+              }
+            }
+            return img;
+          }).filter(Boolean);
+
+          return { ...prev, images: updatedImages };
+        });
+
+        if (newErrors.length > 0) {
+          setUploadErrors(newErrors);
+          setTimeout(() => setUploadErrors([]), 5000);
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        newErrors.push(`Upload failed: ${error.message}`);
+        setUploadErrors(newErrors);
+        setTimeout(() => setUploadErrors([]), 5000);
+
+        // Remove uploading images on error
+        setTempRoomData(prev => ({
+          ...prev,
+          images: (prev.images || []).filter(img => !img.uploading),
+        }));
+      } finally {
+        setUploadProgress({});
+      }
     }
+
+    event.target.value = '';
   };
 
   // Remove image
@@ -405,49 +505,48 @@ export default function RoomTypesPgStep() {
 
   // Upload images for all room types
   const uploadRoomImages = async (roomTypes) => {
-    // This is a placeholder for actual upload logic
-    // In a real implementation, you would upload to S3 or your backend
-    // For now, we'll simulate the upload and return URLs
-    
+    // Process each room type
     const uploadedRoomTypes = await Promise.all(
       roomTypes.map(async (room) => {
         if (!room.images || room.images.length === 0) {
           return { ...room, images: [] };
         }
 
-        // Filter out images that already have URLs (already uploaded)
+        // Filter images that already have URLs (already uploaded)
         const imagesToUpload = room.images.filter(img => img.file && !img.url);
         const alreadyUploaded = room.images.filter(img => img.url);
 
         if (imagesToUpload.length === 0) {
-          return room; // No new images to upload
+          // All images already uploaded, just return the URLs
+          return {
+            ...room,
+            images: alreadyUploaded.map(img => ({ url: img.url })),
+          };
         }
 
-        // Simulate upload - in production, replace with actual API call
-        const uploadedImages = await Promise.all(
-          imagesToUpload.map(async (img) => {
-            // TODO: Replace with actual upload to backend/S3
-            // const formData = new FormData();
-            // formData.append('file', img.file);
-            // const response = await fetch('/api/upload/room-image', {
-            //   method: 'POST',
-            //   body: formData,
-            // });
-            // const result = await response.json();
-            // return { url: result.url };
-            
-            // For now, keep the preview URL as the URL
-            return {
-              url: img.preview || '',
-              preview: img.preview,
-            };
-          })
-        );
+        // Upload new images to S3
+        try {
+          const uploadResults = await uploadMultipleFiles(
+            imagesToUpload.map(img => img.file),
+            'listing-drafts/room-images'
+          );
 
-        return {
-          ...room,
-          images: [...alreadyUploaded, ...uploadedImages],
-        };
+          const successfulUploads = uploadResults
+            .filter(result => result.success)
+            .map(result => ({ url: result.url }));
+
+          return {
+            ...room,
+            images: [...alreadyUploaded.map(img => ({ url: img.url })), ...successfulUploads],
+          };
+        } catch (error) {
+          console.error('Error uploading room images:', error);
+          // Return room with only already uploaded images
+          return {
+            ...room,
+            images: alreadyUploaded.map(img => ({ url: img.url })),
+          };
+        }
       })
     );
 
@@ -898,6 +997,21 @@ export default function RoomTypesPgStep() {
 
                 {/* Images Tab */}
                 <TabsContent value="images" className="mt-6 space-y-6">
+                  {/* Upload Errors */}
+                  {uploadErrors.length > 0 && (
+                    <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <AlertCircle className="w-4 h-4 text-red-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm text-red-600 font-medium mb-1">Upload Errors:</p>
+                        <ul className="text-xs text-red-600 space-y-0.5">
+                          {uploadErrors.map((error, idx) => (
+                            <li key={idx}>• {error}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Room Images</h3>
                     <Badge variant="secondary">
@@ -936,29 +1050,64 @@ export default function RoomTypesPgStep() {
                   {/* Image Preview Grid */}
                   {tempRoomData.images && tempRoomData.images.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {tempRoomData.images.map((image, index) => (
-                        <div key={index} className="relative group">
-                          <div className="aspect-video rounded-lg overflow-hidden border-2 border-muted">
-                            <img
-                              src={image.preview || image.url}
-                              alt={`Room image ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
+                      {tempRoomData.images.map((image, index) => {
+                        const isUploading = image.uploading || false;
+                        const progress = uploadProgress[image.id] || image.uploadProgress || 0;
+                        
+                        return (
+                          <div key={image.id || index} className="relative group">
+                            <div className="aspect-video rounded-lg overflow-hidden border-2 border-muted">
+                              <img
+                                src={image.preview || image.url}
+                                alt={`Room image ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              
+                              {/* Upload Progress Overlay */}
+                              {isUploading && (
+                                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2">
+                                  <Upload className="w-5 h-5 text-white animate-pulse" />
+                                  <div className="w-20 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full bg-orange-500 transition-all duration-300"
+                                      style={{ width: `${progress}%` }}
+                                    />
+                                  </div>
+                                  <p className="text-white text-xs font-medium">{progress}%</p>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {!isUploading && (
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => removeImage(index)}
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </Button>
+                            )}
+                            
+                            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                              {isUploading ? (
+                                <>
+                                  <Upload className="w-3 h-3" />
+                                  Uploading...
+                                </>
+                              ) : image.url ? (
+                                <>
+                                  <CheckCircle2 className="w-3 h-3 text-green-400" />
+                                  Image {index + 1}
+                                </>
+                              ) : (
+                                `Image ${index + 1}`
+                              )}
+                            </div>
                           </div>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => removeImage(index)}
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </Button>
-                          <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                            Image {index + 1}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center py-8 border-2 border-dashed rounded-lg">
@@ -979,7 +1128,8 @@ export default function RoomTypesPgStep() {
                             <li>Include photos of bed, study area, and amenities</li>
                             <li>Ensure good lighting for better visibility</li>
                             <li>First image will be used as the primary thumbnail</li>
-                            <li className="font-semibold text-blue-700">Images will be uploaded when you click "Save & Continue"</li>
+                            <li className="font-semibold text-blue-700">Images upload automatically to cloud storage</li>
+                            <li>Maximum 10MB per image, common formats supported (JPG, PNG, WebP)</li>
                           </ul>
                         </div>
                       </div>
