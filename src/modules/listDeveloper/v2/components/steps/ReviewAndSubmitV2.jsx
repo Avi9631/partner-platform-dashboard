@@ -4,36 +4,31 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useDeveloperFormV2 } from '../../context/DeveloperFormContextV2';
 import { useToast } from '@/components/hooks/use-toast';
+import { developerApi } from '@/services/developerService';
+import { useParams } from 'react-router-dom';
 
 export default function ReviewAndSubmitV2() {
   const { formData, goToStep, previousStep, saveDraft } = useDeveloperFormV2();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { draftId } = useParams(); 
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const result = await saveDraft(formData);
+      const result = await developerApi.publishDeveloper({draftId});
       
-      if (result.success) {
-        toast({
-          title: 'Success!',
-          description: 'Developer profile submitted successfully.',
-          variant: 'default',
-        });
-        // Close the form or redirect
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to submit. Please try again.',
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: 'Success!',
+        description: 'Developer profile published successfully.',
+        variant: 'default',
+      });
+      // Close the form or redirect
     } catch (error) {
       console.error('Submit error:', error);
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred.',
+        description: error.message || 'Failed to publish developer profile.',
         variant: 'destructive',
       });
     } finally {

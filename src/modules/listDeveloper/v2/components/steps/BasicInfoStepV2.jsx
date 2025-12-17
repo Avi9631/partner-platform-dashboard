@@ -59,8 +59,7 @@ export default function BasicInfoStepV2() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Card className="border-orange-200 dark:border-orange-800">
-        <CardContent className="pt-6">
+         <div className="pt-6">
           <div className="flex items-start gap-3 mb-6">
             <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
               <Building2 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
@@ -216,9 +215,8 @@ export default function BasicInfoStepV2() {
               )}
             />
           </div>
-        </CardContent>
-      </Card>
-
+        </div>
+ 
       <SaveAndContinueFooter
         onBack={previousStep}
         showBack={currentStep > 0}
