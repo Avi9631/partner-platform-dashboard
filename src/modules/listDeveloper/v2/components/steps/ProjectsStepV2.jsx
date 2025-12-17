@@ -91,7 +91,7 @@ export default function ProjectsStepV2() {
   });
 
   useEffect(() => {
-    if (formData) {
+    if (formData && Object.keys(formData).length > 0) {
       Object.keys(formData).forEach((key) => {
         setValue(key, formData[key]);
       });

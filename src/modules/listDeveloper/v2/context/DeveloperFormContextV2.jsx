@@ -44,10 +44,10 @@ export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId, edi
       if (response.success && response.data) {
         console.log('Developer draft data fetched successfully:', response.data);
         
-        // Set form data from fetched draft
-        if (response.data.formData) {
-          setFormData(response.data.formData);
-          console.log('Form data populated from draft');
+        // Set form data from fetched draft (backend returns draftData field)
+        if (response.data.draftData) {
+          setFormData(response.data.draftData);
+          console.log('Form data populated from draft:', response.data.draftData);
         }
         
         // Mark all steps as not completed (user can edit any step)
@@ -67,12 +67,16 @@ export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId, edi
 
   // Load draft data when editingDraft is provided (legacy support)
   const loadDraftData = useCallback(() => {
-    if (editingDraft && editingDraft.formData) {
+    if (editingDraft) {
       setIsLoadingDraft(true);
       console.log('Loading developer draft data for editing:', editingDraft);
       
-      // Set form data from draft
-      setFormData(editingDraft.formData);
+      // Set form data from draft (support both formData and draftData fields)
+      const draftFormData = editingDraft.draftData || editingDraft.formData;
+      if (draftFormData) {
+        setFormData(draftFormData);
+        console.log('Developer draft data loaded successfully:', draftFormData);
+      }
   
       // Mark all steps as not completed (user can edit any step)
       setCompletedSteps(new Set());
@@ -81,7 +85,6 @@ export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId, edi
       setCurrentStep(0);
       
       setIsLoadingDraft(false);
-      console.log('Developer draft data loaded successfully');
     }
   }, [editingDraft]);
 
