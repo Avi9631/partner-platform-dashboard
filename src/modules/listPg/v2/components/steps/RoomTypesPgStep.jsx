@@ -540,18 +540,16 @@ export default function RoomTypesPgStep() {
                     <Card key={roomType.id} className={`${
                       hasErrors ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''
                     }`}>
-                      <CardHeader className="pb-3">
+                      <CardHeader className="">
                         <div className="flex items-center justify-between">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                             <div className="flex items-center gap-2">
                               <Bed className="w-4 md:w-5 h-4 md:h-5 text-orange-600" />
                               <span className="font-medium text-sm md:text-base">
-                                {roomData?.name || `Room Type ${index + 1}`}
+                                {roomData?.name || `Room Type ${index + 1}`}  <span className='text-muted-foreground text-xs'>{roomData?.category}</span>
                               </span>
                             </div>
-                            <Badge variant="outline" className="text-xs">
-                              {roomData?.category}
-                            </Badge>
+
                           </div>
                           <div className="flex items-center gap-1">
                             <Button
