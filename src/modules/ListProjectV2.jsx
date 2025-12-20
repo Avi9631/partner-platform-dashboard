@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   PlusCircle, MapPin, Building2, Calendar, DollarSign, 
@@ -7,9 +8,10 @@ import {
   TrendingUp, Building
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ProjectFormSheetV2 from '@/modules/listProject/v2/components/ProjectFormSheetV2';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { draftApi } from '@/services/draftService';
+import { useToast } from '@/components/hooks/use-toast';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,19 +21,103 @@ import {
 import { Input } from '@/components/ui/input';
 
 export default function ListProjectV2Page() {
-  const [showForm, setShowForm] = useState(false);
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isCreatingDraft, setIsCreatingDraft] = useState(false);
+  const { toast } = useToast();
 
-  // Mock data - Replace with actual API call
-  useEffect(() => {
-    setTimeout(() => {
-      setProjects(mockProjects);
+  // Fetch project drafts from API
+  const fetchProjects = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await draftApi.getUserListingDrafts('PROPERTY');
+      
+      if (response.success && response.data) {
+        // Transform API data to match our component structure
+        const transformedProjects = response.data.map(draft => {
+          // Handle configurations - convert to display string
+          let configurationsDisplay = null;
+          if (draft.draftData?.configurations) {
+            if (Array.isArray(draft.draftData.configurations)) {
+              // If it's an array, count the items
+              configurationsDisplay = `${draft.draftData.configurations.length} Config${draft.draftData.configurations.length !== 1 ? 's' : ''}`;
+            } else if (typeof draft.draftData.configurations === 'object') {
+              // If it's an object, it might be a single configuration
+              configurationsDisplay = '1 Config';
+            } else {
+              // If it's already a string or number, use it directly
+              configurationsDisplay = draft.draftData.configurations;
+            }
+          }
+
+          return {
+            id: draft.id,
+            name: draft.draftData?.projectName || 'Untitled Project',
+            location: `${draft.draftData?.locality || ''}, ${draft.draftData?.city || 'Location not set'}`.trim(),
+            developer: draft.draftData?.developerName || 'Developer not specified',
+            projectType: draft.draftData?.propertyType || 'Not specified',
+            totalUnits: draft.draftData?.totalUnits || null,
+            configurations: configurationsDisplay,
+            area: draft.draftData?.projectArea || null,
+            priceRange: draft.draftData?.priceRange || 'Price not set',
+            status: draft.draftData?.projectStatus || 'under_construction',
+            image: draft.draftData?.coverImage || null,
+            views: draft.views || 0,
+            launchDate: draft.draftData?.launchDate || 'TBA',
+          };
+        });
+        setProjects(transformedProjects);
+      } else {
+        setProjects([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch projects:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load your projects. Please try again.',
+        variant: 'destructive',
+      });
+      setProjects([]);
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [toast]);
+
+  const handleAddNewProject = async () => {
+    try {
+      setIsCreatingDraft(true);
+      const response = await draftApi.createListingDraft('PROPERTY');
+
+      console.log(response);
+      
+      if (response.success && response.data?.draftId) {
+        // Navigate to the form page with the draft ID
+        navigate(`/list-project/${response.data.draftId}`);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to create draft. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create draft:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create draft. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCreatingDraft(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -52,11 +138,21 @@ export default function ListProjectV2Page() {
             </div>
             <Button
               size="lg"
-              onClick={() => setShowForm(true)}
-              className="h-12 px-8 text-sm font-bold bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:scale-105 transition-all duration-300 self-start md:self-auto"
+              onClick={handleAddNewProject}
+              disabled={isCreatingDraft}
+              className="h-12 px-8 text-sm font-bold bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:scale-105 transition-all duration-300 self-start md:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <PlusCircle className="w-5 h-5 mr-2" />
-              List New Project
+              {isCreatingDraft ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Creating Draft...
+                </>
+              ) : (
+                <>
+                  <PlusCircle className="w-5 h-5 mr-2" />
+                  List New Project
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -139,7 +235,7 @@ export default function ListProjectV2Page() {
             <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
           </div>
         ) : filteredProjects.length === 0 ? (
-          <EmptyState searchQuery={searchQuery} onAddNew={() => setShowForm(true)} />
+          <EmptyState searchQuery={searchQuery} onAddNew={handleAddNewProject} isCreating={isCreatingDraft} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
@@ -151,8 +247,7 @@ export default function ListProjectV2Page() {
         )}
       </div>
 
-      <ProjectFormSheetV2 open={showForm} onOpenChange={setShowForm} />
-    </div>
+     </div>
   );
 }
 
@@ -186,6 +281,8 @@ function StatsCard({ icon, value, label, color }) {
 
 // Project Card Component
 function ProjectCard({ project, index }) {
+  const navigate = useNavigate();
+  
   const statusConfig = {
     upcoming: { 
       color: 'blue', 
@@ -261,11 +358,11 @@ function ProjectCard({ project, index }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/list-project/${project.id}`)}>
                   <Eye className="w-4 h-4 mr-2" />
                   View
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/list-project/${project.id}`)}>
                   <Edit2 className="w-4 h-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
@@ -355,7 +452,7 @@ function ProjectCard({ project, index }) {
 }
 
 // Empty State Component
-function EmptyState({ searchQuery, onAddNew }) {
+function EmptyState({ searchQuery, onAddNew, isCreating }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -377,106 +474,22 @@ function EmptyState({ searchQuery, onAddNew }) {
         <Button
           size="lg"
           onClick={onAddNew}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30"
+          disabled={isCreating}
+          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <PlusCircle className="w-5 h-5 mr-2" />
-          List Your First Project
+          {isCreating ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            <>
+              <PlusCircle className="w-5 h-5 mr-2" />
+              List Your First Project
+            </>
+          )}
         </Button>
       )}
     </motion.div>
   );
 }
-
-// Mock Data
-const mockProjects = [
-  {
-    id: 1,
-    name: 'Sky Heights Residency',
-    location: 'Bandra West, Mumbai',
-    developer: 'Prestige Group',
-    projectType: 'Apartment Complex',
-    totalUnits: 450,
-    configurations: '2-4 BHK',
-    area: '12 acres',
-    priceRange: '₹1.2-3.5 Cr',
-    status: 'under_construction',
-    image: null,
-    views: 1234,
-    launchDate: 'Jan 2024',
-  },
-  {
-    id: 2,
-    name: 'Green Valley Villas',
-    location: 'Whitefield, Bangalore',
-    developer: 'Godrej Properties',
-    projectType: 'Villa Community',
-    totalUnits: 85,
-    configurations: '3-4 BHK',
-    area: '25 acres',
-    priceRange: '₹2.5-4.8 Cr',
-    status: 'ready_to_move',
-    image: null,
-    views: 2456,
-    launchDate: 'Mar 2023',
-  },
-  {
-    id: 3,
-    name: 'Metro Park Township',
-    location: 'Gurgaon, Haryana',
-    developer: 'DLF Limited',
-    projectType: 'Township',
-    totalUnits: 1200,
-    configurations: '1-4 BHK',
-    area: '50 acres',
-    priceRange: '₹65L-2.8 Cr',
-    status: 'under_construction',
-    image: null,
-    views: 3789,
-    launchDate: 'Sep 2024',
-  },
-  {
-    id: 4,
-    name: 'Riverside Row Houses',
-    location: 'Pune, Maharashtra',
-    developer: 'Sobha Limited',
-    projectType: 'Row Houses',
-    totalUnits: 120,
-    configurations: '3 BHK',
-    area: '8 acres',
-    priceRange: '₹1.8-2.2 Cr',
-    status: 'upcoming',
-    image: null,
-    views: 567,
-    launchDate: 'Dec 2024',
-  },
-  {
-    id: 5,
-    name: 'Tech Park Commercial',
-    location: 'Hyderabad, Telangana',
-    developer: 'Brigade Group',
-    projectType: 'Office Complex',
-    totalUnits: 250,
-    configurations: 'Office Spaces',
-    area: '15 acres',
-    priceRange: '₹45L-1.5 Cr',
-    status: 'ready_to_move',
-    image: null,
-    views: 2123,
-    launchDate: 'Jun 2023',
-  },
-  {
-    id: 6,
-    name: 'Lake View Plots',
-    location: 'Noida Extension',
-    developer: 'ATS Group',
-    projectType: 'Plotted Development',
-    totalUnits: 300,
-    configurations: 'Plots',
-    area: '40 acres',
-    priceRange: '₹35-85 L',
-    status: 'completed',
-    image: null,
-    views: 1890,
-    launchDate: 'Jan 2022',
-  },
-];

@@ -21,6 +21,8 @@ import EditBusiness from "./pages/EditBusiness.jsx";
 import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
 import BusinessProfileSetup from "./modules/BusinessProfileSetup/index.jsx";
 import { DeveloperFormPageV2 } from "./modules/listDeveloper/v2/index.js";
+import ListProjectV2Page from "./modules/ListProjectV2.jsx";
+import ProjectFormPageV2 from "./modules/listProject/v2/components/ProjectFormPageV2.jsx";
 
 const router = createBrowserRouter([
   {
@@ -56,6 +58,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "list-project/:draftId",
+        element: (
+          <ProtectedRoute>
+            <ProjectFormPageV2 />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "/",
         element: (
           <ProtectedRoute>
@@ -75,10 +85,10 @@ const router = createBrowserRouter([
             path: "list-developer",
             element: <ListDeveloperV2Page />,
           },
-          // {
-          //   path: "list-project",
-          //   element: <ListProjectV2Page />,
-          // },
+          {
+            path: "list-project",
+            element: <ListProjectV2Page />,
+          },
           {
             path: "list-property",
             element: <ListPropertyV2 />,
