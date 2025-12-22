@@ -38,18 +38,11 @@ export default function ListDeveloperV2Page() {
       if (response.success && response.data) {
         // Transform API data to match our component structure
         const transformedDevelopers = response.data.map(draft => ({
-          id: draft.id,
-          name: draft.formData?.developerName || 'Untitled Developer',
-          location: `${draft.formData?.city || 'Location not set'}, ${draft.formData?.state || ''}`.trim(),
-          type: draft.formData?.developerType || 'Not specified',
-          experience: new Date().getFullYear() - (draft.formData?.establishedYear || new Date().getFullYear()),
-          projectsCount: (draft.formData?.totalProjectsCompleted || 0) + (draft.formData?.totalProjectsOngoing || 0),
-          rating: 4.5, // Default rating
-          verified: false, // Default not verified
-          established: draft.formData?.establishedYear || new Date().getFullYear(),
-          specializations: draft.formData?.specializations || [],
-          logo: draft.formData?.logo || null,
-          views: draft.views || 0,
+          id: draft.draftId,
+          name: draft.draftData?.developerName || 'Untitled Developer',
+          logo: draft.draftData?.logo || null,
+          subscribed: draft.draftData?.subscribeForDeveloperPage || false,
+          status: draft.draftStatus,
         }));
         setDevelopers(transformedDevelopers);
       } else {
@@ -233,10 +226,18 @@ export default function ListDeveloperV2Page() {
         ) : filteredDevelopers.length === 0 ? (
           <EmptyState searchQuery={searchQuery} onAddNew={handleAddNewDeveloper} isCreating={isCreatingDraft} />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-3">
             <AnimatePresence>
               {filteredDevelopers.map((developer, index) => (
-                <DeveloperCard key={developer.id} developer={developer} index={index} />
+                <DeveloperCard 
+                  key={developer.id} 
+                  developer={developer} 
+                  index={index}
+                  onDelete={(id) => {
+                    // TODO: Implement delete functionality
+                    console.log('Delete developer:', id);
+                  }}
+                />
               ))}
             </AnimatePresence>
           </div>
@@ -275,172 +276,91 @@ function StatsCard({ icon, value, label, color }) {
 }
 
 // Developer Card Component
-function DeveloperCard({ developer, index }) {
+function DeveloperCard({ developer, index, onEdit, onDelete }) {
   const navigate = useNavigate();
   
-  const typeConfig = {
-    'National Developer': { 
-      color: 'blue', 
-      badgeClass: 'bg-orange-500 hover:bg-orange-600'
-    },
-    'Regional Developer': { 
-      color: 'purple', 
-      badgeClass: 'bg-purple-500 hover:bg-purple-600'
-    },
-    'Local Builder': { 
-      color: 'indigo', 
-      badgeClass: 'bg-indigo-500 hover:bg-indigo-600'
-    },
-    'Boutique Developer': { 
-      color: 'cyan', 
-      badgeClass: 'bg-cyan-500 hover:bg-cyan-600'
-    },
-    'Luxury Developer': { 
-      color: 'teal', 
-      badgeClass: 'bg-teal-500 hover:bg-teal-600'
-    },
-    'Affordable Housing Developer': { 
-      color: 'green', 
-      badgeClass: 'bg-green-500 hover:bg-green-600'
-    },
-  };
-
-  const config = typeConfig[developer.type] || typeConfig['Local Builder'];
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ delay: index * 0.1 }}
-      whileHover={{ y: -8 }}
+      transition={{ delay: index * 0.05 }}
       className="group"
     >
-      <Card className="overflow-hidden border-2 border-gray-200 dark:border-gray-700 hover:border-orange-400 dark:hover:border-orange-500 transition-all duration-300 shadow-lg hover:shadow-2xl bg-white dark:bg-gray-900">
-        {/* Logo/Banner Section */}
-        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
-          {developer.logo ? (
-            <img 
-              src={developer.logo} 
-              alt={developer.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Building2 className="w-20 h-20 text-orange-300 dark:text-orange-700" />
+      <Card className="overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-orange-400 dark:hover:border-orange-500 transition-all duration-200 hover:shadow-md bg-white dark:bg-gray-900">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              {developer.logo ? (
+                <img 
+                  src={developer.logo} 
+                  alt={developer.name}
+                  className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200 dark:border-gray-700"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20 flex items-center justify-center border-2 border-gray-200 dark:border-gray-700">
+                  <Building2 className="w-8 h-8 text-orange-500" />
+                </div>
+              )}
             </div>
-          )}
-          
-          {/* Verified Badge */}
-          {developer.verified && (
-            <div className="absolute top-3 right-3">
-              <Badge className="bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1 shadow-lg flex items-center">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Verified
-              </Badge>
-            </div>
-          )}
 
-          {/* Actions Menu */}
-          <div className="absolute top-3 left-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="h-8 w-8 bg-white/90 hover:bg-white shadow-lg"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem>
-                  <Eye className="w-4 h-4 mr-2" />
-                  View Profile onClick={() => navigate(`/list-developer/${developer.id}`)}
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Edit2 className="w-4 h-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        {/* Content Section */}
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between gap-2">
+            {/* Developer Info */}
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate mb-1">
                 {developer.name}
               </h3>
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
-                <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                <span className="truncate">{developer.location}</span>
+              
+              {/* Subscription Status */}
+              <div className="flex items-center gap-2 mb-1">
+                {developer.subscribed ? (
+                  <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-100 text-xs">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    Page Subscribed
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-xs text-gray-500">
+                    Not Subscribed
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Status Badge */}
+              <div>
+                <Badge 
+                  variant="outline" 
+                  className={`text-xs ${
+                    developer.status === 'PUBLISHED' 
+                      ? 'border-green-500 text-green-700 dark:text-green-400' 
+                      : 'border-gray-300 text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  {developer.status === 'PUBLISHED' ? 'Published' : 'Draft'}
+                </Badge>
               </div>
             </div>
-          </div>
-        </CardHeader>
 
-        <CardContent className="pb-3">
-          {/* Developer Type Badge */}
-          <div className="mb-3">
-            <Badge className={`${config.badgeClass} text-white text-xs font-medium`}>
-              <Briefcase className="w-3 h-3 mr-1" />
-              {developer.type}
-            </Badge>
-          </div>
-
-          {/* Developer Stats */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                {developer.experience}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Years</div>
-            </div>
-            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="text-lg font-bold text-green-600 dark:text-green-400">
-                {developer.projectsCount}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Projects</div>
-            </div>
-            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                {developer.rating}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Rating</div>
-            </div>
-          </div>
-
-          {/* Specializations */}
-          <div className="flex flex-wrap gap-1">
-            {developer.specializations.map((spec, idx) => (
-              <Badge 
-                key={idx} 
-                variant="outline" 
-                className="text-xs"
+            {/* Action Buttons */}
+            <div className="flex-shrink-0 flex gap-2">
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => navigate(`/list-developer/${developer.id}`)}
+                className="h-9 w-9 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-300"
               >
-                {spec}
-              </Badge>
-            ))}
+                <Edit2 className="w-4 h-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => onDelete && onDelete(developer.id)}
+                className="h-9 w-9 hover:bg-red-50 hover:text-red-600 hover:border-red-300"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
-
-        <CardFooter className="pt-0 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center">
-            <Calendar className="w-3 h-3 mr-1" />
-            <span>Est. {developer.established}</span>
-          </div>
-          <div className="flex items-center">
-            <Eye className="w-3 h-3 mr-1" />
-            <span>{developer.views} views</span>
-          </div>
-        </CardFooter>
       </Card>
     </motion.div>
   );

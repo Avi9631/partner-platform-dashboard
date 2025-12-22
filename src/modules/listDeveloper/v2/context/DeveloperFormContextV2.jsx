@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback, useMemo, useEffect } 
 import { useForm, FormProvider as RHFFormProvider } from 'react-hook-form';
 import { getTotalVisibleSteps } from '../config/stepConfiguration';
 import { developerDraftApi } from '@/services/developerDraftService';
+import { developerApi } from '@/services/developerService';
 
 const DeveloperFormContextV2 = createContext(null);
 
@@ -248,6 +249,53 @@ export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId, edi
     return Math.round((currentStep / (totalSteps - 1)) * 100);
   }, [currentStep, getTotalSteps]);
 
+  // Publish developer (update draft + call publish API)
+  const publishDeveloper = useCallback(async (finalData) => {
+    try {
+      // Update form data in context
+      const updatedFormData = { ...formData, ...finalData };
+      
+      if (finalData) {
+        updateFormData(finalData);
+      }
+      
+      // Save to backend (this will auto-create draft if draftId doesn't exist)
+      console.log('Saving developer draft before publishing...', { draftId, finalData });
+      const saveResult = await saveDraft(updatedFormData);
+      
+      if (!saveResult.success) {
+        console.error('Failed to save draft before publishing');
+        return { success: false, message: 'Failed to save draft' };
+      }
+      
+      // Get the draftId (either existing or newly created)
+      const publishDraftId = saveResult.draftId || draftId;
+      
+      if (!publishDraftId) {
+        console.error('No draft ID available for publishing');
+        return { success: false, message: 'No draft ID available' };
+      }
+      
+      console.log('Calling publishDeveloper API...', { draftId: publishDraftId });
+      
+      // Call publish API
+      const response = await developerApi.publishDeveloper({ draftId: publishDraftId });
+      
+      console.log('Publish API Response:', response);
+      
+      if (response.success) {
+        console.log('✅ Developer published successfully');
+        return { success: true, data: response };
+      } else {
+        console.warn('⚠️ Developer publish returned unsuccessful response:', response);
+        return { success: false, message: response.message || 'Unknown error' };
+      }
+    } catch (error) {
+      console.error('❌ Failed to publish developer:', error);
+      return { success: false, error: error.message };
+    }
+  }, [draftId, formData, updateFormData, saveDraft]);
+
   const value = {
     currentStep,
     setCurrentStep,
@@ -266,6 +314,7 @@ export const DeveloperFormProviderV2 = ({ children, onClose, initialDraftId, edi
     draftId,
     setDraftId,
     saveDraft,
+    publishDeveloper,
     isCreatingDraft,
     isLoadingDraft,
   };

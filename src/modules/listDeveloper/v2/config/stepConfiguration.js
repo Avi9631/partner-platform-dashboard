@@ -6,9 +6,6 @@
  */
 
 import BasicInfoStepV2 from '../components/steps/BasicInfoStepV2';
-import ContactInfoStepV2 from '../components/steps/ContactInfoStepV2';
-import ProjectsStepV2 from '../components/steps/ProjectsStepV2';
-import ReviewAndSubmitV2 from '../components/steps/ReviewAndSubmitV2';
 
 // Step categories for better organization
 export const STEP_CATEGORIES = {
@@ -37,22 +34,22 @@ export const STEP_CONFIG = [
     isVisible: () => true,
     order: 0,
   },
-  {
-    id: 'contact-info',
-    name: 'Contact Information',
-    component: ContactInfoStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: () => true,
-    order: 1,
-  },
-  {
-    id: 'projects',
-    name: 'Projects & Portfolio',
-    component: ProjectsStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: () => true,
-    order: 2,
-  },
+  // {
+  //   id: 'contact-info',
+  //   name: 'Contact Information',
+  //   component: ContactInfoStepV2,
+  //   category: STEP_CATEGORIES.CORE,
+  //   isVisible: () => true,
+  //   order: 1,
+  // },
+  // {
+  //   id: 'projects',
+  //   name: 'Projects & Portfolio',
+  //   component: ProjectsStepV2,
+  //   category: STEP_CATEGORIES.CORE,
+  //   isVisible: () => true,
+  //   order: 2,
+  // },
   // {
   //   id: 'certifications',
   //   name: 'Certifications & Awards',
@@ -69,14 +66,6 @@ export const STEP_CONFIG = [
   //   isVisible: () => true,
   //   order: 3,
   // },
-  {
-    id: 'review-submit',
-    name: 'Review & Submit',
-    component: ReviewAndSubmitV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: () => true,
-    order: 3,
-  },
 ];
 
 /**

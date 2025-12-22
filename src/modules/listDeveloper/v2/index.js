@@ -38,7 +38,6 @@ export {
 
 // Individual step components (if needed elsewhere)
 export { default as BasicInfoStepV2 } from './components/steps/BasicInfoStepV2';
-export { default as ContactInfoStepV2 } from './components/steps/ContactInfoStepV2';
-export { default as ProjectsStepV2 } from './components/steps/ProjectsStepV2';
+
 
 export { default as ReviewAndSubmitV2 } from './components/steps/ReviewAndSubmitV2';
