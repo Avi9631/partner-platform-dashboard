@@ -325,29 +325,20 @@ export default function MediaUploadProjectStep() {
     saveAndContinue(data);
   };
 
-  // Pro tips for media upload
-  const mediaTips = [
-    "Upload high-quality images with good lighting for better visibility",
-    "Include photos of exterior, sample flats, amenities, and construction progress",
-    "Floor plans and master plans help buyers understand the layout",
-    "Videos should showcase key features and amenities (1-2 minutes ideal)",
-    "Add descriptive titles and categories to help buyers navigate",
-    "Show completed areas and current construction status clearly",
-  ];
-
+ 
   return (
-    <div className="w-full max-w-7xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto px-2 sm:px-4">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-4 md:mb-6"
+        className="mb-6 md:mb-8"
       >
-        <h2 className="text-xl md:text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 md:mb-3 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
           Project Media Gallery
         </h2>
-        <p className="text-muted-foreground text-xs md:text-sm">
+        <p className="text-muted-foreground text-sm md:text-base">
           Add photos and videos to showcase your project
         </p>
       </motion.div>
@@ -357,7 +348,7 @@ export default function MediaUploadProjectStep() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Upload Errors */}
           <AnimatePresence>
             {uploadErrors.length > 0 && (
@@ -386,11 +377,12 @@ export default function MediaUploadProjectStep() {
 
           {/* Upload Section */}
           <div className="space-y-4">
-            {/* Upload Button */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            {/* Upload Button and Stats */}
+            <div className="flex flex-col gap-4">
+              {/* Upload Button - Full width on mobile */}
               <label
                 htmlFor="media-upload"
-                className="cursor-pointer flex-shrink-0"
+                className="cursor-pointer w-full sm:w-auto"
               >
                 <input
                   id="media-upload"
@@ -406,7 +398,7 @@ export default function MediaUploadProjectStep() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950"
+                  className="w-full sm:w-auto border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950 h-12 sm:h-10 text-base sm:text-sm font-medium"
                   onClick={() =>
                     document.getElementById("media-upload").click()
                   }
@@ -414,29 +406,29 @@ export default function MediaUploadProjectStep() {
                 >
                   {isUploading ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-5 h-5 sm:w-4 sm:h-4 mr-2 animate-spin" />
                       Uploading...
                     </>
                   ) : (
                     <>
-                      <Plus className="w-4 h-4 mr-2" />
+                      <Plus className="w-5 h-5 sm:w-4 sm:h-4 mr-2" />
                       Add Images or Videos
                     </>
                   )}
                 </Button>
               </label>
 
-              {/* Media Count */}
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <Camera className="w-4 h-4 text-blue-600" />
-                  <span className="text-muted-foreground">
+              {/* Media Count - Better mobile layout */}
+              <div className="flex items-center gap-3 sm:gap-4 text-sm">
+                <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950/20 px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                  <span className="font-medium text-blue-700 dark:text-blue-400">
                     {imageCount} {imageCount === 1 ? "Image" : "Images"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Film className="w-4 h-4 text-purple-600" />
-                  <span className="text-muted-foreground">
+                <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-950/20 px-3 py-2 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <Film className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                  <span className="font-medium text-purple-700 dark:text-purple-400">
                     {videoCount} {videoCount === 1 ? "Video" : "Videos"}
                   </span>
                 </div>
@@ -444,38 +436,38 @@ export default function MediaUploadProjectStep() {
             </div>
 
             {/* Upload Info */}
-            <div className="bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-background border-2 border-orange-200 dark:border-orange-800 rounded-lg p-4">
+            <div className="bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-background border-2 border-orange-200 dark:border-orange-800 rounded-lg p-4 md:p-5">
               <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                <div className="flex-1 text-sm">
-                  <p className="font-semibold text-orange-700 dark:text-orange-400 mb-1">
+                <Info className="w-5 h-5 md:w-6 md:h-6 text-orange-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-2">
+                  <p className="font-semibold text-orange-700 dark:text-orange-400 text-sm md:text-base">
                     At least 3 images are required{" "}
                     <span className="text-red-500">*</span>
                   </p>
-                  <p className="text-muted-foreground text-xs">
-                    Images: JPEG, PNG, WebP (max 10MB) • Videos: MP4, WebM, MOV
-                    (max 100MB)
-                  </p>
+                  <div className="space-y-1 text-xs md:text-sm text-muted-foreground">
+                    <p>• Images: JPEG, PNG, WebP (max 10MB)</p>
+                    <p>• Videos: MP4, WebM, MOV (max 100MB)</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Media Grid or Empty State */}
             {mediaList.length === 0 ? (
-              <div className="border-2 border-dashed rounded-lg p-12 text-center">
+              <div className="border-2 border-dashed rounded-lg p-8 md:p-12 text-center bg-gray-50/50 dark:bg-gray-900/20">
                 <div className="flex justify-center gap-4 mb-4">
-                  <Building className="w-12 h-12 text-muted-foreground" />
-                  <Camera className="w-12 h-12 text-muted-foreground" />
+                  <Building className="w-10 h-10 md:w-12 md:h-12 text-muted-foreground/60" />
+                  <Camera className="w-10 h-10 md:w-12 md:h-12 text-muted-foreground/60" />
                 </div>
-                <p className="text-sm text-muted-foreground mb-2">
+                <p className="text-sm md:text-base font-medium text-muted-foreground mb-2">
                   No media uploaded yet
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   Click &quot;Add Images or Videos&quot; to start uploading
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {mediaList.map((media) => (
                   <MediaCard
                     key={media.id}
@@ -490,22 +482,7 @@ export default function MediaUploadProjectStep() {
             )}
           </div>
 
-          {/* Pro Tips */}
-          <div className="bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="font-semibold text-blue-700 dark:text-blue-400 mb-2">
-                  Pro Tips for Better Listings:
-                </p>
-                <ul className="text-sm text-blue-600 dark:text-blue-300 space-y-1">
-                  {mediaTips.map((tip, idx) => (
-                    <li key={idx}>• {tip}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
+ 
         </div>
       </motion.div>
 
@@ -561,17 +538,17 @@ function MediaCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       className={cn(
-        "border-2 rounded-lg overflow-hidden transition-all",
+        "border-2 rounded-lg overflow-hidden transition-all shadow-sm hover:shadow-md",
         borderColor,
-        isUploading && "opacity-60"
+        isUploading && "opacity-60 pointer-events-none"
       )}
     >
       {/* Preview Section */}
-      <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
+      <div className="relative aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden">
         {isVideo ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Film className="w-12 h-12 text-purple-500" />
-            <div className="absolute top-2 right-2 bg-purple-500 text-white px-2 py-1 rounded text-xs font-semibold">
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-950 dark:to-purple-900">
+            <Film className="w-12 h-12 md:w-16 md:h-16 text-purple-500" />
+            <div className="absolute top-2 right-2 bg-purple-500 text-white px-3 py-1.5 rounded-md text-xs font-semibold shadow-lg">
               VIDEO
             </div>
           </div>
@@ -580,10 +557,10 @@ function MediaCard({
             <img
               src={media.preview || media.url}
               alt={media.title || "Project media"}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform hover:scale-105"
             />
             {media.isPrimary && (
-              <div className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 rounded text-xs font-semibold flex items-center gap-1">
+              <div className="absolute top-2 left-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 shadow-lg">
                 <Check className="w-3 h-3" />
                 Cover Image
               </div>
@@ -593,55 +570,57 @@ function MediaCard({
 
         {/* Upload Progress */}
         {isUploading && uploadProgress !== undefined && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center">
             <div className="text-center text-white">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-              <p className="text-sm">{Math.round(uploadProgress)}%</p>
+              <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin mx-auto mb-3" />
+              <p className="text-lg md:text-xl font-semibold">{Math.round(uploadProgress)}%</p>
+              <p className="text-xs md:text-sm text-white/80 mt-1">Uploading...</p>
             </div>
           </div>
         )}
 
-        {/* Remove Button */}
+        {/* Remove Button - Larger touch target for mobile */}
         <button
           onClick={() => onRemove(media.id)}
-          className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full transition-colors"
+          className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 md:p-1.5 rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg"
           disabled={isUploading}
+          aria-label="Remove media"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5 md:w-4 md:h-4" />
         </button>
       </div>
 
       {/* Metadata Section */}
-      <div className="p-4 space-y-3">
+      <div className="p-4 md:p-5 space-y-4">
         {/* Title */}
         <div>
-          <Label className="text-xs font-medium mb-1">Title</Label>
+          <Label className="text-xs md:text-sm font-medium mb-2 block">Title</Label>
           <Input
             value={media.title || ""}
             onChange={(e) => onUpdateMetadata(media.id, "title", e.target.value)}
             placeholder={isVideo ? "e.g., Project Walkthrough" : "e.g., Exterior View"}
-            className="text-sm"
+            className="text-sm md:text-base h-10 md:h-11"
             disabled={isUploading}
           />
         </div>
 
         {/* Category Selector */}
         <div>
-          <Label className="text-xs font-medium mb-1">Category</Label>
+          <Label className="text-xs md:text-sm font-medium mb-2 block">Category</Label>
           <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 role="combobox"
                 aria-expanded={categoryOpen}
-                className="w-full justify-between text-sm"
+                className="w-full justify-between text-sm md:text-base h-10 md:h-11"
                 disabled={isUploading}
               >
-                {media.category || "Select category..."}
-                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <span className="truncate">{media.category || "Select category..."}</span>
+                <ChevronDown className="ml-2 h-4 w-4 md:h-5 md:w-5 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-full p-0" align="start">
+            <PopoverContent className="w-[calc(100vw-2rem)] sm:w-full max-w-md p-0" align="start">
               <Command>
                 <CommandInput
                   placeholder="Search or create category..."
@@ -695,25 +674,25 @@ function MediaCard({
 
         {/* Caption */}
         <div>
-          <Label className="text-xs font-medium mb-1">Caption (Optional)</Label>
+          <Label className="text-xs md:text-sm font-medium mb-2 block">Caption (Optional)</Label>
           <Textarea
             value={media.caption || ""}
             onChange={(e) =>
               onUpdateMetadata(media.id, "caption", e.target.value)
             }
             placeholder="Add a description..."
-            className="text-sm min-h-[60px] resize-none"
+            className="text-sm md:text-base min-h-[80px] md:min-h-[60px] resize-none"
             maxLength={200}
             disabled={isUploading}
           />
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs md:text-sm text-muted-foreground mt-1.5">
             {(media.caption || "").length}/200 characters
           </p>
         </div>
 
         {/* Set as Primary (Images only) */}
         {!isVideo && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 p-3 rounded-lg border bg-gray-50/50 dark:bg-gray-900/20">
             <input
               type="checkbox"
               id={`primary-${media.id}`}
@@ -721,12 +700,12 @@ function MediaCard({
               onChange={(e) =>
                 onUpdateMetadata(media.id, "isPrimary", e.target.checked)
               }
-              className="rounded border-gray-300"
+              className="w-4 h-4 md:w-5 md:h-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
               disabled={isUploading}
             />
             <Label
               htmlFor={`primary-${media.id}`}
-              className="text-xs cursor-pointer"
+              className="text-xs md:text-sm cursor-pointer font-medium flex-1"
             >
               Set as cover image
             </Label>
@@ -734,9 +713,12 @@ function MediaCard({
         )}
 
         {/* File Info */}
-        <div className="text-xs text-muted-foreground pt-2 border-t">
-          <p>
-            {media.filename} •{" "}
+        <div className="text-xs md:text-sm text-muted-foreground pt-3 border-t">
+          <p className="truncate" title={media.filename}>
+            <span className="font-medium">File:</span> {media.filename}
+          </p>
+          <p className="mt-1">
+            <span className="font-medium">Size:</span>{" "}
             {media.fileSize
               ? `${(media.fileSize / (1024 * 1024)).toFixed(2)} MB`
               : "Unknown size"}

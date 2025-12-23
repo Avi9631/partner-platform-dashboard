@@ -34,7 +34,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
@@ -53,6 +52,7 @@ const FOOD_TYPE_OPTIONS = ['Veg', 'Non-veg', 'Veg & Non-veg'];
 
 export default function FoodMessPgStep() {
   const { saveAndContinue, previousStep, formData } = usePgFormV2();
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [selectedMeal, setSelectedMeal] = useState('breakfast');
   const [newMealItem, setNewMealItem] = useState('');
@@ -197,7 +197,7 @@ export default function FoodMessPgStep() {
   };
 
   const isNonVegAllowed = form.watch('foodMess.foodType') !== 'Veg';
-  const selectedDayIndex = DAYS_OF_WEEK.indexOf(selectedDay);
+  const selectedDayIndexFromName = DAYS_OF_WEEK.indexOf(selectedDay);
 
   return (
     <div className="w-full max-w-7xl mx-auto ">
@@ -515,7 +515,7 @@ export default function FoodMessPgStep() {
                           </Select>
                           <Button
                             type="button"
-                            onClick={() => addMealItem(selectedDayIndex, selectedMeal, mealType)}
+                            onClick={() => addMealItem(selectedDayIndexFromName, selectedMeal, mealType)}
                             disabled={!newMealItem.trim()}
                           >
                             Add
@@ -575,133 +575,145 @@ export default function FoodMessPgStep() {
                   </Dialog>
               </div>
               
-              <Tabs value={selectedDay} onValueChange={setSelectedDay}>
-                  <TabsList className="grid w-full grid-cols-7 mb-4 md:mb-6">
-                    {DAYS_OF_WEEK.map((day) => (
-                      <TabsTrigger key={day} value={day} className="text-[10px] sm:text-xs px-1 sm:px-2">
-                        {day.slice(0, 3)}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
+              {/* Scrollable Carousel */}
+              <div className="space-y-3">
+                {/* Day Navigation */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  {DAYS_OF_WEEK.map((day, index) => (
+                    <Button
+                      key={day}
+                      type="button"
+                      variant={selectedDayIndex === index ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedDayIndex(index)}
+                      className={`min-w-[80px] text-xs ${
+                        selectedDayIndex === index 
+                          ? 'bg-orange-600 hover:bg-orange-700' 
+                          : 'hover:bg-orange-50'
+                      }`}
+                    >
+                      {day.slice(0, 3)}
+                    </Button>
+                  ))}
+                </div>
 
-                  {DAYS_OF_WEEK.map((day, dayIndex) => {
-                    const dayMenu = form.watch(`foodMess.weeklyMenu.${dayIndex}`);
-                    
-                    return (
-                      <TabsContent key={day} value={day} className="space-y-4 md:space-y-6">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                          <h3 className="text-base md:text-lg font-semibold">{day} Menu</h3>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              initializeWeeklyMenuIfNeeded();
-                              addSampleMeals(dayIndex);
-                            }}
-                            className="self-start sm:self-auto"
-                          >
-                            <ThumbsUp className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
-                            <span className="text-xs md:text-sm">Add Sample Menu</span>
-                          </Button>
-                        </div>
+                {/* Current Day Content */}
+                {DAYS_OF_WEEK.map((day, dayIndex) => {
+                  if (selectedDayIndex !== dayIndex) return null;
+                  const dayMenu = form.watch(`foodMess.weeklyMenu.${dayIndex}`);
+                  
+                  return (
+                    <motion.div
+                      key={day}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.2 }}
+                      className="space-y-4"
+                    >
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <h3 className="text-base md:text-lg font-semibold">{day} Menu</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            initializeWeeklyMenuIfNeeded();
+                            addSampleMeals(dayIndex);
+                          }}
+                          className="self-start sm:self-auto"
+                        >
+                          <ThumbsUp className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
+                          <span className="text-xs md:text-sm">Add Sample Menu</span>
+                        </Button>
+                      </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                          {['breakfast', 'lunch', 'dinner'].map((mealTime) => (
-                            <Card key={mealTime} className="border hover:border-orange-200 transition-colors">
-                              <CardHeader className="pb-2 md:pb-3">
-                                <div className="flex items-center justify-between">
-                                  <CardTitle className="text-sm md:text-base capitalize flex items-center gap-2">
-                                    {mealTime === 'breakfast' && <Coffee className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
-                                    {mealTime === 'lunch' && <Utensils className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
-                                    {mealTime === 'dinner' && <ChefHat className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
-                                    {mealTime}
-                                  </CardTitle>
-                                  {dayMenu?.[`${mealTime}Timing`] && (
-                                    <Badge variant="outline" className="text-[10px] md:text-xs flex items-center gap-1">
-                                      <Clock className="w-3 h-3" />
-                                      {dayMenu[`${mealTime}Timing`]}
+                      <div className="space-y-3 md:space-y-4">
+                        {['breakfast', 'lunch', 'dinner'].map((mealTime) => (
+                          <Card key={mealTime} className="border hover:border-orange-200 transition-colors">
+                            <CardHeader className="pb-2 md:pb-3">
+                              <div className="flex items-center justify-between">
+                                <CardTitle className="text-sm md:text-base capitalize flex items-center gap-2">
+                                  {mealTime === 'breakfast' && <Coffee className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
+                                  {mealTime === 'lunch' && <Utensils className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
+                                  {mealTime === 'dinner' && <ChefHat className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />}
+                                  {mealTime}
+                                </CardTitle>
+                                {dayMenu?.[`${mealTime}Timing`] && (
+                                  <Badge variant="outline" className="text-[10px] md:text-xs flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {dayMenu[`${mealTime}Timing`]}
+                                  </Badge>
+                                )}
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-2 md:space-y-3">
+                              
+                              {/* Veg Items */}
+                              <div>
+                                <Label className="text-[10px] md:text-xs text-green-600 flex items-center gap-1 mb-1.5 md:mb-2 font-medium">
+                                  <Leaf className="w-3 h-3" /> Veg Items
+                                </Label>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {dayMenu?.[mealTime]?.veg?.map((item, itemIndex) => (
+                                    <Badge
+                                      key={itemIndex}
+                                      className="bg-green-100 text-green-800 hover:bg-green-200 text-xs py-1.5"
+                                    >
+                                      {item}
+                                      <X
+                                        className="w-3 h-3 ml-1.5 cursor-pointer hover:text-red-600"
+                                        onClick={() => removeMealItem(dayIndex, mealTime, 'veg', itemIndex)}
+                                      />
                                     </Badge>
+                                  ))}
+                                  {(!dayMenu?.[mealTime]?.veg || dayMenu[mealTime].veg.length === 0) && (
+                                    <div className="w-full text-center py-3 border-2 border-dashed border-green-200 rounded-lg">
+                                      <p className="text-[10px] md:text-xs text-muted-foreground italic">
+                                        No veg items added. Use "Configure Menu" to add items.
+                                      </p>
+                                    </div>
                                   )}
                                 </div>
-                              </CardHeader>
-                              <CardContent className="space-y-2 md:space-y-3">
-                                
-                                {/* Veg Items */}
+                              </div>
+
+                              {/* Non-Veg Items */}
+                              {isNonVegAllowed && (
                                 <div>
-                                  <Label className="text-[10px] md:text-xs text-green-600 flex items-center gap-1 mb-1.5 md:mb-2 font-medium">
-                                    <Leaf className="w-3 h-3" /> Veg Items
+                                  <Label className="text-[10px] md:text-xs text-red-600 flex items-center gap-1 mb-1.5 md:mb-2 font-medium">
+                                    <Beef className="w-3 h-3" /> Non-Veg Items
                                   </Label>
-                                  <div className="space-y-1">
-                                    {dayMenu?.[mealTime]?.veg?.map((item, itemIndex) => (
-                                      <div
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {dayMenu?.[mealTime]?.nonVeg?.map((item, itemIndex) => (
+                                      <Badge
                                         key={itemIndex}
-                                        className="flex items-center justify-between p-1.5 md:p-2 bg-green-50 dark:bg-green-900/10 rounded text-xs md:text-sm border border-green-100 dark:border-green-900/30"
+                                        className="bg-red-100 text-red-800 hover:bg-red-200 text-xs py-1.5"
                                       >
-                                        <span className="flex-1 truncate">{item}</span>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => removeMealItem(dayIndex, mealTime, 'veg', itemIndex)}
-                                          className="h-5 w-5 md:h-6 md:w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                        >
-                                          <X className="w-3 h-3" />
-                                        </Button>
-                                      </div>
+                                        {item}
+                                        <X
+                                          className="w-3 h-3 ml-1.5 cursor-pointer hover:text-red-600"
+                                          onClick={() => removeMealItem(dayIndex, mealTime, 'nonVeg', itemIndex)}
+                                        />
+                                      </Badge>
                                     ))}
-                                    {(!dayMenu?.[mealTime]?.veg || dayMenu[mealTime].veg.length === 0) && (
-                                      <div className="text-center py-4 border-2 border-dashed border-green-200 rounded-lg">
+                                    {(!dayMenu?.[mealTime]?.nonVeg || dayMenu[mealTime].nonVeg.length === 0) && (
+                                      <div className="w-full text-center py-3 border-2 border-dashed border-red-200 rounded-lg">
                                         <p className="text-[10px] md:text-xs text-muted-foreground italic">
-                                          No veg items added
+                                          No non-veg items added. Use "Configure Menu" to add items.
                                         </p>
                                       </div>
                                     )}
                                   </div>
                                 </div>
-
-                                {/* Non-Veg Items */}
-                                {isNonVegAllowed && (
-                                  <div>
-                                    <Label className="text-[10px] md:text-xs text-red-600 flex items-center gap-1 mb-1.5 md:mb-2 font-medium">
-                                      <Beef className="w-3 h-3" /> Non-Veg Items
-                                    </Label>
-                                    <div className="space-y-1">
-                                      {dayMenu?.[mealTime]?.nonVeg?.map((item, itemIndex) => (
-                                        <div
-                                          key={itemIndex}
-                                          className="flex items-center justify-between p-1.5 md:p-2 bg-red-50 dark:bg-red-900/10 rounded text-xs md:text-sm border border-red-100 dark:border-red-900/30"
-                                        >
-                                          <span className="flex-1 truncate">{item}</span>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeMealItem(dayIndex, mealTime, 'nonVeg', itemIndex)}
-                                            className="h-5 w-5 md:h-6 md:w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                          >
-                                            <X className="w-3 h-3" />
-                                          </Button>
-                                        </div>
-                                      ))}
-                                      {(!dayMenu?.[mealTime]?.nonVeg || dayMenu[mealTime].nonVeg.length === 0) && (
-                                        <div className="text-center py-4 border-2 border-dashed border-red-200 rounded-lg">
-                                          <p className="text-[10px] md:text-xs text-muted-foreground italic">
-                                            No non-veg items added
-                                          </p>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </TabsContent>
-                    );
-                  })}
-                </Tabs>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           )}
 

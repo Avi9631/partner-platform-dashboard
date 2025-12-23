@@ -1242,7 +1242,7 @@ export default function RoomTypesPgStep() {
                               PNG, JPG up to 10MB each
                             </p>
                           </div>
-                          <Button
+                          {/* <Button
                             type="button"
                             variant="outline"
                             size="sm"
@@ -1250,13 +1250,13 @@ export default function RoomTypesPgStep() {
                           >
                             <ImageIcon className="w-4 h-4 mr-2" />
                             Choose Files
-                          </Button>
+                          </Button> */}
                         </label>
                       </div>
 
                       {/* Image Preview Grid */}
                       {tempRoomData.images && tempRoomData.images.length > 0 ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                           {tempRoomData.images.map((image, index) => {
                             const isUploading = image.uploading || false;
                             const progress =
@@ -1333,41 +1333,7 @@ export default function RoomTypesPgStep() {
                         </div>
                       )}
 
-                      {/* Tips */}
-                      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200">
-                        <CardContent className="pt-4">
-                          <div className="flex items-start gap-3">
-                            <ImageIcon className="w-5 h-5 text-blue-600 mt-0.5" />
-                            <div className="flex-1 text-sm text-blue-900 dark:text-blue-100">
-                              <p className="font-medium mb-1">Image Tips:</p>
-                              <ul className="list-disc list-inside space-y-1 text-xs">
-                                <li>
-                                  Upload high-quality images showing different
-                                  angles of the room
-                                </li>
-                                <li>
-                                  Include photos of bed, study area, and
-                                  amenities
-                                </li>
-                                <li>
-                                  Ensure good lighting for better visibility
-                                </li>
-                                <li>
-                                  First image will be used as the primary
-                                  thumbnail
-                                </li>
-                                <li className="font-semibold text-blue-700">
-                                  Images upload automatically to cloud storage
-                                </li>
-                                <li>
-                                  Maximum 10MB per image, common formats
-                                  supported (JPG, PNG, WebP)
-                                </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+        
                     </TabsContent>
 
                     {/* Amenities Tab */}
@@ -1442,56 +1408,71 @@ export default function RoomTypesPgStep() {
                           </p>
                         </div>
                       )}
-                      
-                      <div>
-                        <Label>
-                          Next Availability <span className="text-red-500">*</span>
-                        </Label>
-                        <Select
-                          value={
-                            tempRoomData.availability?.nextAvailability || ""
-                          }
-                          onValueChange={(value) =>
-                            updateTempRoomField(
-                              "availability.nextAvailability",
-                              value
-                            )
-                          }
-                        >
-                          <SelectTrigger className="mt-2">
-                            <SelectValue placeholder="Select availability" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Immediate">Immediate</SelectItem>
-                            <SelectItem value="Within 1 week">Within 1 week</SelectItem>
-                            <SelectItem value="Within 2 weeks">Within 2 weeks</SelectItem>
-                            <SelectItem value="Within 1 month">Within 1 month</SelectItem>
-                            <SelectItem value="After 1 month">After 1 month</SelectItem>
-                            <SelectItem value="After 2 months">After 2 months</SelectItem>
-                            <SelectItem value="After 3 months">After 3 months</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
 
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                          <Label htmlFor="sheet-soldout">
-                            Currently Sold Out
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        {/* Next Availability */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold">
+                            Next Availability <span className="text-red-500">*</span>
                           </Label>
-                          <Switch
-                            id="sheet-soldout"
-                            checked={
-                              tempRoomData.availability?.soldOut || false
+                          <Select
+                            value={
+                              tempRoomData.availability?.nextAvailability || ""
                             }
-                            onCheckedChange={(checked) =>
+                            onValueChange={(value) =>
                               updateTempRoomField(
-                                "availability.soldOut",
-                                checked
+                                "availability.nextAvailability",
+                                value
                               )
                             }
-                          />
+                          >
+                            <SelectTrigger className="h-11">
+                              <SelectValue placeholder="Select availability" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Immediate">Immediate</SelectItem>
+                              <SelectItem value="Within 1 week">Within 1 week</SelectItem>
+                              <SelectItem value="Within 2 weeks">Within 2 weeks</SelectItem>
+                              <SelectItem value="Within 1 month">Within 1 month</SelectItem>
+                              <SelectItem value="After 1 month">After 1 month</SelectItem>
+                              <SelectItem value="After 2 months">After 2 months</SelectItem>
+                              <SelectItem value="After 3 months">After 3 months</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground">
+                            When will this room be available for booking?
+                          </p>
+                        </div>
+
+                        {/* Room Status */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold">Room Status</Label>
+                          <div className="flex items-center justify-between p-4 border-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors h-11">
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor="sheet-soldout" className="cursor-pointer font-medium text-sm">
+                                Currently Sold Out
+                              </Label>
+                            </div>
+                            <Switch
+                              id="sheet-soldout"
+                              checked={
+                                tempRoomData.availability?.soldOut || false
+                              }
+                              onCheckedChange={(checked) =>
+                                updateTempRoomField(
+                                  "availability.soldOut",
+                                  checked
+                                )
+                              }
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Toggle if all rooms of this type are currently unavailable
+                          </p>
                         </div>
                       </div>
+                      
+
 
                       {/* Availability Summary */}
                       <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200">
