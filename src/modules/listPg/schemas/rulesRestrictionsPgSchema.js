@@ -111,7 +111,6 @@ export const SAMPLE_RULES = [
 const rulesRestrictionsPgSchema = z.object({
   // Structured rules array (matches JSON format)
   rules: z.array(ruleItemSchema)
-    .min(1, 'At least one rule must be specified')
     .max(20, 'Maximum 20 rules allowed')
     .default([]),
 });

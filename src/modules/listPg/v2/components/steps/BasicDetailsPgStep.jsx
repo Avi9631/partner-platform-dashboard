@@ -72,9 +72,7 @@ export default function BasicDetailsPgStep() {
       isBrandManaged:
         formData?.isBrandManaged || formData?.managedByBrand || false,
       brandName: formData?.brandName || "",
-
-      // Property age
-      yearBuilt: formData?.yearBuilt || "",
+ 
   
 
     },
@@ -185,32 +183,7 @@ export default function BasicDetailsPgStep() {
                   </Field>
                 )}
               />
-
-                          <Controller
-              name="yearBuilt"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-orange-600" />
-                    Year Built
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    placeholder="e.g., 2019"
-                    className={`h-11 text-sm border-2 focus:border-orange-500 transition-all ${
-                      fieldState.invalid ? "border-red-500" : ""
-                    }`}
-                    maxLength={4}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-
+ 
             </div>
 
             {/* Descriptions */}

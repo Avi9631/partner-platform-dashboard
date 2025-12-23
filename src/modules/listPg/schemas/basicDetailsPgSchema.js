@@ -33,11 +33,7 @@ const basicDetailsPgSchema = z.object({
     .optional()
     .or(z.literal('')),
   
-  // Property age
-  yearBuilt: z.string()
-    .regex(/^\d{4}$/, 'Please enter a valid year (e.g., 2020)')
-    .optional()
-    .or(z.literal('')),
+ 
  
 }).refine(
   (data) => {

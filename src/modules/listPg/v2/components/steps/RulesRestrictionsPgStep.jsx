@@ -213,10 +213,10 @@ export default function RulesRestrictionsPgStep() {
           
           {/* Header Actions */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-orange-600" />
               <h3 className="text-lg font-semibold">Property Rules </h3>
-            </div>
+            </div> */}
             <div className="flex items-center gap-2">
              
               <Sheet open={showAddDialog} onOpenChange={(open) => {
@@ -503,7 +503,7 @@ export default function RulesRestrictionsPgStep() {
           <SaveAndContinueFooter
             onSaveAndContinue={form.handleSubmit(onSubmit)}
             onBack={previousStep}
-            nextDisabled={!form.formState.isValid || ruleFields.length === 0}
+            nextDisabled={!form.formState.isValid}
             showBack={true}
           />
         </form>
