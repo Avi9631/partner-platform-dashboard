@@ -36,12 +36,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { usePgFormV2 } from '../../context/PgFormContextV2';
 import foodMessPgSchema, { DAYS_OF_WEEK, SAMPLE_MEALS } from '../../../schemas/foodMessPgSchema';
 import SaveAndContinueFooter from './SaveAndContinueFooter';
@@ -57,7 +57,7 @@ export default function FoodMessPgStep() {
   const [selectedMeal, setSelectedMeal] = useState('breakfast');
   const [newMealItem, setNewMealItem] = useState('');
   const [mealType, setMealType] = useState('veg');
-  const [showMealDialog, setShowMealDialog] = useState(false);
+  const [showMealSheet, setShowMealSheet] = useState(false);
   const [showTimingSection, setShowTimingSection] = useState(false);
 
   const logger = useMemo(() => createStepLogger('Food & Mess PG Step V2'), []);
@@ -118,12 +118,12 @@ export default function FoodMessPgStep() {
       if (!updatedMenu[dayIndex][mealType].veg) {
         updatedMenu[dayIndex][mealType].veg = [];
       }
-      updatedMenu[dayIndex][mealType].veg.push(newMealItem.trim());
+      updatedMenu[dayIndex][mealType].veg.push(newMealItem.trim().toUpperCase());
     } else {
       if (!updatedMenu[dayIndex][mealType].nonVeg) {
         updatedMenu[dayIndex][mealType].nonVeg = [];
       }
-      updatedMenu[dayIndex][mealType].nonVeg.push(newMealItem.trim());
+      updatedMenu[dayIndex][mealType].nonVeg.push(newMealItem.trim().toUpperCase());
     }
     
     form.setValue('foodMess.weeklyMenu', updatedMenu);
@@ -159,24 +159,31 @@ export default function FoodMessPgStep() {
   const addSampleMeals = (dayIndex) => {
     const currentMenu = form.getValues('foodMess.weeklyMenu');
     const updatedMenu = [...currentMenu];
+    const selectedMeals = form.watch('foodMess.meals') || [];
     
-    // Add sample breakfast
-    updatedMenu[dayIndex].breakfast = {
-      veg: SAMPLE_MEALS.breakfast.veg.slice(0, 3),
-      nonVeg: form.watch('foodMess.foodType') !== 'Veg' ? SAMPLE_MEALS.breakfast.nonVeg.slice(0, 1) : null,
-    };
+    // Add sample breakfast only if selected
+    if (selectedMeals.includes('Breakfast')) {
+      updatedMenu[dayIndex].breakfast = {
+        veg: SAMPLE_MEALS.breakfast.veg.slice(0, 3),
+        nonVeg: form.watch('foodMess.foodType') !== 'Veg' ? SAMPLE_MEALS.breakfast.nonVeg.slice(0, 1) : null,
+      };
+    }
     
-    // Add sample lunch
-    updatedMenu[dayIndex].lunch = {
-      veg: SAMPLE_MEALS.lunch.veg.slice(0, 5),
-      nonVeg: form.watch('foodMess.foodType') !== 'Veg' ? SAMPLE_MEALS.lunch.nonVeg.slice(0, 1) : null,
-    };
+    // Add sample lunch only if selected
+    if (selectedMeals.includes('Lunch')) {
+      updatedMenu[dayIndex].lunch = {
+        veg: SAMPLE_MEALS.lunch.veg.slice(0, 5),
+        nonVeg: form.watch('foodMess.foodType') !== 'Veg' ? SAMPLE_MEALS.lunch.nonVeg.slice(0, 1) : null,
+      };
+    }
     
-    // Add sample dinner
-    updatedMenu[dayIndex].dinner = {
-      veg: SAMPLE_MEALS.dinner.veg.slice(0, 4),
-      nonVeg: form.watch('foodMess.foodType') !== 'Veg' ? SAMPLE_MEALS.dinner.nonVeg.slice(0, 1) : null,
-    };
+    // Add sample dinner only if selected
+    if (selectedMeals.includes('Dinner')) {
+      updatedMenu[dayIndex].dinner = {
+        veg: SAMPLE_MEALS.dinner.veg.slice(0, 4),
+        nonVeg: form.watch('foodMess.foodType') !== 'Veg' ? SAMPLE_MEALS.dinner.nonVeg.slice(0, 1) : null,
+      };
+    }
     
     form.setValue('foodMess.weeklyMenu', updatedMenu);
   };
@@ -454,125 +461,191 @@ export default function FoodMessPgStep() {
                   <Calendar className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
                   <h3 className="text-lg md:text-xl font-semibold">Weekly Menu <span className="text-sm text-muted-foreground font-normal">(Optional)</span></h3>
                 </div>
-                <Dialog open={showMealDialog} onOpenChange={(open) => {
+                <Sheet open={showMealSheet} onOpenChange={(open) => {
                   if (open) {
                     initializeWeeklyMenuIfNeeded();
                   }
-                  setShowMealDialog(open);
+                  setShowMealSheet(open);
                 }}>
-                    <DialogTrigger asChild>
+                    <SheetTrigger asChild>
                       <Button variant="outline" size="sm" className="self-start sm:self-auto">
                         <Plus className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
                         <span className="text-xs md:text-sm">Quick Add</span>
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="w-full max-w-[95vw] sm:max-w-2xl">
-                      <DialogHeader>
-                        <DialogTitle className="text-lg md:text-xl">Quick Add Meal Items</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-3 md:space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <Select value={selectedDay} onValueChange={setSelectedDay}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {DAYS_OF_WEEK.map((day) => (
-                                <SelectItem key={day} value={day}>{day}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                    </SheetTrigger>
+                    <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+                      <SheetHeader className="space-y-2 pb-4 border-b">
+                        <SheetTitle className="text-xl md:text-2xl flex items-center gap-2">
+                          <ChefHat className="w-5 h-5 text-orange-600" />
+                          Quick Add Meal Items
+                        </SheetTitle>
+                        <p className="text-sm text-muted-foreground">
+                          Add custom items or choose from sample menu suggestions to build your weekly food menu
+                        </p>
+                      </SheetHeader>
 
-                          <Select value={selectedMeal} onValueChange={setSelectedMeal}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="breakfast">Breakfast</SelectItem>
-                              <SelectItem value="lunch">Lunch</SelectItem>
-                              <SelectItem value="dinner">Dinner</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Input
-                            value={newMealItem}
-                            onChange={(e) => setNewMealItem(e.target.value)}
-                            placeholder="Enter meal item..."
-                            className="flex-1"
-                          />
-                          <Select value={mealType} onValueChange={setMealType}>
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="veg">Veg</SelectItem>
-                              {isNonVegAllowed && (
-                                <SelectItem value="nonVeg">Non-Veg</SelectItem>
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <Button
-                            type="button"
-                            onClick={() => addMealItem(selectedDayIndexFromName, selectedMeal, mealType)}
-                            disabled={!newMealItem.trim()}
-                          >
-                            Add
-                          </Button>
-                        </div>
-
+                      <div className="space-y-6 mt-6">
+                        {/* Day and Meal Selection */}
                         <div className="space-y-3">
-                          <h4 className="font-medium">Sample Items for {selectedMeal}:</h4>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <Label className="text-sm text-green-600 flex items-center gap-1">
-                                <Leaf className="w-3 h-3" /> Veg
+                          <Label className="text-sm font-semibold text-foreground">
+                            Select Day & Meal Type
+                          </Label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                Day
                               </Label>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {SAMPLE_MEALS[selectedMeal]?.veg.map((item) => (
-                                  <Badge
-                                    key={item}
-                                    variant="outline"
-                                    className="cursor-pointer hover:bg-green-50"
-                                    onClick={() => {
-                                      setNewMealItem(item);
-                                      setMealType('veg');
-                                    }}
-                                  >
-                                    {item}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                            
-                            {isNonVegAllowed && (
-                              <div>
-                                <Label className="text-sm text-red-600 flex items-center gap-1">
-                                  <Beef className="w-3 h-3" /> Non-Veg
-                                </Label>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {SAMPLE_MEALS[selectedMeal]?.nonVeg.map((item) => (
-                                    <Badge
-                                      key={item}
-                                      variant="outline"
-                                      className="cursor-pointer hover:bg-red-50"
-                                      onClick={() => {
-                                        setNewMealItem(item);
-                                        setMealType('nonVeg');
-                                      }}
-                                    >
-                                      {item}
-                                    </Badge>
+                              <Select value={selectedDay} onValueChange={setSelectedDay}>
+                                <SelectTrigger className="h-11">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {DAYS_OF_WEEK.map((day) => (
+                                    <SelectItem key={day} value={day}>{day}</SelectItem>
                                   ))}
-                                </div>
-                              </div>
-                            )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Utensils className="w-3 h-3" />
+                                Meal
+                              </Label>
+                              <Select value={selectedMeal} onValueChange={setSelectedMeal}>
+                                <SelectTrigger className="h-11">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {form.watch('foodMess.meals')?.includes('Breakfast') && (
+                                    <SelectItem value="breakfast">
+                                      <div className="flex items-center gap-2">
+                                        <Coffee className="w-4 h-4" />
+                                        Breakfast
+                                      </div>
+                                    </SelectItem>
+                                  )}
+                                  {form.watch('foodMess.meals')?.includes('Lunch') && (
+                                    <SelectItem value="lunch">
+                                      <div className="flex items-center gap-2">
+                                        <Utensils className="w-4 h-4" />
+                                        Lunch
+                                      </div>
+                                    </SelectItem>
+                                  )}
+                                  {form.watch('foodMess.meals')?.includes('Dinner') && (
+                                    <SelectItem value="dinner">
+                                      <div className="flex items-center gap-2">
+                                        <ChefHat className="w-4 h-4" />
+                                        Dinner
+                                      </div>
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
                         </div>
+
+                        <Separator />
+
+                        {/* Add Custom Item */}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-semibold text-foreground">
+                            Add Custom Item
+                          </Label>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Input
+                              value={newMealItem}
+                              onChange={(e) => setNewMealItem(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && newMealItem.trim()) {
+                                  addMealItem(selectedDayIndexFromName, selectedMeal, mealType);
+                                }
+                              }}
+                              placeholder="Type a meal item..."
+                              className="flex-1 h-11"
+                            />
+                            <div className="flex gap-2">
+                              <Select value={mealType} onValueChange={setMealType}>
+                                <SelectTrigger className="w-[130px] h-11">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="veg">
+                                    <div className="flex items-center gap-2">
+                                      <Leaf className="w-4 h-4 text-green-600" />
+                                      Veg
+                                    </div>
+                                  </SelectItem>
+                                  {isNonVegAllowed && (
+                                    <SelectItem value="nonVeg">
+                                      <div className="flex items-center gap-2">
+                                        <Beef className="w-4 h-4 text-red-600" />
+                                        Non-Veg
+                                      </div>
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                type="button"
+                                onClick={() => addMealItem(selectedDayIndexFromName, selectedMeal, mealType)}
+                                disabled={!newMealItem.trim()}
+                                className="h-11 bg-orange-600 hover:bg-orange-700"
+                              >
+                                <Plus className="w-4 h-4 mr-1" />
+                                Add
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            💡 Press Enter to quickly add items
+                          </p>
+                        </div>
+
+                        {/* Current Items Preview */}
+                        {form.watch(`foodMess.weeklyMenu.${selectedDayIndexFromName}.${selectedMeal}`) && (
+                          <>
+                            <Separator />
+                            <div className="space-y-3">
+                              <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                                <Check className="w-4 h-4 text-green-600" />
+                                Current {selectedDay} {selectedMeal.charAt(0).toUpperCase() + selectedMeal.slice(1)} Items
+                              </Label>
+                              <div className="space-y-2">
+                                {form.watch(`foodMess.weeklyMenu.${selectedDayIndexFromName}.${selectedMeal}.veg`)?.length > 0 && (
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {form.watch(`foodMess.weeklyMenu.${selectedDayIndexFromName}.${selectedMeal}.veg`).map((item, idx) => (
+                                      <Badge key={idx} className="bg-green-100 text-green-800 border-green-300">
+                                        {item}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                                {form.watch(`foodMess.weeklyMenu.${selectedDayIndexFromName}.${selectedMeal}.nonVeg`)?.length > 0 && (
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {form.watch(`foodMess.weeklyMenu.${selectedDayIndexFromName}.${selectedMeal}.nonVeg`).map((item, idx) => (
+                                      <Badge key={idx} className="bg-red-100 text-red-800 border-red-300">
+                                        {item}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                                {!form.watch(`foodMess.weeklyMenu.${selectedDayIndexFromName}.${selectedMeal}.veg`)?.length && 
+                                 !form.watch(`foodMess.weeklyMenu.${selectedDayIndexFromName}.${selectedMeal}.nonVeg`)?.length && (
+                                  <p className="text-xs text-muted-foreground italic text-center py-4 border-2 border-dashed rounded-lg">
+                                    No items added yet. Start by selecting items above!
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
-                    </DialogContent>
-                  </Dialog>
+                    </SheetContent>
+                  </Sheet>
               </div>
               
               {/* Scrollable Carousel */}
@@ -629,7 +702,12 @@ export default function FoodMessPgStep() {
                       </div>
 
                       <div className="space-y-3 md:space-y-4">
-                        {['breakfast', 'lunch', 'dinner'].map((mealTime) => (
+                        {['breakfast', 'lunch', 'dinner'].map((mealTime) => {
+                          const selectedMeals = form.watch('foodMess.meals') || [];
+                          const mealTypeMap = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' };
+                          if (!selectedMeals.includes(mealTypeMap[mealTime])) return null;
+                          
+                          return (
                           <Card key={mealTime} className="border hover:border-orange-200 transition-colors">
                             <CardHeader className="pb-2 md:pb-3">
                               <div className="flex items-center justify-between">
@@ -708,7 +786,8 @@ export default function FoodMessPgStep() {
                               )}
                             </CardContent>
                           </Card>
-                        ))}
+                          );
+                        })}
                       </div>
                     </motion.div>
                   );
