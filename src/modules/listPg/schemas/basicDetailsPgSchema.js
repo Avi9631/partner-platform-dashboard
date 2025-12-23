@@ -15,7 +15,7 @@ const basicDetailsPgSchema = z.object({
 
   
   // Gender allowed
-  genderAllowed: z.enum(['Gents', 'Ladies', 'Gents / Ladies / Unisex'], {
+  genderAllowed: z.enum(['Gents', 'Ladies', 'Unisex'], {
     required_error: 'Please select allowed gender',
   }),
   

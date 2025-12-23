@@ -158,7 +158,7 @@ export default function BasicDetailsPgStep() {
                       Gender Allowed <span className="text-red-500">*</span>
                     </FieldLabel>
                     <div className="grid grid-cols-3 gap-2">
-                      {["Gents", "Ladies", "Gents / Ladies / Unisex"].map(
+                      {["Gents", "Ladies", "Unisex"].map(
                         (type) => (
                           <button
                             key={type}
@@ -170,7 +170,7 @@ export default function BasicDetailsPgStep() {
                                 : "border-muted hover:border-orange-500/50 hover:scale-105"
                             }`}
                           >
-                            {type === "Gents / Ladies / Unisex"
+                            {type === "Unisex"
                               ? "Unisex"
                               : type}
                           </button>
