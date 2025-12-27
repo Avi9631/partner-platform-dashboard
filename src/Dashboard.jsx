@@ -8,15 +8,15 @@ function Dashboard() {
   const navigate = useNavigate();
 
   const managementCards = [
-    // {
-    //   title: "Manage Properties",
-    //   description: "Add, edit, and manage property listings",
-    //   icon: Building2,
-    //   path: "/list-property-v2",
-    //   color: "text-orange-600",
-    //   bgColor: "bg-orange-50",
-    //   hoverBg: "from-orange-500 to-orange-600",
-    // },
+    {
+      title: "Manage Properties",
+      description: "Add, edit, and manage property listings",
+      icon: Building2,
+      path: "/list-property-v2",
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+      hoverBg: "from-orange-500 to-orange-600",
+    },
     {
       title: "Manage Projects",
       description: "Organize and oversee development projects",
