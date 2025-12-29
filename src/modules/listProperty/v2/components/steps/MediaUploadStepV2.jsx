@@ -14,6 +14,8 @@ import {
   Check,
   ChevronsUpDown,
   Tags,
+  Upload,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,7 @@ import { cn } from "@/lib/utils";
 import { usePropertyFormV2 } from "../../context/PropertyFormContextV2";
 import SaveAndContinueFooter from "../SaveAndContinueFooter";
 import ProTipV2 from "../shared/ProTipV2";
+import { uploadMultipleFiles } from "@/lib/uploadUtils";
 
 // Maximum file sizes
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -82,6 +85,8 @@ export default function MediaUploadStepV2() {
   // Unified media list (both images and videos)
   const [mediaList, setMediaList] = useState(formData?.mediaData || []);
   const [uploadErrors, setUploadErrors] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
 
   // Track all categories (default + user-added)
   const [allCategories, setAllCategories] = useState(() => {
@@ -112,14 +117,36 @@ export default function MediaUploadStepV2() {
   // Validation: At least one image is required
   const isValid = imageCount > 0;
 
+  // Helper function to check if file is duplicate
+  const isDuplicateFile = useCallback(
+    (newFile) => {
+      return mediaList.some((media) => {
+        if (!media.file) return false;
+        return (
+          media.file.name === newFile.name &&
+          media.file.size === newFile.size &&
+          media.file.lastModified === newFile.lastModified
+        );
+      });
+    },
+    [mediaList]
+  );
+
   // Handle unified media upload (images and videos)
   const handleMediaUpload = useCallback(
-    (e) => {
+    async (e) => {
       const files = Array.from(e.target.files || []);
       const newErrors = [];
-      const validMedia = [];
+      const validFiles = [];
 
+      // Step 1: Validate files
       files.forEach((file) => {
+        // Check for duplicate
+        if (isDuplicateFile(file)) {
+          newErrors.push(`"${file.name}" is already added`);
+          return;
+        }
+
         // Determine if it's an image or video
         const isImage = ACCEPTED_IMAGE_TYPES.includes(file.type);
         const isVideo = ACCEPTED_VIDEO_TYPES.includes(file.type);
@@ -127,7 +154,7 @@ export default function MediaUploadStepV2() {
         // Validate file type
         if (!isImage && !isVideo) {
           newErrors.push(
-            `${file.name}: Invalid file type. Only images (JPEG, PNG, WebP) and videos (MP4, WebM, MOV) are allowed.`
+            `"${file.name}" has unsupported format. Please upload images (JPEG, PNG, WebP) or videos (MP4, WebM, MOV).`
           );
           return;
         }
@@ -138,23 +165,12 @@ export default function MediaUploadStepV2() {
 
         if (file.size > maxSize) {
           newErrors.push(
-            `${file.name}: File too large. Maximum size is ${maxSizeText}.`
+            `"${file.name}" exceeds the maximum size of ${maxSizeText}.`
           );
           return;
         }
 
-        // Create preview URL
-        const previewUrl = URL.createObjectURL(file);
-
-        validMedia.push({
-          id: `media-${Date.now()}-${Math.random()}`,
-          file,
-          preview: previewUrl,
-          title: "",
-          category: "",
-          description: "",
-          type: isImage ? "image" : "video",
-        });
+        validFiles.push({ file, isImage, isVideo });
       });
 
       if (newErrors.length > 0) {
@@ -162,16 +178,107 @@ export default function MediaUploadStepV2() {
         setTimeout(() => setUploadErrors([]), 5000);
       }
 
-      if (validMedia.length > 0) {
-        const updatedMedia = [...mediaList, ...validMedia];
-        setMediaList(updatedMedia);
+      if (validFiles.length === 0) {
+        e.target.value = "";
+        return;
+      }
+
+      // Step 2: Create temporary media items with previews and uploading status
+      const tempMediaItems = validFiles.map(({ file, isImage, isVideo }) => ({
+        id: `media-${Date.now()}-${Math.random()}`,
+        file,
+        preview: URL.createObjectURL(file),
+        title: "",
+        category: "",
+        description: "",
+        type: isImage ? "image" : "video",
+        uploading: true,
+        uploadProgress: 0,
+        url: null,
+        key: null,
+      }));
+
+      // Add to media list immediately to show uploading state
+      const updatedMedia = [...mediaList, ...tempMediaItems];
+      setMediaList(updatedMedia);
+
+      // Step 3: Upload files to S3
+      setIsUploading(true);
+
+      try {
+        const filesToUpload = validFiles.map((vf) => vf.file);
+        const folder = "listing-drafts/images";
+
+        // Upload with progress tracking
+        const uploadResults = await uploadMultipleFiles(
+          filesToUpload,
+          folder,
+          (index, progress) => {
+            const mediaId = tempMediaItems[index].id;
+            setUploadProgress((prev) => ({
+              ...prev,
+              [mediaId]: progress,
+            }));
+          }
+        );
+
+        // Step 4: Update media items with upload results
+        setMediaList((currentMedia) => {
+          return currentMedia.map((media) => {
+            const tempIndex = tempMediaItems.findIndex((t) => t.id === media.id);
+            if (tempIndex === -1) return media;
+
+            const result = uploadResults[tempIndex];
+            if (result.success) {
+              return {
+                ...media,
+                uploading: false,
+                url: result.url,
+                key: result.key,
+              };
+            } else {
+              // Upload failed - mark as failed
+              return {
+                ...media,
+                uploading: false,
+                uploadFailed: true,
+                uploadError: result.error,
+              };
+            }
+          });
+        });
+
+        // Update form value
         setValue("mediaData", updatedMedia, { shouldValidate: true });
+
+        // Check for failed uploads
+        const failedUploads = uploadResults.filter((r) => !r.success);
+        if (failedUploads.length > 0) {
+          const failureErrors = failedUploads.map(
+            (f) => `Failed to upload "${f.file.name}": ${f.error}`
+          );
+          setUploadErrors(failureErrors);
+          setTimeout(() => setUploadErrors([]), 5000);
+        }
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadErrors([`Upload failed: ${error.message}`]);
+        setTimeout(() => setUploadErrors([]), 5000);
+
+        // Remove failed items from media list
+        setMediaList((currentMedia) =>
+          currentMedia.filter(
+            (media) => !tempMediaItems.some((t) => t.id === media.id)
+          )
+        );
+      } finally {
+        setIsUploading(false);
       }
 
       // Reset input
       e.target.value = "";
     },
-    [mediaList, setValue]
+    [mediaList, setValue, isDuplicateFile]
   );
 
   // Update media metadata
@@ -209,8 +316,36 @@ export default function MediaUploadStepV2() {
 
   // Handle form submission
   const handleContinue = () => {
+    // Validate all uploads are complete
+    const hasUploadingItems = mediaList.some((media) => media.uploading);
+    if (hasUploadingItems) {
+      setUploadErrors(["Please wait for all uploads to complete before continuing"]);
+      setTimeout(() => setUploadErrors([]), 5000);
+      return;
+    }
+
+    // Validate all uploads succeeded
+    const hasFailedItems = mediaList.some((media) => media.uploadFailed);
+    if (hasFailedItems) {
+      setUploadErrors(["Some files failed to upload. Please remove them and try again."]);
+      setTimeout(() => setUploadErrors([]), 5000);
+      return;
+    }
+
+    // Clean media data: remove File objects and preview URLs before sending to backend
+    // Keep only the metadata (url, key, title, category, description, type, docType)
+    const cleanedMediaData = mediaList.map((media) => ({
+      url: media.url,
+      key: media.key,
+      title: media.title || '',
+      category: media.category || '',
+      description: media.description || '',
+      type: media.type,
+      docType: media.docType || '',
+    }));
+
     const data = {
-      mediaData: mediaList,
+      mediaData: cleanedMediaData,
     };
     saveAndContinue(data);
   };
@@ -298,9 +433,19 @@ export default function MediaUploadStepV2() {
                   onClick={() =>
                     document.getElementById("media-upload").click()
                   }
+                  disabled={isUploading}
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Images or Videos
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Images or Videos
+                    </>
+                  )}
                 </Button>
               </label>
               <div className="flex items-center gap-2 flex-wrap">
@@ -362,6 +507,7 @@ export default function MediaUploadStepV2() {
                     allCategories={allCategories}
                     onUpdateMetadata={updateMediaMetadata}
                     onRemove={removeMedia}
+                    uploadProgress={uploadProgress[media.id]}
                   />
                 ))}
               </div>
@@ -386,11 +532,12 @@ export default function MediaUploadStepV2() {
 /**
  * Media Card Component - Displays individual image/video with metadata inputs
  */
-function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
+function MediaCard({ media, allCategories, onUpdateMetadata, onRemove, uploadProgress }) {
   const [showPreview, setShowPreview] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState("");
   const isVideo = media.type === "video";
+  const isUploading = media.uploading || false;
 
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
@@ -429,26 +576,46 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
         <div className="relative w-full sm:w-28 h-28 sm:h-28 flex-shrink-0 rounded-lg overflow-hidden">
           {isVideo ? (
             <video
-              src={media.preview}
+              src={media.preview || media.url}
               className="w-full h-full object-cover"
               controls={false}
             />
           ) : (
             <img
-              src={media.preview}
+              src={media.preview || media.url}
               alt={media.title || "Property media"}
               className="w-full h-full object-cover"
             />
           )}
 
+          {/* Uploading Overlay */}
+          {isUploading && (
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2">
+              <Loader2 className="w-6 h-6 text-white animate-spin" />
+              <div className="w-20 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-orange-500 transition-all duration-300"
+                  style={{ width: `${uploadProgress || 0}%` }}
+                />
+              </div>
+              <p className="text-white text-xs font-medium">
+                {uploadProgress || 0}%
+              </p>
+            </div>
+          )}
+
           {/* Overlay Actions */}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-1.5">
+          <div className={cn(
+            "absolute inset-0 bg-black/60 opacity-0 transition-all duration-200 flex items-center justify-center gap-1.5",
+            !isUploading && "group-hover:opacity-100"
+          )}>
             <Button
               type="button"
               size="sm"
               variant="secondary"
               className="h-7 w-7 sm:w-auto sm:px-2.5 p-0 sm:p-2"
               onClick={() => setShowPreview(true)}
+              disabled={isUploading}
             >
               <Eye className="w-3.5 h-3.5" />
               <span className="hidden sm:inline ml-1 text-xs">View</span>
@@ -459,6 +626,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
               variant="destructive"
               className="h-7 w-7 sm:w-auto sm:px-2.5 p-0 sm:p-2"
               onClick={() => onRemove(media.id)}
+              disabled={isUploading}
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span className="hidden sm:inline ml-1 text-xs">Delete</span>
@@ -471,16 +639,30 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
               variant="secondary"
               className={cn(
                 "backdrop-blur-md text-white text-[10px] h-5 px-2 font-medium shadow-sm",
-                isVideo ? "bg-purple-600/90" : "bg-blue-600/90"
+                isUploading
+                  ? "bg-orange-600/90"
+                  : isVideo
+                  ? "bg-purple-600/90"
+                  : "bg-blue-600/90"
               )}
             >
-              {isVideo ? "Video" : "Image"}
+              {isUploading ? "Uploading" : isVideo ? "Video" : "Image"}
             </Badge>
           </div>
         </div>
 
         {/* Metadata Inputs */}
         <div className="flex-1 min-w-0 space-y-2.5">
+          {/* Uploading Banner */}
+          {isUploading && (
+            <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-md px-3 py-2 mb-2">
+              <p className="text-xs text-orange-700 dark:text-orange-400 font-medium flex items-center gap-2">
+                <Upload className="w-3.5 h-3.5" />
+                Uploading to cloud storage...
+              </p>
+            </div>
+          )}
+          
           {/* Form Fields Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {/* Title Input - Full Width */}
@@ -495,6 +677,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
                   onUpdateMetadata(media.id, "title", e.target.value)
                 }
                 className="h-8 text-xs"
+                disabled={isUploading}
               />
             </div>
 
@@ -509,7 +692,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
                   onUpdateMetadata(media.id, "docType", value)
                 }
               >
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8 text-xs" disabled={isUploading}>
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -535,6 +718,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
                       "w-full justify-between h-8 text-xs font-normal",
                       !media.category && "text-muted-foreground"
                     )}
+                    disabled={isUploading}
                   >
                     <span className="truncate">
                       {media.category || "Select..."}
@@ -620,6 +804,7 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
                 }
                 className="text-xs min-h-[52px] resize-none"
                 rows={2}
+                disabled={isUploading}
               />
             </div>
           </div>
@@ -638,13 +823,13 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove }) {
           >
             {isVideo ? (
               <video
-                src={media.preview}
+                src={media.preview || media.url}
                 controls
                 className="w-full h-full rounded-lg"
               />
             ) : (
               <img
-                src={media.preview}
+                src={media.preview || media.url}
                 alt={media.title}
                 className="w-full h-full object-contain rounded-lg"
               />

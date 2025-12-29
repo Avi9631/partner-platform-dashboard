@@ -20,34 +20,75 @@ import {
   Ruler,
   TreePine,
   CheckSquare,
+  AlertCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
+import { draftApi } from '@/services/draftService';
+import { useToast } from '@/components/hooks/use-toast';
 
 export default function ReviewAndSubmitV2() {
-  const { previousStep, propertyType, isBuildingType, formData } = usePropertyFormV2();
+  const { previousStep, propertyType, isBuildingType, formData, draftId } = usePropertyFormV2();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState(null);
+  const { toast } = useToast();
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-    
-    // Log the complete payload
-    const payload = {
-      propertyType,
-      ...formData
-    };
-    console.log('=== PROPERTY LISTING PAYLOAD ===');
-    console.log(JSON.stringify(payload, null, 2));
-    console.log('================================');
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      
+      // Check if draftId exists
+      if (!draftId) {
+        setError('No draft found. Please save your form data first.');
+        toast({
+          title: 'Error',
+          description: 'No draft found. Please save your form data first.',
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Log the complete payload
+      const payload = {
+        propertyType,
+        ...formData
+      };
+      console.log('=== PUBLISHING PROPERTY LISTING ===');
+      console.log('Draft ID:', draftId);
+      console.log('Payload:', JSON.stringify(payload, null, 2));
+      console.log('====================================');
+      
+      // Call the publish listing API
+      const response = await draftApi.submitListingDraft(draftId);
+      
+      if (response.success) {
+        console.log('✅ Property listing published successfully:', response);
+        toast({
+          title: 'Success',
+          description: 'Your property listing has been published successfully!',
+        });
+        setIsSubmitted(true);
+      } else {
+        throw new Error(response.message || 'Failed to publish listing');
+      }
+    } catch (error) {
+      console.error('❌ Error publishing listing:', error);
+      const errorMessage = error.message || 'Failed to publish property listing. Please try again.';
+      setError(errorMessage);
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -508,47 +549,57 @@ export default function ReviewAndSubmitV2() {
         transition={{ delay: 0.5 }}
         className="fixed bottom-0 left-72 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t-2 border-green-200 dark:border-green-900 p-6 z-50 shadow-lg"
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={previousStep}
-            disabled={isSubmitting}
-            className="px-8 py-6 text-base border-2"
-          >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+        <div className="max-w-7xl mx-auto">
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-900 rounded-lg flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
+          
+          <div className="flex justify-between items-center">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={previousStep}
+              disabled={isSubmitting}
+              className="px-8 py-6 text-base border-2"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 17l-5-5m0 0l5-5m-5 5h12"
-              />
-            </svg>
-            Back
-          </Button>
-          <Button
-            size="lg"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="px-16 py-6 text-base font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/30"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="w-5 h-5 mr-2" />
-                Submit Listing
-              </>
-            )}
-          </Button>
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 17l-5-5m0 0l5-5m-5 5h12"
+                />
+              </svg>
+              Back
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleSubmit}
+              disabled={isSubmitting || !draftId}
+              className="px-16 py-6 text-base font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/30"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Publishing...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-5 h-5 mr-2" />
+                  Publish Listing
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </motion.div>
     </div>

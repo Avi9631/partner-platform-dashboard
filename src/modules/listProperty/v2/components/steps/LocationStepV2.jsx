@@ -56,8 +56,7 @@ export default function LocationStepV2() {
       facing: formData?.facing || '',
       view: formData?.view || '',
       propertyPosition: formData?.propertyPosition || '',
-      overlooking: formData?.overlooking || [],
-    },
+     },
     reValidateMode: 'onChange',
   });
 
@@ -208,62 +207,10 @@ export default function LocationStepV2() {
                 </p>
               </motion.div>
 
-              {/* Overlooking */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45 }}
-                className="space-y-3"
-              >
-                <Label className="text-sm font-semibold flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-orange-600" />
-                  Property Overlooks
-                </Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {[
-                    { value: 'garden', label: 'Garden', icon: '🌳' },
-                    { value: 'park', label: 'Park', icon: '🏞️' },
-                    { value: 'main_road', label: 'Main Road', icon: '🛣️' },
-                    { value: 'swimming_pool', label: 'Swimming Pool', icon: '🏊' },
-                    { value: 'club_house', label: 'Club House', icon: '🏛️' },
-                    { value: 'other_buildings', label: 'Other Buildings', icon: '🏢' },
-                  ].map((item) => {
-                    const overlooking = watch('overlooking') || [];
-                    return (
-                      <div
-                        key={item.value}
-                        className="flex items-center space-x-2 p-3 border-2 rounded-lg hover:border-orange-500 transition-colors cursor-pointer"
-                        onClick={() => {
-                          const updated = overlooking.includes(item.value)
-                            ? overlooking.filter((v) => v !== item.value)
-                            : [...overlooking, item.value];
-                          setValue('overlooking', updated, { shouldValidate: true });
-                        }}
-                      >
-                        <Checkbox
-                          checked={overlooking.includes(item.value)}
-                          onCheckedChange={() => {
-                            const updated = overlooking.includes(item.value)
-                              ? overlooking.filter((v) => v !== item.value)
-                              : [...overlooking, item.value];
-                            setValue('overlooking', updated, { shouldValidate: true });
-                          }}
-                        />
-                        <span className="text-lg">{item.icon}</span>
-                        <label className="text-xs font-medium cursor-pointer flex-1">
-                          {item.label}
-                        </label>
-                      </div>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Select all views visible from the property
-                </p>
-              </motion.div>
+     
 
               {/* Info Box */}
-              <motion.div
+              {/* <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
@@ -272,7 +219,7 @@ export default function LocationStepV2() {
                 <p className="text-sm text-blue-900 dark:text-blue-100">
                   <span className="font-semibold">💡 Tip:</span> East and North-facing properties are often preferred for better natural light and ventilation.
                 </p>
-              </motion.div>
+              </motion.div> */}
             </div>
           </div>
         </motion.div>

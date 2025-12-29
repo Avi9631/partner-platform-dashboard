@@ -19,17 +19,7 @@ export const floorDetailsSchema = z.object({
   unitNumber: z.string().optional(),
   isUnitNumberPrivate: z.boolean().optional().default(false),
   
-  // Existing fields
-  liftAvailable: z.boolean().default(false),
   
-  // NEW: Phase 1 enhancements
-  fireExitProximity: z.enum([
-    'very_near',     // Within 10m
-    'near',          // Within 50m
-    'moderate',      // Within 100m
-    'far',           // Beyond 100m
-    'not_available'
-  ]).optional(),
   
   hasEmergencyExit: z.boolean().default(false),
   

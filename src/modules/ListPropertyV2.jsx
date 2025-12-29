@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   PlusCircle, MapPin, Home, Calendar, DollarSign, 
@@ -7,7 +8,6 @@ import {
   Clock, CheckCircle, XCircle, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PropertyFormSheetV2 } from '@/modules/listProperty/v2';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -21,14 +21,12 @@ import { draftApi } from '@/services/draftService';
 import { useToast } from '@/components/hooks/use-toast';
 
 export default function ListPropertyV2Page() {
-  const [showForm, setShowForm] = useState(false);
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [currentDraftId, setCurrentDraftId] = useState(null);
   const [isCreatingDraft, setIsCreatingDraft] = useState(false);
-  const [editingDraft, setEditingDraft] = useState(null);
   const { toast } = useToast();
 
   // Fetch listing drafts from API
@@ -75,30 +73,16 @@ export default function ListPropertyV2Page() {
     }
   }, [toast]);
 
-  const handleFormClose = (isOpen) => {
-    setShowForm(isOpen);
-    if (!isOpen) {
-      // Reset draft ID, editing state and refresh listings when form closes
-      setCurrentDraftId(null);
-      setEditingDraft(null);
-      fetchListings();
-    }
-  };
-
   const handleListNewProperty = async () => {
     try {
       setIsCreatingDraft(true);
-      const response = await draftApi.createListingDraft({
-        status: 'draft',
-        formData: {},
-      });
+      const response = await draftApi.createListingDraft("PROPERTY");
 
       console.log('Create draft response:', response);
       
       if (response.success && response.data?.draftId) {
-        setCurrentDraftId(response.data.draftId);
-        setEditingDraft(null); // Clear any editing state
-        setShowForm(true);
+        // Navigate to the form page
+        navigate(`/list-property/${response.data.draftId}`);
       } else {
         toast({
           title: 'Error',
@@ -119,35 +103,8 @@ export default function ListPropertyV2Page() {
   };
 
   const handleEditDraft = async (draftId) => {
-    try {
-      setIsCreatingDraft(true);
-      const response = await draftApi.getListingDraftById(draftId);
-      
-      if (response.success && response.data) {
-        setCurrentDraftId(draftId);
-        setEditingDraft(response.data);
-        setShowForm(true);
-        toast({
-          title: 'Draft Loaded',
-          description: 'You can now continue editing your property listing.',
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to load draft. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Failed to load draft:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to load draft. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsCreatingDraft(false);
-    }
+    // Navigate to form page with draft ID
+    navigate(`/list-property/new?draftId=${draftId}`);
   };
 
   const handleDeleteDraft = async (draftId) => {
@@ -318,13 +275,6 @@ export default function ListPropertyV2Page() {
           </div>
         )}
       </div>
-
-      <PropertyFormSheetV2 
-        open={showForm} 
-        onOpenChange={handleFormClose} 
-        initialDraftId={currentDraftId}
-        editingDraft={editingDraft}
-      />
     </div>
   );
 }

@@ -10,7 +10,9 @@ import {
   ChevronsUpDown,
   Tags,
   Eye,
-  X
+  X,
+  Loader2,
+  Upload
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -43,6 +45,7 @@ import { cn } from '@/lib/utils';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import ProTipV2 from '../shared/ProTipV2';
+import { uploadMultipleFiles } from '@/lib/uploadUtils';
 
 // Maximum file size
 const MAX_PLAN_SIZE = 10 * 1024 * 1024; // 10MB
@@ -82,6 +85,8 @@ export default function PropertyPlanUploadStepV2() {
   
   const [propertyPlans, setPropertyPlans] = useState(formData?.propertyPlans || []);
   const [uploadErrors, setUploadErrors] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
   
   // Track all categories (default + user-added)
   const [allCategories, setAllCategories] = useState(() => {
@@ -118,11 +123,12 @@ export default function PropertyPlanUploadStepV2() {
   };
 
   // Handle property plan upload
-  const handlePlanUpload = useCallback((e) => {
+  const handlePlanUpload = useCallback(async (e) => {
     const files = Array.from(e.target.files || []);
     const newErrors = [];
-    const validPlans = [];
+    const validFiles = [];
 
+    // Step 1: Validate files
     files.forEach((file) => {
       // Validate file type
       if (!ACCEPTED_PLAN_TYPES.includes(file.type)) {
@@ -136,11 +142,25 @@ export default function PropertyPlanUploadStepV2() {
         return;
       }
 
-      // Create preview URL for images
+      validFiles.push(file);
+    });
+
+    if (newErrors.length > 0) {
+      setUploadErrors(newErrors);
+      setTimeout(() => setUploadErrors([]), 5000);
+    }
+
+    if (validFiles.length === 0) {
+      e.target.value = '';
+      return;
+    }
+
+    // Step 2: Create temporary plan items with uploading status
+    const tempPlanItems = validFiles.map((file) => {
       const isPDF = file.type === 'application/pdf';
       const previewUrl = isPDF ? null : URL.createObjectURL(file);
-
-      validPlans.push({
+      
+      return {
         id: `plan-${Date.now()}-${Math.random()}`,
         file,
         fileName: file.name,
@@ -151,19 +171,86 @@ export default function PropertyPlanUploadStepV2() {
         title: '',
         description: '',
         docType: '',
+        uploading: true,
+        uploadProgress: 0,
+        url: null,
+        key: null,
         uploadedAt: new Date().toISOString(),
-      });
+      };
     });
 
-    if (newErrors.length > 0) {
-      setUploadErrors(newErrors);
-      setTimeout(() => setUploadErrors([]), 5000);
-    }
+    // Add to plans list immediately to show uploading state
+    const updatedPlans = [...propertyPlans, ...tempPlanItems];
+    setPropertyPlans(updatedPlans);
 
-    if (validPlans.length > 0) {
-      const updatedPlans = [...propertyPlans, ...validPlans];
-      setPropertyPlans(updatedPlans);
+    // Step 3: Upload files to S3
+    setIsUploading(true);
+    try {
+      const folder = 'listing-drafts/plans';
+
+      const uploadResults = await uploadMultipleFiles(
+        validFiles,
+        folder,
+        (fileIndex, progress) => {
+          const planId = tempPlanItems[fileIndex].id;
+          setUploadProgress((prev) => ({
+            ...prev,
+            [planId]: progress,
+          }));
+        }
+      );
+
+      // Step 4: Update plan items with upload results
+      setPropertyPlans((currentPlans) => {
+        return currentPlans.map((plan) => {
+          const tempIndex = tempPlanItems.findIndex((t) => t.id === plan.id);
+          if (tempIndex === -1) return plan;
+
+          const result = uploadResults[tempIndex];
+          if (result.success) {
+            return {
+              ...plan,
+              uploading: false,
+              url: result.url,
+              key: result.key,
+              file: null, // Remove file object after upload
+            };
+          } else {
+            return {
+              ...plan,
+              uploading: false,
+              uploadFailed: true,
+              uploadError: result.error,
+            };
+          }
+        });
+      });
+
       setValue('propertyPlans', updatedPlans, { shouldValidate: true });
+
+      // Check for failed uploads
+      const failedUploads = uploadResults.filter((r) => !r.success);
+      if (failedUploads.length > 0) {
+        const failureErrors = failedUploads.map(
+          (f) => `Failed to upload "${f.file.name}": ${f.error}`
+        );
+        setUploadErrors(failureErrors);
+        setTimeout(() => setUploadErrors([]), 5000);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadErrors([`Upload failed: ${error.message}`]);
+      setTimeout(() => setUploadErrors([]), 5000);
+
+      // Remove failed items
+      setPropertyPlans((currentPlans) =>
+        currentPlans.filter(
+          (plan) => !tempPlanItems.some((t) => t.id === plan.id)
+        )
+      );
+    } finally {
+      setIsUploading(false);
+      setUploadProgress({});
     }
 
     // Reset input
@@ -199,8 +286,39 @@ export default function PropertyPlanUploadStepV2() {
 
   // Handle form submission
   const handleContinue = () => {
+    // Validate all uploads are complete
+    const hasUploadingItems = propertyPlans.some((plan) => plan.uploading);
+    if (hasUploadingItems) {
+      setUploadErrors(['Please wait for all uploads to complete before continuing']);
+      setTimeout(() => setUploadErrors([]), 5000);
+      return;
+    }
+
+    // Validate all uploads succeeded
+    const hasFailedItems = propertyPlans.some((plan) => plan.uploadFailed);
+    if (hasFailedItems) {
+      setUploadErrors(['Some files failed to upload. Please remove them and try again.']);
+      setTimeout(() => setUploadErrors([]), 5000);
+      return;
+    }
+
+    // Clean property plan data: remove File objects and preview URLs before sending to backend
+    // Keep only the metadata (url, key, title, category, description, docType, fileName, fileSize, fileType, uploadedAt)
+    const cleanedPropertyPlans = propertyPlans.map((plan) => ({
+      url: plan.url,
+      key: plan.key,
+      title: plan.title || '',
+      category: plan.category || '',
+      description: plan.description || '',
+      docType: plan.docType || '',
+      fileName: plan.fileName,
+      fileSize: plan.fileSize,
+      fileType: plan.fileType,
+      uploadedAt: plan.uploadedAt,
+    }));
+
     const data = {
-      propertyPlans,
+      propertyPlans: cleanedPropertyPlans,
     };
     saveAndContinue(data);
   };
@@ -278,9 +396,19 @@ export default function PropertyPlanUploadStepV2() {
                   variant="outline"
                   className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950"
                   onClick={() => document.getElementById('plan-upload').click()}
+                  disabled={isUploading}
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Property Plans
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Property Plans
+                    </>
+                  )}
                 </Button>
               </label>
               <div className="flex items-center gap-2 flex-wrap">
@@ -325,6 +453,7 @@ export default function PropertyPlanUploadStepV2() {
                     onUpdateMetadata={updatePlanMetadata}
                     onRemove={removePlan}
                     formatFileSize={formatFileSize}
+                    uploadProgress={uploadProgress[plan.id]}
                   />
                 ))}
               </div>
@@ -349,10 +478,11 @@ export default function PropertyPlanUploadStepV2() {
 /**
  * Property Plan Card Component - Displays individual plan with metadata inputs
  */
-function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, formatFileSize }) {
+function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, formatFileSize, uploadProgress }) {
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const isUploading = plan.uploading || false;
   
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
@@ -397,8 +527,27 @@ function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, for
             </div>
           )}
           
+          {/* Upload Progress Overlay */}
+          {isUploading && (
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2">
+              <Loader2 className="w-6 h-6 text-white animate-spin" />
+              <div className="w-20 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-orange-500 transition-all duration-300"
+                  style={{ width: `${uploadProgress || 0}%` }}
+                />
+              </div>
+              <p className="text-white text-xs font-medium">
+                {uploadProgress || 0}%
+              </p>
+            </div>
+          )}
+          
           {/* Overlay Actions */}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-1.5">
+          <div className={cn(
+            "absolute inset-0 bg-black/60 opacity-0 transition-all duration-200 flex items-center justify-center gap-1.5",
+            !isUploading && "group-hover:opacity-100"
+          )}>
             {isImage && plan.preview && (
               <Button
                 type="button"
@@ -406,6 +555,7 @@ function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, for
                 variant="secondary"
                 className="h-7 w-7 sm:w-auto sm:px-2.5 p-0 sm:p-2"
                 onClick={() => setShowPreview(true)}
+                disabled={isUploading}
               >
                 <Eye className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline ml-1 text-xs">View</span>
@@ -417,6 +567,7 @@ function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, for
               variant="destructive"
               className="h-7 w-7 sm:w-auto sm:px-2.5 p-0 sm:p-2"
               onClick={() => onRemove(plan.id)}
+              disabled={isUploading}
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span className="hidden sm:inline ml-1 text-xs">Delete</span>
@@ -427,15 +578,28 @@ function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, for
           <div className="absolute top-1.5 left-1.5">
             <Badge 
               variant="secondary" 
-              className="backdrop-blur-md bg-orange-600/90 text-white text-[10px] h-5 px-2 font-medium shadow-sm"
+              className={cn(
+                "backdrop-blur-md text-white text-[10px] h-5 px-2 font-medium shadow-sm",
+                isUploading ? "bg-orange-600/90" : "bg-orange-600/90"
+              )}
             >
-              {isPDF ? 'PDF' : 'Image'}
+              {isUploading ? 'Uploading' : isPDF ? 'PDF' : 'Image'}
             </Badge>
           </div>
         </div>
 
         {/* Metadata Inputs */}
         <div className="flex-1 min-w-0 space-y-2.5">
+          {/* Uploading Banner */}
+          {isUploading && (
+            <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-md px-3 py-2 mb-2">
+              <p className="text-xs text-orange-700 dark:text-orange-400 font-medium flex items-center gap-2">
+                <Upload className="w-3.5 h-3.5" />
+                Uploading to cloud storage...
+              </p>
+            </div>
+          )}
+          
           {/* File Info Header */}
           <div className="pb-2 border-b border-gray-200 dark:border-gray-700">
             <p className="font-semibold text-xs truncate text-gray-900 dark:text-gray-100">{plan.fileName}</p>
@@ -454,6 +618,7 @@ function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, for
                 value={plan.title}
                 onChange={(e) => onUpdateMetadata(plan.id, 'title', e.target.value)}
                 className="h-8 text-xs"
+                disabled={isUploading}
               />
             </div>
             
@@ -464,7 +629,7 @@ function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, for
                 value={plan.docType}
                 onValueChange={(value) => onUpdateMetadata(plan.id, 'docType', value)}
               >
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8 text-xs" disabled={isUploading}>
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -490,6 +655,7 @@ function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, for
                       "w-full justify-between h-8 text-xs font-normal",
                       !plan.category && "text-muted-foreground"
                     )}
+                    disabled={isUploading}
                   >
                     <span className="truncate">{plan.category || "Select..."}</span>
                     <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
@@ -563,6 +729,7 @@ function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, for
                 onChange={(e) => onUpdateMetadata(plan.id, 'description', e.target.value)}
                 className="text-xs min-h-[52px] resize-none"
                 rows={2}
+                disabled={isUploading}
               />
             </div>
           </div>

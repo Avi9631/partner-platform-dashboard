@@ -8,7 +8,9 @@ import {
   Info,
   Check,
   ChevronsUpDown,
-  Tags
+  Tags,
+  Loader2,
+  Upload
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -41,6 +43,7 @@ import { cn } from '@/lib/utils';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import ProTipV2 from '../shared/ProTipV2';
+import { uploadMultipleFiles } from '@/lib/uploadUtils';
 
 // Maximum file size
 const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10MB
@@ -80,6 +83,8 @@ export default function DocumentUploadStepV2() {
   
   const [documents, setDocuments] = useState(formData?.documents || []);
   const [uploadErrors, setUploadErrors] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
   
   // Track all categories (default + user-added)
   const [allCategories, setAllCategories] = useState(() => {
@@ -116,11 +121,12 @@ export default function DocumentUploadStepV2() {
   };
 
   // Handle document upload (no category parameter - will be set per document)
-  const handleDocumentUpload = useCallback((e) => {
+  const handleDocumentUpload = useCallback(async (e) => {
     const files = Array.from(e.target.files || []);
     const newErrors = [];
-    const validDocuments = [];
+    const validFiles = [];
 
+    // Step 1: Validate files
     files.forEach((file) => {
       // Validate file type
       if (!ACCEPTED_DOCUMENT_TYPES.includes(file.type)) {
@@ -134,18 +140,7 @@ export default function DocumentUploadStepV2() {
         return;
       }
 
-      validDocuments.push({
-        id: `doc-${Date.now()}-${Math.random()}`,
-        file,
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        category: '',
-        title: '',
-        description: '',
-        docType: '',
-        uploadedAt: new Date().toISOString(),
-      });
+      validFiles.push(file);
     });
 
     if (newErrors.length > 0) {
@@ -153,10 +148,101 @@ export default function DocumentUploadStepV2() {
       setTimeout(() => setUploadErrors([]), 5000);
     }
 
-    if (validDocuments.length > 0) {
-      const updatedDocuments = [...documents, ...validDocuments];
-      setDocuments(updatedDocuments);
-      setValue('documents', updatedDocuments, { shouldValidate: true });
+    if (validFiles.length === 0) {
+      e.target.value = '';
+      return;
+    }
+
+    // Step 2: Create temporary document items with uploading status
+    const tempDocItems = validFiles.map((file) => ({
+      id: `doc-${Date.now()}-${Math.random()}`,
+      file,
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      category: '',
+      title: '',
+      description: '',
+      docType: '',
+      uploading: true,
+      uploadProgress: 0,
+      url: null,
+      key: null,
+      uploadedAt: new Date().toISOString(),
+    }));
+
+    // Add to documents list immediately to show uploading state
+    const updatedDocs = [...documents, ...tempDocItems];
+    setDocuments(updatedDocs);
+
+    // Step 3: Upload files to S3
+    setIsUploading(true);
+    try {
+      const folder = 'listing-drafts/documents';
+
+      const uploadResults = await uploadMultipleFiles(
+        validFiles,
+        folder,
+        (fileIndex, progress) => {
+          const docId = tempDocItems[fileIndex].id;
+          setUploadProgress((prev) => ({
+            ...prev,
+            [docId]: progress,
+          }));
+        }
+      );
+
+      // Step 4: Update document items with upload results
+      setDocuments((currentDocs) => {
+        return currentDocs.map((doc) => {
+          const tempIndex = tempDocItems.findIndex((t) => t.id === doc.id);
+          if (tempIndex === -1) return doc;
+
+          const result = uploadResults[tempIndex];
+          if (result.success) {
+            return {
+              ...doc,
+              uploading: false,
+              url: result.url,
+              key: result.key,
+              file: null, // Remove file object after upload
+            };
+          } else {
+            return {
+              ...doc,
+              uploading: false,
+              uploadFailed: true,
+              uploadError: result.error,
+            };
+          }
+        });
+      });
+
+      setValue('documents', updatedDocs, { shouldValidate: true });
+
+      // Check for failed uploads
+      const failedUploads = uploadResults.filter((r) => !r.success);
+      if (failedUploads.length > 0) {
+        const failureErrors = failedUploads.map(
+          (f) => `Failed to upload "${f.file.name}": ${f.error}`
+        );
+        setUploadErrors(failureErrors);
+        setTimeout(() => setUploadErrors([]), 5000);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadErrors([`Upload failed: ${error.message}`]);
+      setTimeout(() => setUploadErrors([]), 5000);
+
+      // Remove failed items
+      setDocuments((currentDocs) =>
+        currentDocs.filter(
+          (doc) => !tempDocItems.some((t) => t.id === doc.id)
+        )
+      );
+    } finally {
+      setIsUploading(false);
+      setUploadProgress({});
     }
 
     // Reset input
@@ -186,8 +272,39 @@ export default function DocumentUploadStepV2() {
 
   // Handle form submission
   const handleContinue = () => {
+    // Validate all uploads are complete
+    const hasUploadingItems = documents.some((doc) => doc.uploading);
+    if (hasUploadingItems) {
+      setUploadErrors(['Please wait for all uploads to complete before continuing']);
+      setTimeout(() => setUploadErrors([]), 5000);
+      return;
+    }
+
+    // Validate all uploads succeeded
+    const hasFailedItems = documents.some((doc) => doc.uploadFailed);
+    if (hasFailedItems) {
+      setUploadErrors(['Some files failed to upload. Please remove them and try again.']);
+      setTimeout(() => setUploadErrors([]), 5000);
+      return;
+    }
+
+    // Clean document data: remove File objects before sending to backend
+    // Keep only the metadata (url, key, title, category, description, docType, fileName, fileSize, fileType, uploadedAt)
+    const cleanedDocuments = documents.map((doc) => ({
+      url: doc.url,
+      key: doc.key,
+      title: doc.title || '',
+      category: doc.category || '',
+      description: doc.description || '',
+      docType: doc.docType || '',
+      fileName: doc.fileName,
+      fileSize: doc.fileSize,
+      fileType: doc.fileType,
+      uploadedAt: doc.uploadedAt,
+    }));
+
     const data = {
-      documents,
+      documents: cleanedDocuments,
     };
     saveAndContinue(data);
   };
@@ -265,9 +382,19 @@ export default function DocumentUploadStepV2() {
                   variant="outline"
                   className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950"
                   onClick={() => document.getElementById('document-upload').click()}
+                  disabled={isUploading}
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Documents
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Documents
+                    </>
+                  )}
                 </Button>
               </label>
               <div className="flex items-center gap-2 flex-wrap">
@@ -312,6 +439,7 @@ export default function DocumentUploadStepV2() {
                     onUpdateMetadata={updateDocumentMetadata}
                     onRemove={removeDocument}
                     formatFileSize={formatFileSize}
+                    uploadProgress={uploadProgress[doc.id]}
                   />
                 ))}
               </div>
@@ -336,9 +464,10 @@ export default function DocumentUploadStepV2() {
 /**
  * Document Card Component - Displays individual document with metadata inputs
  */
-function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, formatFileSize }) {
+function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, formatFileSize, uploadProgress }) {
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
+  const isUploading = document.uploading || false;
   
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
@@ -369,12 +498,37 @@ function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, for
     >
       <div className="flex flex-col sm:flex-row gap-3 p-3">
         {/* File Icon Thumbnail */}
-        <div className="w-full sm:w-28 h-28 sm:h-28 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-md">
+        <div className="relative w-full sm:w-28 h-28 sm:h-28 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-md">
           <span className="text-4xl sm:text-5xl">{getFileIcon()}</span>
+          
+          {/* Upload Progress Overlay */}
+          {isUploading && (
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2 rounded-lg">
+              <Loader2 className="w-6 h-6 text-white animate-spin" />
+              <div className="w-20 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-orange-500 transition-all duration-300"
+                  style={{ width: `${uploadProgress || 0}%` }}
+                />
+              </div>
+              <p className="text-white text-xs font-medium">
+                {uploadProgress || 0}%
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-2.5">
+          {/* Uploading Banner */}
+          {isUploading && (
+            <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-md px-3 py-2 mb-2">
+              <p className="text-xs text-orange-700 dark:text-orange-400 font-medium flex items-center gap-2">
+                <Upload className="w-3.5 h-3.5" />
+                Uploading to cloud storage...
+              </p>
+            </div>
+          )}
           {/* File Info Header */}
           <div className="flex items-start justify-between gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
             <div className="flex-1 min-w-0">
@@ -389,6 +543,7 @@ function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, for
               variant="ghost"
               className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200"
               onClick={() => onRemove(document.id)}
+              disabled={isUploading}
             >
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
@@ -404,6 +559,7 @@ function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, for
                 value={document.title}
                 onChange={(e) => onUpdateMetadata(document.id, 'title', e.target.value)}
                 className="h-8 text-xs"
+                disabled={isUploading}
               />
             </div>
             
@@ -414,7 +570,7 @@ function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, for
                 value={document.docType}
                 onValueChange={(value) => onUpdateMetadata(document.id, 'docType', value)}
               >
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8 text-xs" disabled={isUploading}>
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -440,6 +596,7 @@ function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, for
                       "w-full justify-between h-8 text-xs font-normal",
                       !document.category && "text-muted-foreground"
                     )}
+                    disabled={isUploading}
                   >
                     <span className="truncate">{document.category || "Select..."}</span>
                     <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
@@ -513,6 +670,7 @@ function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, for
                 onChange={(e) => onUpdateMetadata(document.id, 'description', e.target.value)}
                 className="text-xs min-h-[52px] resize-none"
                 rows={2}
+                disabled={isUploading}
               />
             </div>
           </div>

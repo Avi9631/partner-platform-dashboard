@@ -228,7 +228,7 @@ export default function AreaDetailsV2() {
           </motion.div>
 
           {/* Built-up to Carpet Ratio Display */}
-          {carpetArea && superArea && Number(carpetArea) > 0 && Number(superArea) > 0 && (
+          {/* {carpetArea && superArea && Number(carpetArea) > 0 && Number(superArea) > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -241,7 +241,7 @@ export default function AreaDetailsV2() {
                 {' '}(Super area is {((Number(superArea) / Number(carpetArea) - 1) * 100).toFixed(1)}% more than carpet area)
               </p>
             </motion.div>
-          )}
+          )} */}
 
           {/* Divider */}
           <div className="border-t pt-6">
@@ -335,7 +335,7 @@ export default function AreaDetailsV2() {
           </div>
 
           {/* Info Box */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
@@ -344,7 +344,7 @@ export default function AreaDetailsV2() {
             <p className="text-sm text-blue-900 dark:text-blue-100">
               <span className="font-semibold">💡 Tip:</span> Super area is typically 20-30% more than carpet area due to common spaces and walls.
             </p>
-          </motion.div>
+          </motion.div> */}
         </FieldGroup>
       </div>
 

@@ -8,14 +8,24 @@
  * - Comprehensive review page with collapsible cards
  * - Ability to edit any completed section from the review page
  * - Consolidated step components (no separate form components)
+ * - Draft loading support (URL-based or prop-based)
+ * - Full-page and sheet overlay variants
  * 
  * Usage:
- * import { PropertyFormSheetV2 } from '@/modules/listProperty/v2';
+ * import { PropertyFormSheetV2, PropertyFormPageV2 } from '@/modules/listProperty/v2';
  * 
+ * // Sheet variant
  * <PropertyFormSheetV2 open={isOpen} onOpenChange={setIsOpen} />
+ * 
+ * // Page variant
+ * <PropertyFormPageV2 />
  */
 
+// Main form components
 export { default as PropertyFormSheetV2 } from './components/PropertyFormSheetV2';
+export { default as PropertyFormPageV2 } from './components/PropertyFormPageV2';
+
+// Context and hooks
 export { PropertyFormProviderV2, usePropertyFormV2 } from './context/PropertyFormContextV2';
 
 // Step components - Each step now contains both UI and form logic (consolidated)

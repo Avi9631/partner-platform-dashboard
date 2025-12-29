@@ -105,7 +105,7 @@ export default function FurnishingStepV2() {
               className="mb-6"
             >
               <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-                Furnishing & Amenities
+                Furnishing
               </h2>
               <p className="text-muted-foreground text-sm">
                 Describe the furnishing and flooring of your property

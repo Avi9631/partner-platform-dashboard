@@ -1,13 +1,13 @@
 /**
- * Example Usage of PropertyFormSheetV2
+ * Example Usage of PropertyFormSheetV2 and PropertyFormPageV2
  * 
  * This file demonstrates how to integrate the V2 multi-step property form
- * into your application.
+ * into your application in both sheet and page variants.
  */
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { PropertyFormSheetV2 } from '@/modules/listProperty/v2';
+import { PropertyFormSheetV2, PropertyFormPageV2 } from '@/modules/listProperty/v2';
 import { PlusCircle } from 'lucide-react';
 
 /**
@@ -219,6 +219,53 @@ export function CustomTriggerExample() {
         open={isOpen} 
         onOpenChange={setIsOpen} 
       />
+    </div>
+  );
+}
+
+/**
+ * Full Page Example - Routing Integration
+ * 
+ * This example shows how to use the PropertyFormPageV2 component
+ * with React Router for full-page form experience.
+ * 
+ * Add these routes to your router:
+ * <Route path="/list-property/new" element={<PropertyFormPageV2 />} />
+ * <Route path="/list-property/edit/:draftId" element={<PropertyFormPageV2 />} />
+ */
+export function PageExample() {
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Full Page Form Example</h2>
+      <p className="text-muted-foreground mb-6">
+        The page variant provides a dedicated full-page experience for property listing.
+      </p>
+      
+      <div className="space-y-4">
+        <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+          <h3 className="font-semibold mb-2">Router Configuration:</h3>
+          <pre className="text-sm bg-white dark:bg-gray-800 p-3 rounded border overflow-x-auto">
+{`<Route path="/list-property/new" element={<PropertyFormPageV2 />} />
+<Route path="/list-property/edit/:draftId" element={<PropertyFormPageV2 />} />`}
+          </pre>
+        </div>
+        
+        <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+          <h3 className="font-semibold mb-2">Navigation Examples:</h3>
+          <ul className="text-sm space-y-2 list-disc list-inside">
+            <li><code>/list-property/new</code> - Start new property listing</li>
+            <li><code>/list-property/edit/draft-123</code> - Edit existing draft</li>
+          </ul>
+        </div>
+
+        <Button 
+          onClick={() => window.location.href = '/list-property/new'}
+          className="bg-gradient-to-r from-orange-500 to-orange-600"
+        >
+          <PlusCircle className="w-5 h-5 mr-2" />
+          Open Full Page Form
+        </Button>
+      </div>
     </div>
   );
 }

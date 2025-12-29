@@ -1,46 +1,64 @@
 import { z } from 'zod';
 
 /**
- * Basic Configuration Schema
+ * Basic Configuration Schema (includes Area Details)
  */
 export const basicConfigurationSchema = z.object({
   bedrooms: z.string().min(1, 'Please select number of bedrooms'),
   bathrooms: z.string().min(1, 'Please select number of bathrooms'),
   
-  additionalRooms: z.array(z.object({
-    id: z.string(),
-    type: z.enum([
-      'balcony',
-      'servantRoom',
-      'studyRoom',
-      'storeRoom',
-      'poojaRoom',
-      'homeOffice',
-      'guestRoom',
-      'utilityRoom',
-      'diningRoom',
-      'familyRoom',
-      'laundryRoom'
-    ], {
-      required_error: 'Please select a room type',
-      invalid_type_error: 'Please select a valid room type',
+  // Area Details Fields
+  carpetArea: z.string()
+    .min(1, 'Carpet area is required')
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: 'Carpet area must be a positive number',
     }),
-    count: z.string().min(1, 'Please select count'),
-  })).max(10, 'Maximum 10 additional rooms allowed').optional().default([]),
   
-  roomDimensions: z.array(z.object({
-    id: z.string(),
-    roomName: z.string().min(1, 'Room name is required').max(50),
-    length: z.string()
+  superArea: z.string()
+    .min(1, 'Super area is required')
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: 'Super area must be a positive number',
+    }),
+  
+  measurementMethod: z.enum([
+    'rera_verified',
+    'self_measured',
+    'architect_certified',
+    'builder_provided',
+    'not_verified'
+  ], {
+    required_error: 'Measurement method is required',
+  }),
+  
+  // Optional: Dynamic area configuration for additional area types
+  areaConfig: z.array(z.object({
+    type: z.enum([
+      'built_up',
+      'plot',
+      'terrace',
+      'balcony',
+      'garden',
+      'parking',
+      'common',
+      'other'
+    ]),
+    value: z.string()
       .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-        message: 'Length must be a positive number',
+        message: 'Area must be a positive number',
       }),
-    width: z.string()
-      .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-        message: 'Width must be a positive number',
-      }),
-    unit: z.enum(['feet', 'meters']).default('feet'),
-  })).max(10, 'Maximum 10 room dimensions allowed').optional().default([]),
+  })).optional().default([]),
+  
+  // Auto-calculated field
+  builtUpToCarpetRatio: z.number().optional(),
+}).refine((data) => {
+  // Super area should be greater than or equal to carpet area
+  if (Number(data.superArea) < Number(data.carpetArea)) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Super area should be greater than or equal to carpet area',
+  path: ['superArea'],
 });
 
 export default basicConfigurationSchema;

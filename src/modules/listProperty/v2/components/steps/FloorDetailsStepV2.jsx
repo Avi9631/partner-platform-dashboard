@@ -34,12 +34,7 @@ export default function FloorDetailsStepV2() {
       towerName: formData?.towerName || '',
       unitNumber: formData?.unitNumber || '',
       isUnitNumberPrivate: formData?.isUnitNumberPrivate || false,
-      liftAvailable: formData?.liftAvailable || false,
-      // Phase 1 enhancements
-      fireExitProximity: formData?.fireExitProximity || '',
-      hasEmergencyExit: formData?.hasEmergencyExit || false,
-      staircaseType: formData?.staircaseType || '',
-      hasIntercom: formData?.hasIntercom || false,
+     
     },
   });
 
@@ -188,132 +183,7 @@ export default function FloorDetailsStepV2() {
                 </div>
               </motion.div>
 
-              {/* Lift Available */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="flex items-center justify-between p-4 border-2 rounded-lg hover:border-orange-500 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                    <ArrowUpCircle className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-semibold">Lift/Elevator Available</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Is there a working elevator?
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={watch('liftAvailable')}
-                  onCheckedChange={(checked) =>
-                    setValue('liftAvailable', checked, { shouldValidate: true })
-                  }
-                />
-              </motion.div>
-
-              {/* Fire Exit & Emergency */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Fire Exit Proximity */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.75 }}
-                  className="space-y-2"
-                >
-                  <Label className="text-sm flex items-center gap-2">
-                    <Flame className="w-4 h-4 text-orange-600" />
-                    Fire Exit Proximity
-                  </Label>
-                  <Select
-                    value={watch('fireExitProximity')}
-                    onValueChange={(value) => setValue('fireExitProximity', value)}
-                  >
-                    <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
-                      <SelectValue placeholder="Select proximity" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="very_near">Very Near (Within 10m)</SelectItem>
-                      <SelectItem value="near">Near (Within 50m)</SelectItem>
-                      <SelectItem value="moderate">Moderate (Within 100m)</SelectItem>
-                      <SelectItem value="far">Far (Beyond 100m)</SelectItem>
-                      <SelectItem value="not_available">Not Available</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </motion.div>
-
-                {/* Has Emergency Exit */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 }}
-                  className="space-y-2"
-                >
-                  <Label className="text-sm font-semibold">Emergency Features</Label>
-                  <div className="flex items-center space-x-2 p-3 border-2 rounded-lg hover:border-orange-500 transition-colors">
-                    <Checkbox
-                      checked={watch('hasEmergencyExit')}
-                      onCheckedChange={(checked) => setValue('hasEmergencyExit', checked)}
-                    />
-                    <Label className="text-sm font-medium flex items-center gap-2 cursor-pointer">
-                      <AlertTriangle className="w-4 h-4 text-orange-600" />
-                      Has Emergency Exit on this floor
-                    </Label>
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Staircase Type & Intercom */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Staircase Type */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.85 }}
-                  className="space-y-2"
-                >
-                  <Label className="text-sm flex items-center gap-2">
-                    <ArrowUpDown className="w-4 h-4 text-orange-600" />
-                    Staircase Access
-                  </Label>
-                  <Select
-                    value={watch('staircaseType')}
-                    onValueChange={(value) => setValue('staircaseType', value)}
-                  >
-                    <SelectTrigger className="h-11 text-sm border-2 focus:border-orange-500">
-                      <SelectValue placeholder="Select staircase type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="common">Common Staircase (Shared)</SelectItem>
-                      <SelectItem value="private">Private Staircase</SelectItem>
-                      <SelectItem value="both">Both Common & Private</SelectItem>
-                      <SelectItem value="none">None (Only Lift)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </motion.div>
-
-                {/* Has Intercom */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.9 }}
-                  className="space-y-2"
-                >
-                  <Label className="text-sm font-semibold">Communication</Label>
-                  <div className="flex items-center space-x-2 p-3 border-2 rounded-lg hover:border-orange-500 transition-colors">
-                    <Checkbox
-                      checked={watch('hasIntercom')}
-                      onCheckedChange={(checked) => setValue('hasIntercom', checked)}
-                    />
-                    <Label className="text-sm font-medium flex items-center gap-2 cursor-pointer">
-                      <Phone className="w-4 h-4 text-orange-600" />
-                      Intercom System Available
-                    </Label>
-                  </div>
-                </motion.div>
-              </div>
+           
             </div>
           </div>
         </motion.div>

@@ -18,14 +18,7 @@ const locationAttributesSchema = z.object({
     'rear'
   ], { required_error: 'Property position is required' }),
   
-  overlooking: z.array(z.enum([
-    'park',
-    'main_road',
-    'garden',
-    'swimming_pool',
-    'club_house',
-    'other_buildings'
-  ])).optional().default([]),
+   
 });
 
 export default locationAttributesSchema;

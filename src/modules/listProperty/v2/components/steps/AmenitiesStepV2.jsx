@@ -74,29 +74,23 @@ export default function AmenitiesStepV2() {
     saveAndContinue(data);
   };
 
-  // Memoize selected features and amenities arrays
-  const selectedFeatures = useMemo(
-    () => watch('features') || [],
-    [watch]
-  );
-
-  const selectedAmenities = useMemo(
-    () => watch('amenities') || [],
-    [watch]
-  );
+  // Watch the current values
+  const selectedFeatures = watch('features') || [];
+  const selectedAmenities = watch('amenities') || [];
 
   /**
    * Toggle feature selection
    */
   const toggleFeature = useCallback(
     (featureId) => {
-      const updated = selectedFeatures.includes(featureId)
-        ? selectedFeatures.filter((id) => id !== featureId)
-        : [...selectedFeatures, featureId];
+      const currentFeatures = methods.getValues('features') || [];
+      const updated = currentFeatures.includes(featureId)
+        ? currentFeatures.filter((id) => id !== featureId)
+        : [...currentFeatures, featureId];
       
       setValue('features', updated, { shouldValidate: true });
     },
-    [selectedFeatures, setValue]
+    [methods, setValue]
   );
 
   /**
@@ -104,13 +98,14 @@ export default function AmenitiesStepV2() {
    */
   const toggleAmenity = useCallback(
     (amenityId) => {
-      const updated = selectedAmenities.includes(amenityId)
-        ? selectedAmenities.filter((id) => id !== amenityId)
-        : [...selectedAmenities, amenityId];
+      const currentAmenities = methods.getValues('amenities') || [];
+      const updated = currentAmenities.includes(amenityId)
+        ? currentAmenities.filter((id) => id !== amenityId)
+        : [...currentAmenities, amenityId];
       
       setValue('amenities', updated, { shouldValidate: true });
     },
-    [selectedAmenities, setValue]
+    [methods, setValue]
   );
 
   /**
@@ -274,9 +269,7 @@ export default function AmenitiesStepV2() {
                   })}
                 </fieldset>
               </div>
-
-              {/* Pro Tip Section */}
-              <ProTipV2 title="Make Your Listing Stand Out" tips={listingTips} />
+ 
             </div>
           </div>
         </motion.div>
@@ -320,9 +313,9 @@ function AmenityCard({ amenity, isSelected, onToggle }) {
     >
       <Checkbox
         checked={isSelected}
-        onCheckedChange={handleClick}
         aria-hidden="true"
         tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
       />
       <div className="flex items-center gap-2 flex-1 min-w-0">
         <span className="text-lg flex-shrink-0" aria-hidden="true">

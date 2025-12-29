@@ -4,6 +4,10 @@
 
 This is an enhanced version of the property listing form that implements a **true multi-step workflow** with "Save & Continue" buttons. Each form section is presented as a separate step, and users must complete and save each step before progressing to the next.
 
+The form is available in **two variants**:
+- **Sheet Overlay**: Opens as a slide-in sheet from the right (for embedded use)
+- **Full Page**: Standalone page with routing support (for direct navigation)
+
 ## Key Features
 
 ### 1. **Multi-Step Navigation**
@@ -34,7 +38,13 @@ This is an enhanced version of the property listing form that implements a **tru
 - **Visual Hierarchy**: Color-coded section headers
 - **Submit Button**: Large, prominent button to submit the listing
 
-### 5. **Reusable Components**
+### 5. **Draft Management**
+- Auto-save drafts on each "Save & Continue"
+- Load drafts via URL params (`/list-property/:draftId`)
+- Load drafts via props (`editingDraft`)
+- Draft state persists across sessions
+
+### 6. **Reusable Components**
 - Leverages existing form components
 - Wrapper components add Save & Continue functionality
 - Minimal code duplication
@@ -45,7 +55,8 @@ This is an enhanced version of the property listing form that implements a **tru
 ```
 v2/
 ├── components/
-│   ├── PropertyFormSheetV2.jsx          # Main sheet container
+│   ├── PropertyFormSheetV2.jsx          # Sheet overlay container
+│   ├── PropertyFormPageV2.jsx           # Full page container (NEW)
 │   ├── PropertyFormSidebarV2.jsx        # Enhanced sidebar with step navigation
 │   ├── SaveAndContinueFooter.jsx        # Reusable footer with Save & Continue
 │   └── steps/
@@ -72,7 +83,7 @@ v2/
 
 ## Usage
 
-### Basic Implementation
+### Sheet Overlay Variant (Embedded Use)
 
 ```jsx
 import { PropertyFormSheetV2 } from '@/modules/listProperty/v2';
@@ -88,11 +99,29 @@ function MyComponent() {
       
       <PropertyFormSheetV2 
         open={isOpen} 
-        onOpenChange={setIsOpen} 
+        onOpenChange={setIsOpen}
+        // Optional: Load existing draft
+        initialDraftId="draft-123"
+        // Or: Pass draft object directly
+        editingDraft={draftObject}
       />
     </>
   );
 }
+```
+
+### Full Page Variant (Routing)
+
+```jsx
+import { PropertyFormPageV2 } from '@/modules/listProperty/v2';
+
+// In your router configuration:
+<Route path="/list-property/new" element={<PropertyFormPageV2 />} />
+<Route path="/list-property/edit/:draftId" element={<PropertyFormPageV2 />} />
+
+// Usage:
+// Navigate to: /list-property/new (new property)
+// Navigate to: /list-property/edit/draft-123 (edit existing draft)
 ```
 
 ### Using the Context
@@ -106,13 +135,17 @@ function CustomComponent() {
     saveAndContinue, 
     previousStep,
     isStepCompleted,
-    getProgress 
+    getProgress,
+    draftId,
+    isLoadingDraft 
   } = usePropertyFormV2();
 
   return (
     <div>
       <p>Current Step: {currentStep}</p>
       <p>Progress: {getProgress()}%</p>
+      <p>Draft ID: {draftId}</p>
+      {isLoadingDraft && <p>Loading draft...</p>}
       <button onClick={saveAndContinue}>Save & Continue</button>
     </div>
   );

@@ -131,14 +131,14 @@ const CORE_STEPS = [
     isVisible: (formData) => !!formData.propertyType,
     order: 15,
   },
-  {
-    id: 'review-submit',
-    name: 'Review & Submit',
-    component: ReviewAndSubmitV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: (formData) => !!formData.propertyType,
-    order: 16,
-  },
+  // {
+  //   id: 'review-submit',
+  //   name: 'Review & Submit',
+  //   component: ReviewAndSubmitV2,
+  //   category: STEP_CATEGORIES.CORE,
+  //   isVisible: (formData) => !!formData.propertyType,
+  //   order: 16,
+  // },
 ];
 
 // ============================================================================
@@ -153,14 +153,14 @@ const BUILDING_STEPS = [
     isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
     order: 3,
   },
-  {
-    id: 'area-details',
-    name: 'Area Details',
-    component: AreaDetailsStepV2,
-    category: STEP_CATEGORIES.BUILDING,
-    isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-    order: 4,
-  },
+  // {
+  //   id: 'area-details',
+  //   name: 'Area Details',
+  //   component: AreaDetailsStepV2,
+  //   category: STEP_CATEGORIES.BUILDING,
+  //   isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
+  //   order: 4,
+  // },
   {
     id: 'furnishing',
     name: 'Furnishing',
@@ -169,14 +169,14 @@ const BUILDING_STEPS = [
     isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
     order: 5,
   },
-  {
-    id: 'parking',
-    name: 'Parking',
-    component: ParkingStepV2,
-    category: STEP_CATEGORIES.BUILDING,
-    isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-    order: 6,
-  },
+  // {
+  //   id: 'parking',
+  //   name: 'Parking',
+  //   component: ParkingStepV2,
+  //   category: STEP_CATEGORIES.BUILDING,
+  //   isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
+  //   order: 6,
+  // },
   {
     id: 'location-attributes',
     name: 'Location Attributes',

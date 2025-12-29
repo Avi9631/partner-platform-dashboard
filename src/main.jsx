@@ -23,6 +23,7 @@ import BusinessProfileSetup from "./modules/BusinessProfileSetup/index.jsx";
 import { DeveloperFormPageV2 } from "./modules/listDeveloper/v2/index.js";
 import ListProjectV2Page from "./modules/ListProjectV2.jsx";
 import ProjectFormPageV2 from "./modules/listProject/v2/components/ProjectFormPageV2.jsx";
+import { PropertyFormPageV2 } from "./modules/listProperty/v2/index.js";
 
 const router = createBrowserRouter([
   {
@@ -62,6 +63,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ProjectFormPageV2 />
+          </ProtectedRoute>
+        ),
+      },
+            {
+        path: "list-property/:draftId",
+        element: (
+          <ProtectedRoute>
+            <PropertyFormPageV2 />
           </ProtectedRoute>
         ),
       },

@@ -34,38 +34,81 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     defaultValues: {},
   });
 
-  // Load draft data when editingDraft is provided
-  const loadDraftData = useCallback(() => {
-    if (editingDraft && editingDraft.draftData) {
+  // Fetch draft data from API when initialDraftId is provided
+  const fetchDraftData = useCallback(async (id) => {
+    try {
       setIsLoadingDraft(true);
-      console.log('Loading draft data for editing:', editingDraft);
+      console.log('Fetching property draft data for ID:', id);
       
-      // Set form data from draft (backend stores in draftData field)
-      setFormData(editingDraft.draftData);
+      const response = await draftApi.getListingDraftById(id);
       
-      // Set property type if available
-      if (editingDraft.draftData.propertyType) {
-        setPropertyType(editingDraft.draftData.propertyType);
+      if (response.success && response.data) {
+        console.log('Property draft data fetched successfully:', response.data);
+        
+        // Set form data from fetched draft (backend returns draftData field)
+        if (response.data.draftData) {
+          setFormData(response.data.draftData);
+          console.log('Form data populated from draft:', response.data.draftData);
+          
+          // Set property type if available
+          if (response.data.draftData.propertyType) {
+            setPropertyType(response.data.draftData.propertyType);
+          }
+        }
+        
+        // Mark all steps as not completed (user can edit any step)
+        setCompletedSteps(new Set());
+        
+        // Start from the first step
+        setCurrentStep(0);
+      } else {
+        console.error('Failed to fetch property draft data:', response);
       }
+    } catch (error) {
+      console.error('Error fetching property draft data:', error);
+    } finally {
+      setIsLoadingDraft(false);
+    }
+  }, []);
+
+  // Load draft data when editingDraft is provided (legacy support)
+  const loadDraftData = useCallback(() => {
+    if (editingDraft) {
+      setIsLoadingDraft(true);
+      console.log('Loading property draft data for editing:', editingDraft);
       
+      // Set form data from draft (support both formData and draftData fields)
+      const draftFormData = editingDraft.draftData || editingDraft.formData;
+      if (draftFormData) {
+        setFormData(draftFormData);
+        console.log('Property draft data loaded successfully:', draftFormData);
+        
+        // Set property type if available
+        if (draftFormData.propertyType) {
+          setPropertyType(draftFormData.propertyType);
+        }
+      }
+  
       // Mark all steps as not completed (user can edit any step)
-      // But we could also mark steps with data as completed
       setCompletedSteps(new Set());
       
       // Start from the first step
       setCurrentStep(0);
       
       setIsLoadingDraft(false);
-      console.log('Draft data loaded successfully');
     }
   }, [editingDraft]);
 
-  // Load draft data on mount when editingDraft changes
+  // Load draft data on mount when initialDraftId or editingDraft changes
   useEffect(() => {
-    if (editingDraft) {
+    if (initialDraftId && !editingDraft) {
+      // Fetch draft data from API when draftId is in URL
+      fetchDraftData(initialDraftId);
+    } else if (editingDraft) {
+      // Load draft data directly when provided as prop (legacy)
       loadDraftData();
     }
-  }, [editingDraft, loadDraftData]);
+  }, [initialDraftId, editingDraft, fetchDraftData, loadDraftData]);
 
   // Memoize the form data with propertyType for step configuration
   const formDataWithType = useMemo(() => ({
