@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Building2, Home, TreePine, LandPlot } from 'lucide-react';
+import { Building2, Home, TreePine, LandPlot, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
+import { Button } from '@/components/ui/button';
 
 const propertyTypes = [
   {
@@ -29,20 +29,34 @@ const propertyTypes = [
 ];
 
 export default function PropertyTypeStepV2() {
-  const { setPropertyType, saveAndContinue, formData } = usePropertyFormV2();
+  const { setPropertyType, saveAndContinue, formData, saveDraft } = usePropertyFormV2();
   const [selectedType, setSelectedType] = useState(formData?.propertyType || null);
 
-  const handleSelectType = (type) => {
+  const handleSelectType = async (type) => {
     setSelectedType(type);
     setPropertyType(type);
+    
+    // Auto-save the property type selection
+    await saveDraft({ propertyType: type });
   };
 
   const handleContinue = () => {
     if (selectedType) {
-      // Pass property type data to context
+      // Pass property type data to context and move to next step
       saveAndContinue({ propertyType: selectedType });
     }
   };
+
+  // Mark step as completed when property type is selected
+  useEffect(() => {
+    if (selectedType) {
+      // Auto-advance to next step after selection
+      const timer = setTimeout(() => {
+        handleContinue();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedType]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -158,12 +172,23 @@ export default function PropertyTypeStepV2() {
         ))}
       </div>
 
-      {/* Save & Continue Footer */}
-      <SaveAndContinueFooter
-        onSaveAndContinue={handleContinue}
-        nextDisabled={!selectedType}
-        showBack={false}
-      />
+      {/* Navigation Button */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="mt-8 flex justify-end"
+      >
+        <Button
+          onClick={handleContinue}
+          disabled={!selectedType}
+          size="lg"
+          className="gap-2 shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+        >
+          Continue
+          <ChevronRight className="w-5 h-5" />
+        </Button>
+      </motion.div>
     </div>
   );
 }

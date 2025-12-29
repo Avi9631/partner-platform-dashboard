@@ -1,30 +1,40 @@
 /**
- * ListProperty V2 - Multi-Step Form with Save & Continue
+ * ListProperty V2 - Sidebar Navigation Design
  * 
- * This is the enhanced version of the property listing form with:
- * - Multi-step navigation with "Save & Continue" buttons
- * - Progressive step completion tracking
- * - Enhanced sidebar with locked/unlocked steps
- * - Comprehensive review page with collapsible cards
- * - Ability to edit any completed section from the review page
- * - Consolidated step components (no separate form components)
- * - Draft loading support (URL-based or prop-based)
- * - Full-page and sheet overlay variants
+ * This is the revamped version of the property listing form with:
+ * - Sidebar navigation showing all steps at once
+ * - Direct navigation to any step (no locking)
+ * - Visual progress tracking with completion indicators
+ * - Auto-save functionality (debounced)
+ * - Cleaner form layout without bottom footers
+ * - Responsive design with modern UI
+ * 
+ * Key Changes from Previous Version:
+ * - Replaced "Save & Continue" bottom footer with sidebar navigation
+ * - Added PropertyFormSidebar component for step navigation
+ * - Added StepFormWrapper for consistent step layouts
+ * - Removed SaveAndContinueFooter dependency
+ * - Enhanced auto-save capabilities
  * 
  * Usage:
  * import { PropertyFormSheetV2, PropertyFormPageV2 } from '@/modules/listProperty/v2';
  * 
- * // Sheet variant
+ * // Sheet variant (overlay)
  * <PropertyFormSheetV2 open={isOpen} onOpenChange={setIsOpen} />
  * 
- * // Page variant
+ * // Page variant (full page with sidebar)
  * <PropertyFormPageV2 />
+ * 
+ * For migration guide, see: SIDEBAR_REVAMP_GUIDE.md
  */
 
 // Main form components
 export { default as PropertyFormSheetV2 } from './components/PropertyFormSheetV2';
 export { default as PropertyFormPageV2 } from './components/PropertyFormPageV2';
 
+// New sidebar navigation components
+export { default as PropertyFormSidebar } from './components/PropertyFormSidebar';
+export { default as StepFormWrapper } from './components/StepFormWrapper';
 // Context and hooks
 export { PropertyFormProviderV2, usePropertyFormV2 } from './context/PropertyFormContextV2';
 

@@ -1,9 +1,54 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm, FormProvider as RHFFormProvider } from 'react-hook-form';
-import { getTotalVisibleSteps } from '../config/stepConfigurationPg';
+import { getTotalVisibleSteps, getVisibleSteps } from '../config/stepConfigurationPg';
 import { draftApi } from '@/services/draftService';
 
 const PgFormContextV2 = createContext(null);
+
+/**
+ * Helper function to determine which steps have data
+ * Returns a Set of step indices that have completed data
+ */
+const getCompletedStepsFromData = (formData) => {
+  const completedSteps = new Set();
+  const visibleSteps = getVisibleSteps(formData);
+
+  visibleSteps.forEach((step, index) => {
+    let hasData = false;
+
+    switch (step.id) {
+      case 'basic-details':
+        hasData = !!(formData.pgHostelName || formData.propertyFor || formData.pgHostelType);
+        break;
+      case 'location-details':
+        hasData = !!(formData.address || formData.latitude || formData.longitude);
+        break;
+      case 'room-types':
+        hasData = !!(formData.roomTypes && formData.roomTypes.length > 0);
+        break;
+      case 'amenities':
+        hasData = !!(formData.amenities && Object.keys(formData.amenities).length > 0);
+        break;
+      case 'food-mess':
+        hasData = !!(formData.foodAvailable !== undefined || formData.messAvailable !== undefined);
+        break;
+      case 'rules-restrictions':
+        hasData = !!(formData.rules || formData.restrictions);
+        break;
+      case 'media-upload':
+        hasData = !!(formData.images && formData.images.length > 0);
+        break;
+      default:
+        hasData = false;
+    }
+
+    if (hasData) {
+      completedSteps.add(index);
+    }
+  });
+
+  return completedSteps;
+};
 
 export const usePgFormV2 = () => {
   const context = useContext(PgFormContextV2);
@@ -46,12 +91,15 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
         
         // Set form data from fetched draft
         if (response.data.draftData) {
-          setFormData(response.data.draftData);
+          const draftData = response.data.draftData;
+          setFormData(draftData);
           console.log('Form data populated from draft');
+          
+          // Calculate completed steps based on draft data
+          const completed = getCompletedStepsFromData(draftData);
+          setCompletedSteps(completed);
+          console.log('Completed steps synced with draft data:', Array.from(completed));
         }
-        
-        // Mark all steps as not completed (user can edit any step)
-        setCompletedSteps(new Set());
         
         // Start from the first step
         setCurrentStep(0);
@@ -71,11 +119,14 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
       setIsLoadingDraft(true);
       console.log('Loading PG draft data for editing:', editingDraft);
       
+      const draftData = editingDraft.draftData;
       // Set form data from draft
-      setFormData(editingDraft.draftData);
+      setFormData(draftData);
   
-      // Mark all steps as not completed (user can edit any step)
-      setCompletedSteps(new Set());
+      // Calculate completed steps based on draft data
+      const completed = getCompletedStepsFromData(draftData);
+      setCompletedSteps(completed);
+      console.log('Completed steps synced with draft data:', Array.from(completed));
       
       // Start from the first step
       setCurrentStep(0);

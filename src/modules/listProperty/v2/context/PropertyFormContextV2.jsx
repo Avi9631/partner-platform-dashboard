@@ -1,9 +1,78 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm, FormProvider as RHFFormProvider } from 'react-hook-form';
-import { getTotalVisibleSteps } from '../config/stepConfiguration';
+import { getTotalVisibleSteps, getVisibleSteps } from '../config/stepConfiguration';
 import { draftApi } from '@/services/draftService';
 
 const PropertyFormContextV2 = createContext(null);
+
+/**
+ * Helper function to determine which steps have data
+ * Returns a Set of step indices that have completed data
+ */
+const getCompletedStepsFromData = (formData) => {
+  const completedSteps = new Set();
+  const visibleSteps = getVisibleSteps(formData);
+
+  visibleSteps.forEach((step, index) => {
+    let hasData = false;
+
+    switch (step.id) {
+      case 'property-type':
+        hasData = !!formData.propertyType;
+        break;
+      case 'location-selection':
+        hasData = !!(formData.address || formData.latitude || formData.longitude);
+        break;
+      case 'basic-details':
+        hasData = !!(formData.propertyName || formData.propertyFor || formData.description);
+        break;
+      case 'basic-configuration':
+        hasData = !!(formData.bedrooms || formData.bathrooms);
+        break;
+      case 'furnishing':
+        hasData = !!(formData.furnishingStatus);
+        break;
+      case 'location-attributes':
+        hasData = !!(formData.facing || formData.overLooking);
+        break;
+      case 'floor-details':
+        hasData = !!(formData.floorNumber || formData.totalFloors);
+        break;
+      case 'pricing':
+        hasData = !!(formData.price || formData.pricePerSqft);
+        break;
+      case 'suitable-for':
+        hasData = !!(formData.suitableFor);
+        break;
+      case 'listing-info':
+        hasData = !!(formData.availableFrom || formData.possessionStatus);
+        break;
+      case 'amenities':
+        hasData = !!(formData.amenities && Object.keys(formData.amenities).length > 0);
+        break;
+      case 'media-upload':
+        hasData = !!(formData.images && formData.images.length > 0);
+        break;
+      case 'property-plan-upload':
+        hasData = !!(formData.propertyPlans && formData.propertyPlans.length > 0);
+        break;
+      case 'document-upload':
+        hasData = !!(formData.documents && formData.documents.length > 0);
+        break;
+      case 'land-attributes':
+        hasData = !!(formData.plotArea || formData.plotLength);
+        break;
+      default:
+        hasData = false;
+    }
+
+    if (hasData) {
+      completedSteps.add(index);
+    }
+  });
+
+  return completedSteps;
+};
 
 export const usePropertyFormV2 = () => {
   const context = useContext(PropertyFormContextV2);
@@ -47,17 +116,20 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
         
         // Set form data from fetched draft (backend returns draftData field)
         if (response.data.draftData) {
-          setFormData(response.data.draftData);
-          console.log('Form data populated from draft:', response.data.draftData);
+          const draftData = response.data.draftData;
+          setFormData(draftData);
+          console.log('Form data populated from draft:', draftData);
           
           // Set property type if available
-          if (response.data.draftData.propertyType) {
-            setPropertyType(response.data.draftData.propertyType);
+          if (draftData.propertyType) {
+            setPropertyType(draftData.propertyType);
           }
+          
+          // Calculate completed steps based on draft data
+          const completed = getCompletedStepsFromData(draftData);
+          setCompletedSteps(completed);
+          console.log('Completed steps synced with draft data:', Array.from(completed));
         }
-        
-        // Mark all steps as not completed (user can edit any step)
-        setCompletedSteps(new Set());
         
         // Start from the first step
         setCurrentStep(0);
@@ -87,11 +159,13 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
         if (draftFormData.propertyType) {
           setPropertyType(draftFormData.propertyType);
         }
+        
+        // Calculate completed steps based on draft data
+        const completed = getCompletedStepsFromData(draftFormData);
+        setCompletedSteps(completed);
+        console.log('Completed steps synced with draft data:', Array.from(completed));
       }
   
-      // Mark all steps as not completed (user can edit any step)
-      setCompletedSteps(new Set());
-      
       // Start from the first step
       setCurrentStep(0);
       

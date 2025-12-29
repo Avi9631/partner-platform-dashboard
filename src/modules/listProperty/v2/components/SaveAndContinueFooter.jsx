@@ -1,53 +1,66 @@
 import { Button } from '@/components/ui/button';
+import { ArrowLeft, ArrowRight, Save, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
 
-export default function SaveAndContinueFooter({ 
-  onBack, 
-  onSaveAndContinue, 
-  nextLabel = 'Continue',
+export default function SaveAndContinueFooter({
+  onBack,
+  onSaveAndContinue,
   nextDisabled = false,
   showBack = true,
+  nextLabel = 'Save & Continue',
+  backLabel = 'Back',
   isLastStep = false,
+  isLoading = false,
+  loadingText = 'Saving...',
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.2 }}
-      className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-orange-200 dark:border-orange-900 px-4 py-3 md:px-6 md:py-4 z-50"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
         {showBack ? (
           <Button
             type="button"
             variant="outline"
-            size="default"
             onClick={onBack}
-            className="px-4 md:px-6 border-orange-200 hover:bg-orange-50 hover:border-orange-500 dark:border-orange-800 dark:hover:bg-orange-950/30"
+            disabled={isLoading}
+            className="h-11 px-6 text-sm font-semibold"
           >
-            <ArrowLeft className="w-4 h-4 mr-1 md:mr-2" />
-            <span className="hidden sm:inline">Back</span>
-            <span className="sm:hidden">Back</span>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {backLabel}
           </Button>
         ) : (
-          <div></div>
+          <div /> 
         )}
-        
+
         <Button
-          size="default"
           type="submit"
-          onClick={onSaveAndContinue || undefined}
-          disabled={nextDisabled}
-          className={`px-4 md:px-8 shadow-lg whitespace-nowrap ${
-            isLastStep 
-              ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-green-500/30'
-              : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-orange-500/30'
-          }`}
+          onClick={onSaveAndContinue}
+          disabled={nextDisabled || isLoading}
+          className={`h-11 px-8 text-sm font-bold shadow-lg ${
+            isLastStep
+              ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+              : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          <span className="hidden sm:inline">{nextLabel}</span>
-          <span className="sm:hidden">{nextLabel === 'Save & Continue' ? 'Continue' : nextLabel}</span>
-          <ArrowRight className="w-4 h-4 ml-1 md:ml-2" />
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {loadingText}
+            </>
+          ) : isLastStep ? (
+            <>
+              <Save className="w-4 h-4 mr-2" />
+              Submit Property
+            </>
+          ) : (
+            <>
+              {nextLabel}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </>
+          )}
         </Button>
       </div>
     </motion.div>

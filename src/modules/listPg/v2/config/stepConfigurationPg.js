@@ -102,14 +102,14 @@ const PG_STEPS = [
   //   isVisible: () => true,
   //   order: 8,
   // },
-  {
-    id: 'review-submit',
-    name: 'Review & Submit',
-    component: ReviewAndSubmitPgStep,
-    category: STEP_CATEGORIES.FINAL,
-    isVisible: () => true,
-    order: 7,
-  },
+  // {
+  //   id: 'review-submit',
+  //   name: 'Review & Submit',
+  //   component: ReviewAndSubmitPgStep,
+  //   category: STEP_CATEGORIES.FINAL,
+  //   isVisible: () => true,
+  //   order: 7,
+  // },
 ];
 
 // ============================================================================
