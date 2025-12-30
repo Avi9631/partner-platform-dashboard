@@ -1,17 +1,21 @@
 // Placeholder step components - to be fully implemented
+// Note: These are template components. The page-level SaveAndContinueFooter handles navigation.
 
 import { motion } from 'motion/react';
 import { usePgFormV2 } from '../../context/PgFormContextV2';
-import SaveAndContinueFooter from './SaveAndContinueFooter';
+import { useEffect } from 'react';
 
 // Location Details Step
 export function LocationDetailsPgStep() {
-  const { saveAndContinue, previousStep } = usePgFormV2();
+  const { saveAndContinue, setCurrentStepSubmitHandler } = usePgFormV2();
   
   const handleContinue = () => {
-    // TODO: Implement form validation and data collection
     saveAndContinue({ locationStep: 'completed' });
   };
+
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleContinue);
+  }, []);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -26,172 +30,21 @@ export function LocationDetailsPgStep() {
           This step component needs to be fully implemented with address fields, landmark, coordinates, and nearby places arrays.
         </p>
       </motion.div>
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        showBack={true}
-      />
-    </div>
-  );
-}
-
-// Room Types Step
-export function RoomTypesPgStep() {
-  const { saveAndContinue, previousStep } = usePgFormV2();
-  
-  const handleContinue = () => {
-    saveAndContinue({ roomTypesStep: 'completed' });
-  };
-
-  return (
-    <div className="w-full max-w-7xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-          Room Types & Pricing
-        </h2>
-        <p className="text-muted-foreground text-sm mb-6">
-          Add different room types with their pricing details
-        </p>
-        <p className="text-sm text-muted-foreground py-8">
-          This step needs field array for multiple room types with pricing, facilities, and availability.
-        </p>
-      </motion.div>
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        showBack={true}
-      />
-    </div>
-  );
-}
-
-// Amenities Step
-export function AmenitiesPgStep() {
-  const { saveAndContinue, previousStep } = usePgFormV2();
-  
-  const handleContinue = () => {
-    saveAndContinue({ amenitiesStep: 'completed' });
-  };
-
-  return (
-    <div className="w-full max-w-7xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-          Amenities
-        </h2>
-        <p className="text-muted-foreground text-sm mb-6">
-          Select common and room amenities
-        </p>
-        <p className="text-sm text-muted-foreground py-8">
-          Similar to property amenities step - checkboxes for common and room amenities.
-        </p>
-      </motion.div>
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        showBack={true}
-      />
-    </div>
-  );
-}
-
-// Food & Mess Step
-export function FoodMessPgStep() {
-  const { saveAndContinue, previousStep } = usePgFormV2();
-  
-  const handleContinue = () => {
-    saveAndContinue({ foodMessStep: 'completed' });
-  };
-
-  return (
-    <div className="w-full max-w-7xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-          Food & Mess Details
-        </h2>
-        <p className="text-muted-foreground text-sm mb-6">
-          Meal availability, timings, and food options
-        </p>
-        <p className="text-sm text-muted-foreground py-8">
-          Fields for meal availability, food type, kitchen timings, cooking policy, etc.
-        </p>
-      </motion.div>
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        showBack={true}
-      />
-    </div>
-  );
-}
-
-// Rules & Restrictions Step
-export function RulesRestrictionsPgStep() {
-  const { saveAndContinue, previousStep } = usePgFormV2();
-  
-  const handleContinue = () => {
-    saveAndContinue({ rulesStep: 'completed' });
-  };
-
-  return (
-    <div className="w-full max-w-7xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-          Rules & Restrictions
-        </h2>
-        <p className="text-muted-foreground text-sm mb-6">
-          Property rules and guest policies
-        </p>
-        <p className="text-sm text-muted-foreground py-8">
-          Gate timing, visitor policy, alcohol/smoking/pets policy, minimum stay, notice period.
-        </p>
-      </motion.div>
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        showBack={true}
-      />
-    </div>
-  );
-}
-
-// Media Upload Step
-export function MediaUploadPgStep() {
-  const { saveAndContinue, previousStep } = usePgFormV2();
-  
-  const handleContinue = () => {
-    saveAndContinue({ mediaStep: 'completed' });
-  };
-
-  return (
-    <div className="w-full max-w-7xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-          Media Upload
-        </h2>
-        <p className="text-muted-foreground text-sm mb-6">
-          Upload property, room, and amenities images
-        </p>
-        <p className="text-sm text-muted-foreground py-8">
-          Image upload for property, rooms, washrooms, amenities. Video and virtual tour URLs.
-        </p>
-      </motion.div>
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        showBack={true}
-      />
     </div>
   );
 }
 
 // Availability Step
 export function AvailabilityPgStep() {
-  const { saveAndContinue, previousStep } = usePgFormV2();
+  const { saveAndContinue, setCurrentStepSubmitHandler } = usePgFormV2();
   
   const handleContinue = () => {
     saveAndContinue({ availabilityStep: 'completed' });
   };
+
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleContinue);
+  }, []);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -206,22 +59,21 @@ export function AvailabilityPgStep() {
           Total beds, available beds, sold-out status, next availability, seasonal pricing.
         </p>
       </motion.div>
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        showBack={true}
-      />
     </div>
   );
 }
 
 // Safety & Compliance Step
 export function SafetyCompliancePgStep() {
-  const { saveAndContinue, previousStep } = usePgFormV2();
+  const { saveAndContinue, setCurrentStepSubmitHandler } = usePgFormV2();
   
   const handleContinue = () => {
     saveAndContinue({ safetyStep: 'completed' });
   };
+
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleContinue);
+  }, []);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -236,24 +88,22 @@ export function SafetyCompliancePgStep() {
           Fire safety, police verification, first aid, CCTV, emergency exits, night security.
         </p>
       </motion.div>
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        showBack={true}
-      />
     </div>
   );
 }
 
 // Review & Submit Step
 export function ReviewAndSubmitPgStep() {
-  const { saveAndContinue, previousStep, formData } = usePgFormV2();
+  const { saveAndContinue, formData, setCurrentStepSubmitHandler } = usePgFormV2();
   
   const handleSubmit = () => {
     console.log('Submitting PG listing:', formData);
-    // TODO: Implement final submission logic
     saveAndContinue({ finalStep: 'completed' });
   };
+
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleSubmit);
+  }, []);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -270,13 +120,6 @@ export function ReviewAndSubmitPgStep() {
           </pre>
         </div>
       </motion.div>
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleSubmit}
-        showBack={true}
-        nextLabel="Submit Listing"
-        isLastStep={true}
-      />
     </div>
   );
 }
@@ -284,11 +127,6 @@ export function ReviewAndSubmitPgStep() {
 // Export all as default for easier imports
 export default {
   LocationDetailsPgStep,
-  RoomTypesPgStep,
-  AmenitiesPgStep,
-  FoodMessPgStep,
-  RulesRestrictionsPgStep,
-  MediaUploadPgStep,
   AvailabilityPgStep,
   SafetyCompliancePgStep,
   ReviewAndSubmitPgStep,

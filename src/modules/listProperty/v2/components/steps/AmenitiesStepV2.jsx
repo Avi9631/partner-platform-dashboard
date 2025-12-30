@@ -159,7 +159,7 @@ export default function AmenitiesStepV2() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="pb-24">
+          <div>
             <div className="space-y-6">
               {/* Community Features Toggles */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -333,3 +333,5 @@ AmenityCard.propTypes = {
   isSelected: PropTypes.bool.isRequired,
   onToggle: PropTypes.func.isRequired,
 };
+
+

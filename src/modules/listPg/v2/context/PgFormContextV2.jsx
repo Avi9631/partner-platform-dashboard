@@ -68,6 +68,7 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
   const [draftId, setDraftId] = useState(initialDraftId || null);
   const [isCreatingDraft, setIsCreatingDraft] = useState(false);
   const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+  const [currentStepSubmitHandler, setCurrentStepSubmitHandler] = useState(null);
   
   // Store saved form data from all steps as JSON
   const [formData, setFormData] = useState({});
@@ -338,6 +339,8 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
     saveDraft,
     isCreatingDraft,
     isLoadingDraft,
+    currentStepSubmitHandler,
+    setCurrentStepSubmitHandler,
   };
 
   return (

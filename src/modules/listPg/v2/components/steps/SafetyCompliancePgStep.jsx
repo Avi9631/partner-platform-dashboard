@@ -57,7 +57,6 @@ import {
 } from '@/components/ui/dialog';
 import { usePgFormV2 } from '../../context/PgFormContextV2';
 import safetyCompliancePgSchema, { SAFETY_MEASURES, CCTV_COVERAGE_OPTIONS, COMPLIANCE_LEVELS } from '../../../schemas/safetyCompliancePgSchema';
-import SaveAndContinueFooter from './SaveAndContinueFooter';
 import { createStepLogger } from '../../../../listProperty/utils/validationLogger';
 
 // Icon mapping
@@ -905,13 +904,6 @@ export function SafetyCompliancePgStep() {
             </CardContent>
           </Card>
 
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onSaveAndContinue={form.handleSubmit(onSubmit)}
-            onBack={previousStep}
-            nextDisabled={!form.formState.isValid}
-            showBack={true}
-          />
         </form>
       </motion.div>
 

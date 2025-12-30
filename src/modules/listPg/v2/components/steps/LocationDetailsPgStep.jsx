@@ -9,11 +9,11 @@ import {
 } from '@/components/ui/field';
 import { usePgFormV2 } from '../../context/PgFormContextV2';
 import locationSelectionSchema from '../../../schemas/locationDetailsPgSchema';
-import SaveAndContinueFooter from './SaveAndContinueFooter';
 import LocationPicker from '@/components/maps/LocationPicker';
+import { useEffect } from 'react';
 
 export default function LocationDetailsPgStep() {
-  const { saveAndContinue, previousStep, formData } = usePgFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
 
   // Initialize React Hook Form with Zod validation
   // Default values defined here, populated from context if previously saved
@@ -35,6 +35,11 @@ export default function LocationDetailsPgStep() {
     // Pass step data to context to update formData JSON
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
+  }, [form.handleSubmit]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -189,13 +194,6 @@ export default function LocationDetailsPgStep() {
             </p>
           </motion.div> */}
 
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onBack={previousStep}
-            onSaveAndContinue={form.handleSubmit(onSubmit)}
-            nextDisabled={!form.formState.isValid || !form.watch('coordinates')}
-            showBack={true}
-          />
         </form>
       </motion.div>
     </div>

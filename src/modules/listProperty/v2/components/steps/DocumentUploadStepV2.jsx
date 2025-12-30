@@ -677,3 +677,5 @@ function DocumentCard({ document, allCategories, onUpdateMetadata, onRemove, for
     </motion.div>
   );
 }
+
+

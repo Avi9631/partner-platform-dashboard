@@ -58,7 +58,6 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { usePgFormV2 } from '../../context/PgFormContextV2';
 import rulesRestrictionsPgSchema, { RULE_CATEGORIES, SAMPLE_RULES } from '../../../schemas/rulesRestrictionsPgSchema';
-import SaveAndContinueFooter from './SaveAndContinueFooter';
 import { createStepLogger } from '../../../../listProperty/utils/validationLogger';
 
 // Icon mapping
@@ -77,7 +76,7 @@ const ICON_MAP = {
 };
 
 export default function RulesRestrictionsPgStep() {
-  const { saveAndContinue, previousStep, formData } = usePgFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
   const [editingRuleIndex, setEditingRuleIndex] = useState(-1);
   const [newRule, setNewRule] = useState({ key: '', value: '' });
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -185,6 +184,11 @@ export default function RulesRestrictionsPgStep() {
   const onError = (errors) => {
     logger.logSubmission(form.getValues(), errors);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit, onError));
+  }, [form.handleSubmit]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -497,15 +501,6 @@ export default function RulesRestrictionsPgStep() {
             </motion.div>
           )}
 
-          
-
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onSaveAndContinue={form.handleSubmit(onSubmit)}
-            onBack={previousStep}
-            nextDisabled={!form.formState.isValid}
-            showBack={true}
-          />
         </form>
       </motion.div>
     </div>

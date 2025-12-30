@@ -114,7 +114,7 @@ export default function AreaDetailsV2() {
         </p>
       </motion.div>
 
-      <div className="pb-24">
+      <div>
         <FieldGroup>
           {/* Primary Required Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -355,3 +355,5 @@ export default function AreaDetailsV2() {
     </div>
   );
 }
+
+

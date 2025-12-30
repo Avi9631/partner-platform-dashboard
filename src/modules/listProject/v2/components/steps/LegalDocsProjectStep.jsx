@@ -12,9 +12,8 @@ import {
   Building,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useProjectFormV2 } from "../../context/ProjectFormContextV2";
-import SaveAndContinueFooter from "./SaveAndContinueFooter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,7 +61,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export default function LegalDocsProjectStep() {
-  const { saveAndContinue, goToPreviousStep, formData, currentStep } =
+  const { saveAndContinue, formData, setCurrentStepSubmitHandler } =
     useProjectFormV2();
 
   // Unified documents list
@@ -303,6 +302,11 @@ export default function LegalDocsProjectStep() {
     saveAndContinue({ legalDocuments: documentsList });
   };
 
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleContinue);
+  }, [handleContinue, setCurrentStepSubmitHandler]);
+
   // Pro tips for legal documents
   const legalDocsTips = [
     "RERA certificate is mandatory for projects under RERA jurisdiction",
@@ -473,13 +477,6 @@ export default function LegalDocsProjectStep() {
           </div>
         </div>
       </motion.div>
-
-      <SaveAndContinueFooter
-        onBack={goToPreviousStep}
-        onSaveAndContinue={handleContinue}
-        nextDisabled={!isValid}
-        showBack={true}
-      />
     </div>
   );
 }

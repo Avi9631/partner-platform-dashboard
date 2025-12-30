@@ -2,10 +2,9 @@ import { motion } from "motion/react";
 import { Home, Plus, Trash2, Settings } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProjectFormV2 } from "../../context/ProjectFormContextV2";
 import configurationsProjectSchema, { PROPERTY_CATEGORY } from "../../../schemas/configurationsProjectSchema";
-import SaveAndContinueFooter from "./SaveAndContinueFooter";
 import { 
   getConfigurationTypeOptions, 
   getDefaultConfigValues,
@@ -26,7 +25,7 @@ import FarmFields from "../configuration/FarmFields";
 import CommercialFields from "../configuration/CommercialFields";
 
 export default function ConfigurationsProjectStep() {
-  const { saveAndContinue, formData, goToPreviousStep, currentStep } = useProjectFormV2();
+  const { saveAndContinue, formData, setCurrentStepSubmitHandler } = useProjectFormV2();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
 
@@ -245,11 +244,6 @@ export default function ConfigurationsProjectStep() {
                 </p>
               </div>
             )}
-
-            <SaveAndContinueFooter
-              onBack={goToPreviousStep}
-              showBack={currentStep > 0}
-            />
           </form>
         </Form>
 

@@ -223,12 +223,6 @@ export default function AmenitiesProjectStep() {
               })}
             </AnimatePresence>
           </div>
- 
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onBack={goToPreviousStep}
-            showBack={currentStep > 0}
-          />
         </form>
       </motion.div>
     </div>

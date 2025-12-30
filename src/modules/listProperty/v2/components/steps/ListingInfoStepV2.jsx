@@ -59,10 +59,7 @@ export default function ListingInfoStepV2() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="pb-24">
-            <div className="space-y-4">
- 
-              
+        <div>
               {/* Title */}
               <div className="space-y-1.5">
                 <Label htmlFor="title" className="text-sm flex items-center gap-1.5">
@@ -108,9 +105,10 @@ export default function ListingInfoStepV2() {
                 )}
               </div>
             </div>
-          </div>
         </motion.div>
       </div>
     </FormProvider>
   );
 }
+
+

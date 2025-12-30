@@ -1,8 +1,21 @@
 import { motion } from 'motion/react';
-import { Check, ChevronRight } from 'lucide-react';
+import { Check, ChevronRight, Rocket, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePgFormV2 } from '../context/PgFormContextV2';
 import { getVisibleSteps } from '../config/stepConfigurationPg';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { usePgPublish } from '../hooks/usePgPublish';
 
 export default function PgFormSidebar() {
   const { 
@@ -10,13 +23,27 @@ export default function PgFormSidebar() {
     goToStep, 
     formDataWithType, 
     completedSteps,
+    draftId,
+    formData
   } = usePgFormV2();
+
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const { publish, isPublishing } = usePgPublish(draftId, formData);
 
   const visibleSteps = getVisibleSteps(formDataWithType);
 
   const handleStepClick = (stepIndex) => {
     // Allow navigation to any step (no locking)
     goToStep(stepIndex);
+  };
+
+  const handlePublishClick = () => {
+    setShowPublishDialog(true);
+  };
+
+  const handlePublish = async () => {
+    setShowPublishDialog(false);
+    await publish();
   };
 
   return (
@@ -120,15 +147,83 @@ export default function PgFormSidebar() {
         </ul>
       </nav>
 
-      {/* Footer Info */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-r from-orange-50/50 to-white dark:from-orange-950/10 dark:to-gray-900">
-        <div className="flex items-start gap-2 text-xs text-muted-foreground">
+      {/* Publish Button Section */}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/20 dark:to-gray-900">
+        <Button
+          onClick={handlePublishClick}
+          disabled={isPublishing || !draftId}
+          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPublishing ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Publishing...
+            </>
+          ) : (
+            <>
+              <Rocket className="w-5 h-5 mr-2" />
+              Publish PG/Hostel
+            </>
+          )}
+        </Button>
+
+        <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
           <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-1.5 flex-shrink-0" />
           <p>
-            Click any step to navigate. Your progress is auto-saved.
+            {completedSteps.size === visibleSteps.length 
+              ? "All steps completed! Ready to publish."
+              : `Complete ${visibleSteps.length - completedSteps.size} more step(s) for best results.`}
           </p>
         </div>
       </div>
+
+      {/* Footer Info */}
+      <div className="px-4 pb-4 bg-gradient-to-r from-orange-50/50 to-white dark:from-orange-950/10 dark:to-gray-900">
+        <div className="flex items-start gap-2 text-xs text-muted-foreground">
+          <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-1.5 flex-shrink-0" />
+          <p>
+            Your progress is auto-saved. Click any step to navigate.
+          </p>
+        </div>
+      </div>
+
+      {/* Publish Confirmation Dialog */}
+      <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Publish PG/Hostel?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <div>
+                You have completed <span className="font-semibold text-orange-600">{completedSteps.size} out of {visibleSteps.length}</span> steps.
+              </div>
+              
+              {completedSteps.size === visibleSteps.length ? (
+                <div className="text-green-600 dark:text-green-400">
+                  ✓ All steps completed! Your listing is ready to publish.
+                </div>
+              ) : (
+                <div className="text-amber-600 dark:text-amber-400">
+                  ⚠️ Publishing with incomplete information may affect your listing visibility.
+                </div>
+              )}
+              
+              <div className="pt-2 text-sm">
+                Once published, your listing will be reviewed and made live on the platform.
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handlePublish}
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+            >
+              <Rocket className="w-4 h-4 mr-2" />
+              Confirm & Publish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </aside>
   );
 }

@@ -44,7 +44,6 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { usePgFormV2 } from "../../context/PgFormContextV2";
-import SaveAndContinueFooter from "./SaveAndContinueFooter";
 import ProTipV2 from "../../../../listProperty/v2/components/shared/ProTipV2";
 import { uploadMultipleFiles } from "@/lib/uploadUtils";
 
@@ -83,7 +82,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export default function MediaUploadPgStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePgFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
 
   // Unified media list (both images and videos)
   const [mediaList, setMediaList] = useState(formData?.mediaData || []);
@@ -324,13 +323,15 @@ export default function MediaUploadPgStepV2() {
     });
 
     // Only save media that has been successfully uploaded (has URL)
-    const uploadedMedia = uniqueMedia.filter((media) => media.url);
+    const validMedia = uniqueMedia.filter((media) => media.url);
 
-    const data = {
-      mediaData: uploadedMedia, // Only uploaded media with URLs
-    };
-    saveAndContinue(data);
+    saveAndContinue({ mediaData: validMedia });
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleContinue);
+  }, [handleContinue]);
 
   // Pro tips for media upload
   const mediaTips = [
@@ -483,13 +484,6 @@ export default function MediaUploadPgStepV2() {
  
         </div>
       </motion.div>
-
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        nextDisabled={!isValid}
-        showBack={true}
-      />
     </div>
   );
 }

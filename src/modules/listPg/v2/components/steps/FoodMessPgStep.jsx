@@ -51,7 +51,7 @@ const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner'];
 const FOOD_TYPE_OPTIONS = ['Veg', 'Non-veg', 'Veg & Non-veg'];
 
 export default function FoodMessPgStep() {
-  const { saveAndContinue, previousStep, formData } = usePgFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [selectedMeal, setSelectedMeal] = useState('breakfast');
@@ -796,13 +796,6 @@ export default function FoodMessPgStep() {
             </div>
           )}
 
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onSaveAndContinue={form.handleSubmit(onSubmit)}
-            onBack={previousStep}
-            nextDisabled={!form.formState.isValid}
-            showBack={true}
-          />
         </form>
       </motion.div>
     </div>

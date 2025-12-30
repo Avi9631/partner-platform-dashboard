@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "motion/react";
@@ -8,11 +9,10 @@ import {
 } from "@/components/ui/field";
 import { useProjectFormV2 } from "../../context/ProjectFormContextV2";
 import locationDetailsProjectSchema from "../../../schemas/locationDetailsProjectSchema";
-import SaveAndContinueFooter from "./SaveAndContinueFooter";
 import LocationPicker from "@/components/maps/LocationPicker";
 
 export default function LocationDetailsProjectStep() {
-  const { saveAndContinue, formData, goToPreviousStep, currentStep } = useProjectFormV2();
+  const { saveAndContinue, formData, setCurrentStepSubmitHandler } = useProjectFormV2();
 
   const form = useForm({
     resolver: zodResolver(locationDetailsProjectSchema),
@@ -29,6 +29,11 @@ export default function LocationDetailsProjectStep() {
   const onSubmit = (data) => {
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
+  }, [form.handleSubmit, setCurrentStepSubmitHandler]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -112,13 +117,6 @@ export default function LocationDetailsProjectStep() {
               />
             </div>
           </motion.div>
-
-          <SaveAndContinueFooter
-            onBack={goToPreviousStep}
-            onSaveAndContinue={() => form.handleSubmit(onSubmit)()}
-            nextDisabled={!form.formState.isValid || !form.watch('coordinates')}
-            showBack={currentStep > 0}
-          />
         </div>
       </motion.div>
     </div>

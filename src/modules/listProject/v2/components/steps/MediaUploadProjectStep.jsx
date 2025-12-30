@@ -15,10 +15,9 @@ import {
   Camera,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useProjectFormV2 } from "../../context/ProjectFormContextV2";
 import { MEDIA_CATEGORIES, VIDEO_TYPES } from "../../../schemas/mediaUploadProjectSchema";
-import SaveAndContinueFooter from "./SaveAndContinueFooter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -74,7 +73,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export default function MediaUploadProjectStep() {
-  const { saveAndContinue, goToPreviousStep, formData, currentStep } = useProjectFormV2();
+  const { saveAndContinue, formData, setCurrentStepSubmitHandler } = useProjectFormV2();
 
   // Unified media list (both images and videos)
   const [mediaList, setMediaList] = useState(formData?.mediaData || []);
@@ -325,6 +324,11 @@ export default function MediaUploadProjectStep() {
     saveAndContinue(data);
   };
 
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleContinue);
+  }, [handleContinue, setCurrentStepSubmitHandler]);
+
  
   return (
     <div className="w-full max-w-7xl mx-auto px-2 sm:px-4">
@@ -485,13 +489,6 @@ export default function MediaUploadProjectStep() {
  
         </div>
       </motion.div>
-
-      <SaveAndContinueFooter
-        onBack={goToPreviousStep}
-        onSaveAndContinue={handleContinue}
-        nextDisabled={!isValid}
-        showBack={true}
-      />
     </div>
   );
 }

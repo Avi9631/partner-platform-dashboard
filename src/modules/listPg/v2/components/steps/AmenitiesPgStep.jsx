@@ -30,7 +30,7 @@ const iconMapping = {
 };
 
 export default function AmenitiesPgStep() {
-  const { saveAndContinue, previousStep, formData } = usePgFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
   
   const logger = useMemo(() => createStepLogger('Amenities PG Step V2'), []);
 
@@ -176,16 +176,6 @@ export default function AmenitiesPgStep() {
                   })}
                 </AnimatePresence>
               </div>
-   
- 
-
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onSaveAndContinue={form.handleSubmit(onSubmit)}
-            onBack={previousStep}
-            nextDisabled={false}
-            showBack={true}
-          />
         </form>
       </motion.div>
     </div>

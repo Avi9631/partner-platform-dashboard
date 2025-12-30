@@ -4,6 +4,7 @@ import { getStepComponent } from '../config/stepConfigurationPg';
 import { Button } from '@/components/ui/button';
 import { X, Save } from 'lucide-react';
 import PgFormSidebar from './PgFormSidebar';
+import SaveAndContinueFooter from './steps/SaveAndContinueFooter';
 
 function PgFormContentV2() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ function PgFormContentV2() {
     return null;
   }
   
-  const { currentStep, resetForm, formDataWithType, isLoadingDraft, saveDraft, saveAndContinue, previousStep, getTotalSteps } = context;
+  const { currentStep, resetForm, formDataWithType, isLoadingDraft, saveDraft, formData, saveAndContinue, previousStep, getTotalSteps, currentStepSubmitHandler } = context;
 
   const handleClose = () => {
     if (window.confirm('Are you sure you want to close? Your progress is saved as draft.')) {
@@ -48,12 +49,12 @@ function PgFormContentV2() {
   };
 
   return (
-    <div className="h-screen flex bg-gray-50 dark:bg-gray-950">
+    <div className="fixed inset-0 flex bg-gray-50 dark:bg-gray-950 z-10">
       {/* Sidebar */}
       <PgFormSidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Top Header */}
         <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
           <div className="px-6 py-4 flex items-center justify-between">
@@ -89,7 +90,7 @@ function PgFormContentV2() {
 
         {/* Step Content */}
         <div className="flex-1 overflow-y-auto bg-gradient-to-br from-orange-50/30 to-white dark:from-orange-950/10 dark:to-gray-950">
-          <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="max-w-5xl mx-auto px-6 py-8 pb-32">
             {isLoadingDraft ? (
               <div className="flex items-center justify-center h-full min-h-[400px]">
                 <div className="text-center">
@@ -102,6 +103,26 @@ function PgFormContentV2() {
             )}
           </div>
         </div>
+
+        {/* Fixed Footer */}
+        {!isLoadingDraft && (
+          <div className="flex-shrink-0">
+            <SaveAndContinueFooter
+              onBack={previousStep}
+              onSaveAndContinue={async () => {
+                // If current step has registered a submit handler, use it
+                if (currentStepSubmitHandler) {
+                  await currentStepSubmitHandler();
+                } else {
+                  // No form in current step, just save and continue
+                  await saveAndContinue({});
+                }
+              }}
+              showBack={currentStep > 0}
+              isLastStep={currentStep === getTotalSteps() - 1}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

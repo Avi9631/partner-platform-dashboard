@@ -162,7 +162,7 @@ export default function GeoTagStepV2() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-24">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Property Location Display */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -314,3 +314,5 @@ export default function GeoTagStepV2() {
     </div>
   );
 }
+
+

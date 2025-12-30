@@ -192,3 +192,4 @@ export default function PropertyTypeStepV2() {
     </div>
   );
 }
+

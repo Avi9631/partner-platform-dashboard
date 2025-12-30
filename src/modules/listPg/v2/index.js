@@ -8,8 +8,12 @@
 export { default as PgFormSheetV2 } from './components/PgFormSheetV2';
 export { default as PgFormPageV2 } from './components/PgFormPageV2';
 
+// Sidebar component
+export { default as PgFormSidebar } from './components/PgFormSidebar';
+
 // Context and hooks
 export { PgFormProviderV2, usePgFormV2 } from './context/PgFormContextV2';
+export { usePgPublish } from './hooks/usePgPublish';
 
 // Configuration
 export {

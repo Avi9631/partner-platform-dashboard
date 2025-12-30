@@ -756,3 +756,5 @@ function PropertyPlanCard({ plan, allCategories, onUpdateMetadata, onRemove, for
     </motion.div>
   );
 }
+
+

@@ -72,7 +72,7 @@ export default function SuitableForStepV2() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="pb-24">
+          <div>
             {shouldShowSuitableFor ? (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2 text-orange-700 dark:text-orange-400">
@@ -123,3 +123,5 @@ export default function SuitableForStepV2() {
     </FormProvider>
   );
 }
+
+

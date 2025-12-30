@@ -70,7 +70,6 @@ import {
 } from "@/components/ui/accordion";
 import { usePgFormV2 } from "../../context/PgFormContextV2";
 import roomTypesPgSchema from "../../../schemas/roomTypesPgSchema";
-import SaveAndContinueFooter from "./SaveAndContinueFooter";
 import { createStepLogger } from "../../../../listProperty/utils/validationLogger";
 import { uploadMultipleFiles } from "@/lib/uploadUtils";
 
@@ -112,7 +111,7 @@ const PRICING_TYPES = [
 ];
 
 export default function RoomTypesPgStep() {
-  const { saveAndContinue, previousStep, formData } = usePgFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
   const [showAmenitiesDialog, setShowAmenitiesDialog] = useState(false);
   const [selectedAmenitiesRoomIndex, setSelectedAmenitiesRoomIndex] =
     useState(0);
@@ -623,6 +622,11 @@ export default function RoomTypesPgStep() {
     }
   };
 
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
+  }, [form.handleSubmit]);
+
   const onError = (errors) => {
     logger.logSubmission(form.getValues(), errors);
   };
@@ -754,16 +758,6 @@ export default function RoomTypesPgStep() {
               </div>
             )}
           </div>
-
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onSaveAndContinue={form.handleSubmit(onSubmit)}
-            onBack={previousStep}
-            nextDisabled={!form.formState.isValid || isUploadingImages}
-            showBack={true}
-            isLoading={isUploadingImages}
-            loadingText="Uploading images..."
-          />
         </form>
       </motion.div>
 

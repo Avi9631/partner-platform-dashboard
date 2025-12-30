@@ -1,8 +1,22 @@
 import { motion } from 'motion/react';
-import { Check, ChevronRight } from 'lucide-react';
+import { Check, ChevronRight, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProjectFormV2 } from '../context/ProjectFormContextV2';
 import { getVisibleSteps } from '../config/stepConfigurationProject';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useState } from 'react';
+import { useProjectPublish } from '../hooks/useProjectPublish';
+import { useNavigate } from 'react-router-dom';
 
 export default function ProjectFormSidebar() {
   const { 
@@ -10,13 +24,34 @@ export default function ProjectFormSidebar() {
     goToStep, 
     formDataWithType, 
     completedSteps,
+    draftId,
   } = useProjectFormV2();
+
+  const navigate = useNavigate();
+  const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const { publish, isPublishing } = useProjectPublish(draftId, formDataWithType);
 
   const visibleSteps = getVisibleSteps(formDataWithType);
 
   const handleStepClick = (stepIndex) => {
     // Allow navigation to any step (no locking)
     goToStep(stepIndex);
+  };
+
+  const handlePublishClick = () => {
+    setIsPublishDialogOpen(true);
+  };
+
+  const handlePublish = async () => {
+    const result = await publish();
+    
+    if (result.success) {
+      setIsPublishDialogOpen(false);
+      // Navigate to projects list after successful publish
+      setTimeout(() => {
+        navigate('/list-project');
+      }, 1500);
+    }
   };
 
   return (
@@ -121,7 +156,18 @@ export default function ProjectFormSidebar() {
       </nav>
 
       {/* Footer Info */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-r from-orange-50/50 to-white dark:from-orange-950/10 dark:to-gray-900">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-r from-orange-50/50 to-white dark:from-orange-950/10 dark:to-gray-900 space-y-3">
+        {/* Publish Button */}
+        <Button
+          onClick={handlePublishClick}
+          disabled={isPublishing || !draftId}
+          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30 transition-all duration-200"
+        >
+          <Send className="w-4 h-4 mr-2" />
+          {isPublishing ? 'Publishing...' : 'Publish Project'}
+        </Button>
+
+        {/* Info Text */}
         <div className="flex items-start gap-2 text-xs text-muted-foreground">
           <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-1.5 flex-shrink-0" />
           <p>
@@ -129,6 +175,29 @@ export default function ProjectFormSidebar() {
           </p>
         </div>
       </div>
+
+      {/* Publish Confirmation Dialog */}
+      <AlertDialog open={isPublishDialogOpen} onOpenChange={setIsPublishDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ready to publish your project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will make your project visible to potential buyers and investors. 
+              You can still edit it after publishing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPublishing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handlePublish}
+              disabled={isPublishing}
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+            >
+              {isPublishing ? 'Publishing...' : 'Publish Project'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </aside>
   );
 }

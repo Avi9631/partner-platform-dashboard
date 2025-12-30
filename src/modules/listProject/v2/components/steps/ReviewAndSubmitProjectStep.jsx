@@ -1,15 +1,20 @@
 import { motion } from "motion/react";
 import { CheckCircle } from "lucide-react";
+import { useEffect } from "react";
 import { useProjectFormV2 } from "../../context/ProjectFormContextV2";
-import SaveAndContinueFooter from "./SaveAndContinueFooter";
 
 export default function ReviewAndSubmitProjectStep() {
-  const { formData, goToPreviousStep, currentStep } = useProjectFormV2();
+  const { formData, setCurrentStepSubmitHandler } = useProjectFormV2();
 
   const handleSubmit = () => {
     console.log('Final submission:', formData);
     // TODO: Call publish API
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleSubmit);
+  }, [handleSubmit, setCurrentStepSubmitHandler]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -40,13 +45,6 @@ export default function ReviewAndSubmitProjectStep() {
               Will include: Collapsible sections with all data, Edit buttons, Final submit
             </p>
           </div>
-
-          <SaveAndContinueFooter
-            onBack={goToPreviousStep}
-            onSaveAndContinue={handleSubmit}
-            showBack={currentStep > 0}
-            isLastStep={true}
-          />
         </div>
       </motion.div>
     </div>

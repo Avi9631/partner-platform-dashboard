@@ -66,7 +66,7 @@ export default function LocationSelectionStepV2() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-24">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Location Picker with Map */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -116,7 +116,7 @@ export default function LocationSelectionStepV2() {
                           field.onChange(null);
                         }
                       }}
-                      height="500px"
+                      height="400px"
                     />
                     {fieldState.invalid && (
                       <p className="text-sm text-red-500 mt-2">
@@ -201,3 +201,5 @@ export default function LocationSelectionStepV2() {
     </div>
   );
 }
+
+

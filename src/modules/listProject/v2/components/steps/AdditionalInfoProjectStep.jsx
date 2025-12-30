@@ -2,12 +2,12 @@ import { motion } from "motion/react";
 import { Info } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useProjectFormV2 } from "../../context/ProjectFormContextV2";
 import additionalInfoProjectSchema from "../../../schemas/additionalInfoProjectSchema";
-import SaveAndContinueFooter from "./SaveAndContinueFooter";
 
 export default function AdditionalInfoProjectStep() {
-  const { saveAndContinue, formData, goToPreviousStep, currentStep } = useProjectFormV2();
+  const { saveAndContinue, formData, setCurrentStepSubmitHandler } = useProjectFormV2();
 
   const form = useForm({
     resolver: zodResolver(additionalInfoProjectSchema),
@@ -18,6 +18,11 @@ export default function AdditionalInfoProjectStep() {
   const onSubmit = (data) => {
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
+  }, [form.handleSubmit, setCurrentStepSubmitHandler]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -48,11 +53,6 @@ export default function AdditionalInfoProjectStep() {
               Will include: Highlights, USPs, Investment potential, Awards
             </p>
           </div>
-
-          <SaveAndContinueFooter
-            onBack={goToPreviousStep}
-            showBack={currentStep > 0}
-          />
         </form>
       </motion.div>
     </div>

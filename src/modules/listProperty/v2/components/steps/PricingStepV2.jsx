@@ -161,7 +161,7 @@ export default function PricingStepV2() {
         </p>
       </motion.div>
 
-      <div className="pb-24">
+      <div>
         <FieldGroup>
           {/* Info: Listing Type from Basic Details */}
           <motion.div
@@ -394,3 +394,5 @@ export default function PricingStepV2() {
     </div>
   );
 }
+
+

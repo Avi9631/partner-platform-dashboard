@@ -30,11 +30,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePgFormV2 } from "../../context/PgFormContextV2";
 import basicDetailsPgSchema from "../../../schemas/basicDetailsPgSchema";
-import SaveAndContinueFooter from "./SaveAndContinueFooter";
 import { createStepLogger } from "../../../../listProperty/utils/validationLogger";
 
 export default function BasicDetailsPgStep() {
-  const { saveAndContinue, formData, setPropertyType } = usePgFormV2();
+  const { saveAndContinue, formData, setPropertyType, setCurrentStepSubmitHandler } = usePgFormV2();
  
   const logger = useMemo(
     () => createStepLogger("Basic Details PG Step V2"),
@@ -85,6 +84,11 @@ export default function BasicDetailsPgStep() {
       logger.logErrors(form.formState.errors);
     }
   }, [form.formState.errors, logger]);
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
+  }, [form.handleSubmit]);
  
   const onSubmit = (data) => {
     logger.logSubmission(data, form.formState.errors);
@@ -295,16 +299,6 @@ export default function BasicDetailsPgStep() {
             </AnimatePresence>
           </div>
 
- 
- 
- 
-
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onSaveAndContinue={form.handleSubmit(onSubmit)}
-            nextDisabled={!form.formState.isValid}
-            showBack={false}
-          />
         </form>
       </motion.div>
     </div>

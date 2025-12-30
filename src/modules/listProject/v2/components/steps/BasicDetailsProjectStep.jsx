@@ -23,11 +23,10 @@ import {
 } from "@/components/ui/select";
 import { useProjectFormV2 } from "../../context/ProjectFormContextV2";
 import basicDetailsProjectSchema from "../../../schemas/basicDetailsProjectSchema";
-import SaveAndContinueFooter from "./SaveAndContinueFooter";
 import { createStepLogger } from "../../../../listProperty/utils/validationLogger";
 
 export default function BasicDetailsProjectStep() {
-  const { saveAndContinue, formData, goToPreviousStep, currentStep } = useProjectFormV2();
+  const { saveAndContinue, formData, setCurrentStepSubmitHandler } = useProjectFormV2();
   
   const logger = useMemo(
     () => createStepLogger("Basic Details Project Step V2"),
@@ -68,6 +67,11 @@ export default function BasicDetailsProjectStep() {
   const onError = (errors) => {
     logger.logSubmission(form.getValues(), errors);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit, onError));
+  }, [form.handleSubmit, setCurrentStepSubmitHandler]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -421,11 +425,6 @@ export default function BasicDetailsProjectStep() {
                 )}
               </Field>
             )}
-          />
-
-          <SaveAndContinueFooter
-            onBack={goToPreviousStep}
-            showBack={currentStep > 0}
           />
         </form>
       </motion.div>

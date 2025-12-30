@@ -846,3 +846,5 @@ function MediaCard({ media, allCategories, onUpdateMetadata, onRemove, uploadPro
     </motion.div>
   );
 }
+
+

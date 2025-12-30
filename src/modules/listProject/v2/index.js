@@ -3,6 +3,9 @@
 // Context
 export { ProjectFormProviderV2, useProjectFormV2 } from './context/ProjectFormContextV2';
 
+// Hooks
+export { useProjectPublish } from './hooks/useProjectPublish';
+
 // Components
 export { default as ProjectFormPageV2 } from './components/ProjectFormPageV2';
 export { default as ProjectFormSheetV2 } from './components/ProjectFormSheetV2';
