@@ -31,10 +31,12 @@ const propertyTypes = [
 export default function PropertyTypeStepV2() {
   const { setPropertyType, saveAndContinue, formData, saveDraft } = usePropertyFormV2();
   const [selectedType, setSelectedType] = useState(formData?.propertyType || null);
+  const [hasUserSelected, setHasUserSelected] = useState(false);
 
   const handleSelectType = async (type) => {
     setSelectedType(type);
     setPropertyType(type);
+    setHasUserSelected(true);
     
     // Auto-save the property type selection
     await saveDraft({ propertyType: type });
@@ -47,16 +49,16 @@ export default function PropertyTypeStepV2() {
     }
   };
 
-  // Mark step as completed when property type is selected
+  // Auto-advance only when user actively selects a type (not when returning to this step)
   useEffect(() => {
-    if (selectedType) {
+    if (selectedType && hasUserSelected) {
       // Auto-advance to next step after selection
       const timer = setTimeout(() => {
         handleContinue();
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [selectedType]);
+  }, [selectedType, hasUserSelected]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">

@@ -13,40 +13,164 @@ const getCompletedStepsFromData = (formData) => {
   const completedSteps = new Set();
   const visibleSteps = getVisibleSteps(formData);
 
+  // Helper to check if a value is meaningful (not null, undefined, empty string, or empty array)
+  const hasValue = (val) => {
+    if (val === null || val === undefined || val === '') return false;
+    if (Array.isArray(val)) return val.length > 0;
+    if (typeof val === 'object') return Object.keys(val).length > 0;
+    return true;
+  };
+
   visibleSteps.forEach((step, index) => {
     let hasData = false;
 
     switch (step.id) {
       case 'basic-details':
-        hasData = !!(formData.pgHostelName || formData.propertyFor || formData.pgHostelType);
+        // Check if any basic detail field is filled
+        hasData = !!(
+          hasValue(formData.pgHostelName) || 
+          hasValue(formData.propertyFor) || 
+          hasValue(formData.pgHostelType) ||
+          hasValue(formData.description) ||
+          hasValue(formData.establishedYear) ||
+          hasValue(formData.totalFloors) ||
+          hasValue(formData.ownerName) ||
+          hasValue(formData.ownerContact)
+        );
         break;
+        
       case 'location-details':
-        hasData = !!(formData.address || formData.latitude || formData.longitude);
+        // Check if location details are provided (address or coordinates)
+        hasData = !!(
+          hasValue(formData.address) || 
+          hasValue(formData.city) ||
+          hasValue(formData.state) ||
+          hasValue(formData.pincode) ||
+          hasValue(formData.latitude) || 
+          hasValue(formData.longitude) ||
+          hasValue(formData.locationDetails) ||
+          hasValue(formData.landmark) ||
+          hasValue(formData.locality)
+        );
         break;
+        
       case 'room-types':
-        hasData = !!(formData.roomTypes && formData.roomTypes.length > 0);
+        // Check if room types are defined with valid data
+        console.log('🔍 Checking room-types:', {
+          hasRoomTypes: !!formData.roomTypes,
+          isArray: Array.isArray(formData.roomTypes),
+          length: formData.roomTypes?.length,
+          roomTypes: formData.roomTypes
+        });
+        hasData = !!(
+          formData.roomTypes && 
+          Array.isArray(formData.roomTypes) && 
+          formData.roomTypes.length > 0 &&
+          formData.roomTypes.some(room => 
+            hasValue(room.type) || 
+            hasValue(room.price) || 
+            hasValue(room.sharing) ||
+            hasValue(room.deposit) ||
+            hasValue(room.availableRooms) ||
+            hasValue(room.roomType) ||
+            hasValue(room.sharingType) ||
+            hasValue(room.rent)
+          )
+        );
+        console.log('🔍 room-types hasData:', hasData);
         break;
+        
       case 'amenities':
-        hasData = !!(formData.amenities && Object.keys(formData.amenities).length > 0);
+        // Check if any amenity is selected (using commonAmenities field)
+        hasData = !!(
+          (formData.commonAmenities && Array.isArray(formData.commonAmenities) && formData.commonAmenities.length > 0) ||
+          (formData.commonAmenitiesLegacy && Array.isArray(formData.commonAmenitiesLegacy) && formData.commonAmenitiesLegacy.length > 0) ||
+          (formData.amenities && typeof formData.amenities === 'object' && Object.keys(formData.amenities).length > 0)
+        );
         break;
+        
       case 'food-mess':
-        hasData = !!(formData.foodAvailable !== undefined || formData.messAvailable !== undefined);
+        // Check if food/mess options are defined (using foodMess field)
+        hasData = !!(
+          (formData.foodMess && typeof formData.foodMess === 'object' && Object.keys(formData.foodMess).length > 0) ||
+          formData.foodAvailable !== undefined || 
+          formData.messAvailable !== undefined ||
+          hasValue(formData.foodType) ||
+          hasValue(formData.messCharges) ||
+          hasValue(formData.mealsIncluded) ||
+          hasValue(formData.foodTimings) ||
+          formData.breakfastIncluded !== undefined ||
+          formData.lunchIncluded !== undefined ||
+          formData.dinnerIncluded !== undefined
+        );
         break;
+        
       case 'rules-restrictions':
-        hasData = !!(formData.rules || formData.restrictions);
+        // Check if any rules or restrictions are mentioned
+        hasData = !!(
+          hasValue(formData.rules) || 
+          hasValue(formData.restrictions) ||
+          hasValue(formData.gateClosingTime) ||
+          hasValue(formData.visitingHours) ||
+          hasValue(formData.occupancyRules) ||
+          hasValue(formData.guestPolicy) ||
+          hasValue(formData.noticePeriod) ||
+          (formData.restrictionsList && formData.restrictionsList.length > 0)
+        );
         break;
+        
       case 'media-upload':
-        hasData = !!(formData.images && formData.images.length > 0);
+        // Check if any media files are uploaded (using mediaData field)
+        hasData = !!(
+          (formData.mediaData && Array.isArray(formData.mediaData) && formData.mediaData.length > 0) ||
+          (formData.images && Array.isArray(formData.images) && formData.images.length > 0) ||
+          (formData.videos && Array.isArray(formData.videos) && formData.videos.length > 0) ||
+          hasValue(formData.virtualTourUrl) ||
+          hasValue(formData.coverImage)
+        );
         break;
+        
+      case 'availability':
+        // Check if availability information is provided
+        hasData = !!(
+          hasValue(formData.availableFrom) ||
+          formData.vacantBeds !== undefined ||
+          formData.totalBeds !== undefined ||
+          formData.immediateAvailability !== undefined
+        );
+        break;
+        
+      case 'safety-compliance':
+        // Check if safety/compliance info is provided
+        hasData = !!(
+          formData.hasFireSafety !== undefined ||
+          formData.hasCCTV !== undefined ||
+          formData.hasSecurityGuard !== undefined ||
+          hasValue(formData.safetyFeatures) ||
+          hasValue(formData.fireSafetyEquipment) ||
+          formData.hasEmergencyExit !== undefined
+        );
+        break;
+
+      case 'review-submit':
+        // Review step is always accessible, but mark as complete only if previous steps are done
+        // This will be handled separately - don't auto-complete
+        hasData = false;
+        break;
+        
       default:
         hasData = false;
     }
 
     if (hasData) {
       completedSteps.add(index);
+      console.log(`✅ Step ${index} (${step.id}) marked as completed`);
+    } else {
+      console.log(`❌ Step ${index} (${step.id}) has no data`);
     }
   });
 
+  console.log('📊 Total completed steps:', completedSteps.size, 'out of', visibleSteps.length);
   return completedSteps;
 };
 
@@ -83,32 +207,45 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
   const fetchDraftData = useCallback(async (id) => {
     try {
       setIsLoadingDraft(true);
-      console.log('Fetching PG draft data for ID:', id);
+      console.log('🔄 Fetching PG draft data for ID:', id);
       
       const response = await draftApi.getListingDraftById(id);
       
       if (response.success && response.data) {
-        console.log('PG draft data fetched successfully:', response.data);
+        console.log('✅ PG draft data fetched successfully:', response.data);
         
         // Set form data from fetched draft
         if (response.data.draftData) {
           const draftData = response.data.draftData;
+          console.log('📝 Draft data fields:', Object.keys(draftData));
           setFormData(draftData);
-          console.log('Form data populated from draft');
+          console.log('✅ Form data populated from draft');
           
           // Calculate completed steps based on draft data
           const completed = getCompletedStepsFromData(draftData);
           setCompletedSteps(completed);
-          console.log('Completed steps synced with draft data:', Array.from(completed));
+          console.log('✅ Completed steps synced with draft data:', Array.from(completed));
+          
+          // Start from the first incomplete step to continue progress
+          const visibleSteps = getVisibleSteps(draftData);
+          let firstIncompleteStep = 0;
+          for (let i = 0; i < visibleSteps.length; i++) {
+            if (!completed.has(i)) {
+              firstIncompleteStep = i;
+              break;
+            }
+          }
+          setCurrentStep(firstIncompleteStep);
+          console.log('📍 Starting at step:', firstIncompleteStep, visibleSteps[firstIncompleteStep]?.name || 'Unknown');
+        } else {
+          console.warn('⚠️ No draftData found in response');
+          setCurrentStep(0);
         }
-        
-        // Start from the first step
-        setCurrentStep(0);
       } else {
-        console.error('Failed to fetch PG draft data:', response);
+        console.error('❌ Failed to fetch PG draft data:', response);
       }
     } catch (error) {
-      console.error('Error fetching PG draft data:', error);
+      console.error('❌ Error fetching PG draft data:', error);
     } finally {
       setIsLoadingDraft(false);
     }
@@ -118,22 +255,33 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
   const loadDraftData = useCallback(() => {
     if (editingDraft && editingDraft.draftData) {
       setIsLoadingDraft(true);
-      console.log('Loading PG draft data for editing:', editingDraft);
+      console.log('🔄 Loading PG draft data for editing:', editingDraft);
       
       const draftData = editingDraft.draftData;
+      console.log('📝 Draft data fields:', Object.keys(draftData));
+      
       // Set form data from draft
       setFormData(draftData);
   
       // Calculate completed steps based on draft data
       const completed = getCompletedStepsFromData(draftData);
       setCompletedSteps(completed);
-      console.log('Completed steps synced with draft data:', Array.from(completed));
+      console.log('✅ Completed steps synced with draft data:', Array.from(completed));
       
-      // Start from the first step
-      setCurrentStep(0);
+      // Start from the first incomplete step to continue progress
+      const visibleSteps = getVisibleSteps(draftData);
+      let firstIncompleteStep = 0;
+      for (let i = 0; i < visibleSteps.length; i++) {
+        if (!completed.has(i)) {
+          firstIncompleteStep = i;
+          break;
+        }
+      }
+      setCurrentStep(firstIncompleteStep);
+      console.log('📍 Starting at step:', firstIncompleteStep, visibleSteps[firstIncompleteStep]?.name || 'Unknown');
       
       setIsLoadingDraft(false);
-      console.log('PG draft data loaded successfully');
+      console.log('✅ PG draft data loaded successfully');
     }
   }, [editingDraft]);
 
@@ -147,6 +295,24 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
       loadDraftData();
     }
   }, [initialDraftId, editingDraft, fetchDraftData, loadDraftData]);
+
+  // Re-sync completed steps whenever formData changes (for update case)
+  // This ensures the sidebar step status stays in sync with actual data
+  useEffect(() => {
+    // Only re-sync if we have form data (not during initial render)
+    if (formData && Object.keys(formData).length > 0) {
+      const completed = getCompletedStepsFromData(formData);
+      
+      // Only update if there's an actual difference to avoid infinite loops
+      const currentCompleted = Array.from(completedSteps).sort().join(',');
+      const newCompleted = Array.from(completed).sort().join(',');
+      
+      if (currentCompleted !== newCompleted) {
+        setCompletedSteps(completed);
+        console.log('🔄 Completed steps re-synced with form data:', Array.from(completed));
+      }
+    }
+  }, [formData]);
 
   // Memoize the form data with propertyType
   const formDataWithType = useMemo(() => ({

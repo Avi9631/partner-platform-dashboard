@@ -57,17 +57,17 @@ export default function PropertyFormSidebar() {
   return (
     <aside className="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-screen sticky top-0">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+      {/* <div className="p-6 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent mb-2">
           List Your Property
         </h2>
         <p className="text-sm text-muted-foreground">
           Complete all sections to publish
         </p>
-      </div>
+      </div> */}
 
       {/* Property Type Badge */}
-      {propertyType && (
+      {/* {propertyType && (
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-gray-900">
           <div className="flex items-center justify-between">
             <div>
@@ -86,7 +86,7 @@ export default function PropertyFormSidebar() {
             </Button>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Progress */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
@@ -197,25 +197,25 @@ export default function PropertyFormSidebar() {
           )}
         </Button>
 
-        <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
+        {/* <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
           <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-1.5 flex-shrink-0" />
           <p>
             {completedSteps.size === visibleSteps.length 
               ? "All steps completed! Ready to publish."
               : `Complete ${visibleSteps.length - completedSteps.size} more step(s) for best results.`}
           </p>
-        </div>
+        </div> */}
       </div>
 
       {/* Footer Info */}
-      <div className="px-4 pb-4 bg-gradient-to-r from-orange-50/50 to-white dark:from-orange-950/10 dark:to-gray-900">
+      {/* <div className="px-4 pb-4 bg-gradient-to-r from-orange-50/50 to-white dark:from-orange-950/10 dark:to-gray-900">
         <div className="flex items-start gap-2 text-xs text-muted-foreground">
           <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-1.5 flex-shrink-0" />
           <p>
             Your progress is auto-saved. Click any step to navigate.
           </p>
         </div>
-      </div>
+      </div> */}
 
       {/* Publish Confirmation Dialog */}
       <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>

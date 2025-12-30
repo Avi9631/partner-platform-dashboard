@@ -1,8 +1,159 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import { getTotalVisibleSteps } from '../config/stepConfiguration';
+import { getTotalVisibleSteps, getVisibleSteps } from '../config/stepConfiguration';
 import { draftApi } from '@/services/draftService';
 
 const PropertyFormContextV2 = createContext(null);
+
+/**
+ * Helper function to determine which steps have data
+ * Returns a Set of step indices that have completed data
+ */
+const getCompletedStepsFromData = (formData) => {
+  const completedSteps = new Set();
+  const visibleSteps = getVisibleSteps(formData);
+
+  visibleSteps.forEach((step, index) => {
+    let hasData = false;
+
+    switch (step.id) {
+      case 'property-type':
+        hasData = !!formData.propertyType;
+        break;
+        
+      case 'location-selection':
+        hasData = !!(
+          formData.address || 
+          formData.city ||
+          formData.state ||
+          formData.pincode ||
+          formData.latitude || 
+          formData.longitude
+        );
+        break;
+        
+      case 'basic-details':
+        hasData = !!(
+          formData.propertyName ||
+          formData.listingType ||
+          formData.propertyAge ||
+          formData.description
+        );
+        break;
+        
+      case 'basic-configuration':
+        hasData = !!(
+          formData.bedrooms !== undefined ||
+          formData.bathrooms !== undefined ||
+          formData.balconies !== undefined ||
+          formData.carpetArea ||
+          formData.builtUpArea ||
+          formData.superBuiltUpArea
+        );
+        break;
+        
+      case 'land-attributes':
+        hasData = !!(
+          formData.plotArea ||
+          formData.plotLength ||
+          formData.plotWidth ||
+          formData.boundaryWall ||
+          formData.facingDirection
+        );
+        break;
+        
+      case 'furnishing':
+        hasData = !!(
+          formData.furnishingStatus ||
+          formData.furnishingDetails ||
+          (formData.furnishingItems && formData.furnishingItems.length > 0)
+        );
+        break;
+        
+      case 'location-attributes':
+        hasData = !!(
+          formData.nearbyPlaces ||
+          formData.locationAdvantages ||
+          formData.distanceFromMainRoad
+        );
+        break;
+        
+      case 'floor-details':
+        hasData = !!(
+          formData.floorNumber !== undefined ||
+          formData.totalFloors !== undefined ||
+          formData.floorType
+        );
+        break;
+        
+      case 'pricing':
+        hasData = !!(
+          formData.price !== undefined ||
+          formData.expectedPrice ||
+          formData.rentAmount ||
+          formData.securityDeposit ||
+          formData.maintenanceCharges
+        );
+        break;
+        
+      case 'suitable-for':
+        hasData = !!(
+          formData.suitableFor ||
+          (formData.preferredTenants && formData.preferredTenants.length > 0)
+        );
+        break;
+        
+      case 'listing-info':
+        hasData = !!(
+          formData.availableFrom ||
+          formData.possessionStatus ||
+          formData.ownershipType
+        );
+        break;
+        
+      case 'amenities':
+        hasData = !!(
+          formData.amenities && 
+          typeof formData.amenities === 'object' && 
+          Object.keys(formData.amenities).length > 0 &&
+          Object.values(formData.amenities).some(val => val === true || val === 'yes' || val)
+        );
+        break;
+        
+      case 'media-upload':
+        hasData = !!(
+          (formData.images && Array.isArray(formData.images) && formData.images.length > 0) ||
+          (formData.videos && Array.isArray(formData.videos) && formData.videos.length > 0) ||
+          formData.virtualTourUrl
+        );
+        break;
+        
+      case 'property-plan-upload':
+        hasData = !!(
+          formData.floorPlans && 
+          Array.isArray(formData.floorPlans) && 
+          formData.floorPlans.length > 0
+        );
+        break;
+        
+      case 'document-upload':
+        hasData = !!(
+          formData.documents && 
+          Array.isArray(formData.documents) && 
+          formData.documents.length > 0
+        );
+        break;
+        
+      default:
+        hasData = false;
+    }
+
+    if (hasData) {
+      completedSteps.add(index);
+    }
+  });
+
+  return completedSteps;
+};
 
 export const usePropertyFormV2 = () => {
   const context = useContext(PropertyFormContextV2);
@@ -42,6 +193,11 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
           if (draftData.propertyType) {
             setPropertyType(draftData.propertyType);
           }
+          
+          // Sync completed steps based on draft data
+          const completed = getCompletedStepsFromData(draftData);
+          setCompletedSteps(completed);
+          console.log('✅ Property completed steps synced with draft data:', Array.from(completed));
         }
       } catch (error) {
         console.error('Error loading draft:', error);
@@ -52,6 +208,17 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
 
     loadDraft();
   }, [initialDraftId, editingDraft]);
+
+  // Re-sync completed steps whenever formData changes (for update case)
+  // This ensures the sidebar step status stays in sync with actual data
+  useEffect(() => {
+    // Only re-sync if we have form data (not during initial render)
+    if (formData && Object.keys(formData).length > 0) {
+      const completed = getCompletedStepsFromData(formData);
+      setCompletedSteps(completed);
+      console.log('🔄 Property completed steps re-synced with form data:', Array.from(completed));
+    }
+  }, [formData, propertyType]);
 
   const formDataWithType = useMemo(() => ({
     ...formData,

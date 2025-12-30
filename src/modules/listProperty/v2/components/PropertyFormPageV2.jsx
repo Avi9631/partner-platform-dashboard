@@ -16,7 +16,7 @@ function PropertyFormContentV2() {
     return null;
   }
   
-  const { currentStep, resetForm, propertyType, formDataWithType, isLoading, saveDraft, formData, saveAndContinue, previousStep, getTotalSteps, currentStepSubmitHandler } = context;
+  const { currentStep, resetForm, propertyType, formDataWithType, isLoading, saveDraft, formData, saveAndContinue, previousStep, getTotalSteps, currentStepSubmitHandler, draftId } = context;
 
   const handleClose = () => {
     if (window.confirm('Are you sure you want to close? Your progress is saved as draft.')) {
@@ -71,15 +71,12 @@ function PropertyFormContentV2() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSaveDraft}
-                className="gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span className="hidden sm:inline">Save Draft</span>
-              </Button>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                <div className={`w-2 h-2 rounded-full ${draftId ? 'bg-green-500' : 'bg-gray-400'}`} />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {draftId ? 'Draft Saved' : 'Not Saved'}
+                </span>
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
