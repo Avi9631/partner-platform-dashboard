@@ -69,8 +69,8 @@ const Step2MultiPhoneVerification = ({
   const handleVerifyOtp = (index) => {
     const phone = formData.phoneNumbers[index];
     phoneVerification.verifyOtp(
+      phone.phone,
       phone.otp,
-      phone.generatedOtp,
       () => {
         const updatedPhones = [...formData.phoneNumbers];
         updatedPhones[index] = {
@@ -111,7 +111,7 @@ const Step2MultiPhoneVerification = ({
 
   return (
     <div className="space-y-4">
-      <div className="text-center mb-6">
+      {/* <div className="text-center mb-6">
         <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
           <Phone className="w-8 h-8 text-blue-600" />
         </div>
@@ -119,7 +119,7 @@ const Step2MultiPhoneVerification = ({
         <p className="text-sm text-gray-600">
           Add and verify all business phone numbers
         </p>
-      </div>
+      </div> */}
 
       {/* Add New Phone */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
@@ -198,25 +198,32 @@ const Step2MultiPhoneVerification = ({
                   </div>
                 </div>
               ) : !phone.otpSent ? (
-                <Button
-                  type="button"
-                  onClick={() => handleSendOtp(index)}
-                  disabled={phoneVerification.otpLoading}
-                  className="w-full"
-                  size="sm"
-                >
-                  {phoneVerification.otpLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    "Send Verification Code"
-                  )}
-                </Button>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-3">
+                  <p className="text-sm text-blue-800 text-center">
+                    Click below to receive a verification code
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={() => handleSendOtp(index)}
+                    disabled={phoneVerification.otpLoading}
+                    className="w-full"
+                    size="sm"
+                  >
+                    {phoneVerification.otpLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending OTP...
+                      </>
+                    ) : (
+                      "Send Verification Code"
+                    )}
+                  </Button>
+                </div>
               ) : (
-                <div className="space-y-2">
-                  <Label htmlFor={`otp-${index}`}>Enter Verification Code</Label>
+                <div className="space-y-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <Label htmlFor={`otp-${index}`} className="text-sm font-medium">
+                    Enter Verification Code
+                  </Label>
                   <Input
                     id={`otp-${index}`}
                     type="text"
@@ -224,21 +231,24 @@ const Step2MultiPhoneVerification = ({
                     maxLength={6}
                     value={phone.otp}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
+                    className="bg-white"
                   />
                   <div className="flex gap-2">
                     <Button
                       type="button"
                       onClick={() => handleVerifyOtp(index)}
-                      className="flex-1"
+                      className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                       size="sm"
+                      disabled={!phone.otp?.trim()}
                     >
-                      Verify
+                      Verify Code
                     </Button>
                     <Button
                       type="button"
                       onClick={() => handleResendOtp(index)}
                       variant="outline"
                       size="sm"
+                      title="Resend OTP"
                     >
                       <RefreshCw className="h-4 w-4" />
                     </Button>

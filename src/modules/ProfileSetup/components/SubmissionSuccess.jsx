@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle2, Clock, Mail, Loader2 } from "lucide-react";
+import { CheckCircle2, Clock, Mail, Loader2, Home, ArrowLeft } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -7,6 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
+import { Badge } from "../../../components/ui/badge";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToast } from "../../../components/hooks/use-toast";
 
@@ -16,6 +18,7 @@ const SubmissionSuccess = ({ onGoHome, workflowId }) => {
   const [timeRemaining, setTimeRemaining] = useState(120); // 2 minutes in seconds
   const [isChecking, setIsChecking] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [isFailed, setIsFailed] = useState(false);
   const [initialProfileStatus] = useState(user?.profileCompleted); // Capture initial status
 
   // Countdown timer
@@ -57,10 +60,10 @@ const SubmissionSuccess = ({ onGoHome, workflowId }) => {
         variant: "default",
       });
       
-      // Redirect after 3 seconds
+      // Redirect after 60 seconds
       setTimeout(() => {
         onGoHome();
-      }, 3000);
+      }, 60000);
     }
   }, [user?.profileCompleted, initialProfileStatus, isVerified, onGoHome, toast]);
 
@@ -72,15 +75,22 @@ const SubmissionSuccess = ({ onGoHome, workflowId }) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <Card className="w-full max-w-lg">
-        <CardHeader className="text-center space-y-4">
+    <Card className="w-full h-full sm:h-full flex flex-col overflow-hidden sm:rounded-lg sm:shadow-lg">
+        {/* Fixed Header */}
+        <CardHeader className="space-y-4 flex-shrink-0 text-center border-b">
           <div className="flex justify-center">
-            <div className={`rounded-full p-3 ${isVerified ? 'bg-green-100' : 'bg-green-100'}`}>
-              <CheckCircle2 className={`h-16 w-16 ${isVerified ? 'text-green-600 animate-bounce' : 'text-green-600'}`} />
+            <div className="relative inline-block">
+              <div className={`rounded-full p-3 ${isVerified ? 'bg-green-100' : 'bg-green-100'}`}>
+                <CheckCircle2 className={`h-16 w-16 ${isVerified ? 'text-green-600 animate-bounce' : 'text-green-600'}`} />
+              </div>
+              {isVerified && (
+                <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                </div>
+              )}
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-green-700">
+          <CardTitle className="text-2xl font-bold">
             {isVerified ? 'Verification Successful!' : 'Profile Submitted Successfully!'}
           </CardTitle>
           <CardDescription className="text-base">
@@ -88,32 +98,20 @@ const SubmissionSuccess = ({ onGoHome, workflowId }) => {
               ? 'Your profile has been verified. Redirecting to dashboard...' 
               : 'Your profile has been submitted for verification'}
           </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* What's Next Section */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900 mb-3 flex items-center">
-              <Clock className="h-5 w-5 mr-2" />
-              What happens next?
-            </h3>
-            <ol className="space-y-2 text-sm text-blue-800">
-              <li className="flex items-start">
-                <span className="font-semibold mr-2">1.</span>
-                <span>Our team will review your profile and verification video</span>
-              </li>
-              <li className="flex items-start">
-                <span className="font-semibold mr-2">2.</span>
-                <span>You&apos;ll receive an email notification within 24-48 hours</span>
-              </li>
-              <li className="flex items-start">
-                <span className="font-semibold mr-2">3.</span>
-                <span>Once approved, you&apos;ll have full access to all partner features</span>
-              </li>
-            </ol>
+          <div className="flex justify-center pt-2">
+            <Badge variant={isVerified ? "default" : "secondary"} className={isVerified ? "bg-green-600" : ""}>
+              {isVerified ? 'Verified' : 'Under Review'}
+            </Badge>
           </div>
+        </CardHeader>
+        
+        {/* Scrollable Content */}
+        <CardContent className="flex-1 overflow-y-auto space-y-6 pt-6">
+          {/* What's Next Section */}
+         
 
           {/* Current Status */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 hover:border-amber-300 transition-colors duration-200">
             <div className="flex items-center mb-2">
               <Mail className="h-5 w-5 text-amber-600 mr-2" />
               <h3 className="font-semibold text-amber-900">Current Status</h3>
@@ -124,22 +122,18 @@ const SubmissionSuccess = ({ onGoHome, workflowId }) => {
               Your profile is currently under review by our verification team.
             </p>
             {workflowId && (
-              <p className="text-xs text-amber-600 mt-2">
+              <p className="text-xs text-amber-600 mt-2 font-mono">
                 Tracking ID: {workflowId}
               </p>
             )}
           </div>
 
           {/* Email Notification */}
-          <div className="text-center text-sm text-gray-600 border-t pt-4">
-            <p>
-              📧 A confirmation email has been sent to your registered email address
-            </p>
-          </div>
+         
 
           {/* Verification Timer or Success Message */}
           {!isVerified ? (
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-lg p-6 hover:border-purple-300 transition-colors duration-200">
               <div className="flex flex-col items-center space-y-3">
                 <div className="flex items-center space-x-2">
                   <Clock className="h-6 w-6 text-purple-600 animate-pulse" />
@@ -167,7 +161,7 @@ const SubmissionSuccess = ({ onGoHome, workflowId }) => {
               </div>
             </div>
           ) : (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-6">
               <div className="flex flex-col items-center space-y-3">
                 <div className="flex items-center space-x-2">
                   <CheckCircle2 className="h-6 w-6 text-green-600 animate-pulse" />
@@ -176,20 +170,52 @@ const SubmissionSuccess = ({ onGoHome, workflowId }) => {
                   </span>
                 </div>
                 <p className="text-sm text-green-700 text-center">
-                  Redirecting you to the dashboard in 3 seconds...
+                  Auto-redirecting in 60 seconds or click Dashboard button below
                 </p>
-                <Loader2 className="h-8 w-8 text-green-600 animate-spin" />
+                <div className="flex items-center gap-2 text-green-600">
+                  <Clock className="h-5 w-5" />
+                  <span className="text-sm">You can now access your dashboard</span>
+                </div>
               </div>
             </div>
           )}
 
           {/* Help Text */}
-          <p className="text-xs text-center text-gray-500">
-            Need help? Contact our support team at support@partner-platform.com
-          </p>
+          <div className="text-center border-t pt-4">
+            <p className="text-xs text-gray-500">
+              Need help? Contact our support team at{" "}
+              <a href="mailto:support@partner-platform.com" className="text-orange-600 hover:underline">
+                support@partner-platform.com
+              </a>
+            </p>
+          </div>
         </CardContent>
+
+        {/* Fixed Footer */}
+        <div className="flex-shrink-0 border-t px-6 py-4 bg-gray-50">
+          <div className="flex justify-between items-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onGoHome}
+              disabled={!isFailed}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            
+            <Button
+              onClick={onGoHome}
+              disabled={!isVerified}
+              className={`flex items-center gap-2 ${isVerified ? 'animate-pulse' : ''}`}
+            >
+              <Home className="h-4 w-4" />
+              {isVerified ? 'Go to Dashboard' : 'Dashboard'}
+            </Button>
+          </div>
+        </div>
       </Card>
-    </div>
   );
 };
 

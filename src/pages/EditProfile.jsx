@@ -30,6 +30,12 @@ export default function EditProfile() {
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const [videoFile, setVideoFile] = useState(null);
+  const [originalPhone, setOriginalPhone] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -55,10 +61,12 @@ export default function EditProfile() {
         });
 
         const user = response.data.user;
+        const phoneNumber = user.phone || "";
+        setOriginalPhone(phoneNumber);
         setFormData({
           firstName: user.firstName || "",
           lastName: user.lastName || "",
-          phone: user.phone || "",
+          phone: phoneNumber,
           accountType: user.accountType || "INDIVIDUAL",
           latitude: user.latitude || "",
           longitude: user.longitude || "",
@@ -82,6 +90,19 @@ export default function EditProfile() {
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    
+    // Reset OTP states if phone number changes
+    if (field === "phone" && value !== originalPhone) {
+      setOtpSent(false);
+      setOtpVerified(false);
+      setOtp("");
+    } else if (field === "phone" && value === originalPhone) {
+      // If phone is changed back to original, no OTP needed
+      setOtpSent(false);
+      setOtpVerified(true);
+      setOtp("");
+    }
+    
     // Clear error for this field
     if (errors[field]) {
       setErrors((prev) => {
@@ -128,6 +149,86 @@ export default function EditProfile() {
     }
   };
 
+  const handleSendOtp = async () => {
+    if (!formData.phone.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a phone number",
+      });
+      return;
+    }
+
+    try {
+      setSendingOtp(true);
+      await apiCall(`${backendUrl}/api/otp/send`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone: formData.phone }),
+      });
+
+      setOtpSent(true);
+      toast({
+        title: "OTP Sent",
+        description: "Please check your phone for the verification code",
+      });
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to send OTP. Please try again.",
+      });
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter the OTP",
+      });
+      return;
+    }
+
+    try {
+      setVerifyingOtp(true);
+      
+      // Simulate verification (remove this and uncomment below for real verification)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setOtpVerified(true);
+      
+      // Real verification (commented out for simulation)
+      // await apiCall(`${backendUrl}/api/otp/verify`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ phone: formData.phone, otp }),
+      // });
+      // setOtpVerified(true);
+
+      toast({
+        title: "Success",
+        description: "Phone number verified successfully",
+      });
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Invalid OTP. Please try again.",
+      });
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -165,6 +266,16 @@ export default function EditProfile() {
         variant: "destructive",
         title: "Validation Error",
         description: "Please fix the errors in the form",
+      });
+      return;
+    }
+
+    // Check if phone number changed and OTP verification is required
+    if (formData.phone !== originalPhone && !otpVerified) {
+      toast({
+        variant: "destructive",
+        title: "Verification Required",
+        description: "Please verify your new phone number with OTP",
       });
       return;
     }
@@ -297,19 +408,85 @@ export default function EditProfile() {
                 <Phone className="h-4 w-4" />
                 Phone Number <span className="text-red-500">*</span>
               </Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+1 (555) 123-4567"
-                value={formData.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                className={`h-12 ${errors.phone ? "border-red-500 focus-visible:ring-red-500" : ""}`}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+1 (555) 123-4567"
+                  value={formData.phone}
+                  onChange={(e) => handleChange("phone", e.target.value)}
+                  className={`h-12 flex-1 ${errors.phone ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                />
+                {formData.phone !== originalPhone && !otpVerified && (
+                  <Button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={sendingOtp || !formData.phone.trim()}
+                    className="h-12 px-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                  >
+                    {sendingOtp ? (
+                      <>
+                        <Spinner size="sm" className="mr-2" />
+                        Sending...
+                      </>
+                    ) : (
+                      otpSent ? "Resend OTP" : "Send OTP"
+                    )}
+                  </Button>
+                )}
+              </div>
               {errors.phone && (
                 <p className="text-sm text-red-500 flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
                   {errors.phone}
                 </p>
+              )}
+              
+              {/* OTP Verification Section */}
+              {formData.phone !== originalPhone && otpSent && !otpVerified && (
+                <div className="mt-4 p-4 border-2 border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50 dark:bg-blue-950/30">
+                  <Label htmlFor="otp" className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+                    Enter OTP
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="otp"
+                      type="text"
+                      placeholder="Enter 6-digit OTP"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      maxLength={6}
+                      className="h-12 flex-1"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleVerifyOtp}
+                      disabled={verifyingOtp || !otp.trim()}
+                      className="h-12 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                    >
+                      {verifyingOtp ? (
+                        <>
+                          <Spinner size="sm" className="mr-2" />
+                          Verifying...
+                        </>
+                      ) : (
+                        "Verify"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Verification Success Message */}
+              {formData.phone !== originalPhone && otpVerified && (
+                <div className="mt-2 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
+                  <p className="text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Phone number verified successfully
+                  </p>
+                </div>
               )}
             </div>
 

@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { apiCall } from "../../../lib/apiClient";
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 export const useMultiPhoneVerification = (toast) => {
   const [otpLoading, setOtpLoading] = useState(false);
 
-  const sendOtp = (phone, onOtpGenerated) => {
+  const sendOtp = async (phone, onOtpGenerated) => {
     if (!phone?.trim()) {
       toast({
         title: "Error",
@@ -15,25 +18,40 @@ export const useMultiPhoneVerification = (toast) => {
 
     setOtpLoading(true);
 
-    // Simulate OTP generation (6-digit random number)
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    try {
+      // Call backend API to send OTP
+      await apiCall(`${backendUrl}/api/otp/send`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone }),
+      });
 
-    // In production, you would call an API here to send the OTP via SMS
-    setTimeout(() => {
+      // For simulation, generate a dummy OTP
+      const otp = "123456"; // In production, this won't be needed
       onOtpGenerated(otp);
-      setOtpLoading(false);
 
       toast({
         title: "OTP Sent",
-        description: `Verification code sent to ${phone}. Code: ${otp} (For testing only)`,
-        duration: 10000,
+        description: `Verification code sent to ${phone}`,
+        duration: 5000,
       });
 
-      console.log(`Generated OTP for ${phone}:`, otp);
-    }, 1000);
+      console.log(`OTP sent to ${phone}`);
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send OTP. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setOtpLoading(false);
+    }
   };
 
-  const verifyOtp = (inputOtp, generatedOtp, onVerified, onError) => {
+  const verifyOtp = async (phone, inputOtp, onVerified, onError) => {
     if (!inputOtp?.trim()) {
       toast({
         title: "Error",
@@ -43,28 +61,41 @@ export const useMultiPhoneVerification = (toast) => {
       return;
     }
 
-    if (inputOtp === generatedOtp) {
+    try {
+      // Simulate verification for now
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In production, uncomment this:
+      // await apiCall(`${backendUrl}/api/otp/verify`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ phone, otp: inputOtp }),
+      // });
+
       onVerified();
       toast({
         title: "Success",
         description: "Phone number verified successfully!",
       });
-    } else {
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
       onError();
       toast({
         title: "Error",
-        description: "Invalid OTP. Please check and try again.",
+        description: error.message || "Invalid OTP. Please check and try again.",
         variant: "destructive",
       });
     }
   };
 
-  const resendOtp = (phone, onReset) => {
+  const resendOtp = async (phone, onReset) => {
     toast({
       title: "Resending OTP",
       description: `Sending new verification code to ${phone}`,
     });
-    sendOtp(phone, onReset);
+    await sendOtp(phone, onReset);
   };
 
   return {

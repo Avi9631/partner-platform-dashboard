@@ -2,26 +2,10 @@ import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import { Loader2, MapPin, CheckCircle2, Navigation, AlertCircle } from "lucide-react";
 
-const Step3Location = ({ formData, errors, locationLoading, captureLocation }) => {
+const Step3BusinessLocation = ({ formData, errors, locationLoading, captureLocation }) => {
   return (
     <div className="space-y-6">
-      {/* <div className="text-center mb-6">
-        <div className="relative inline-block">
-          <MapPin className="w-16 h-16 mx-auto text-orange-600 mb-4" />
-          <div className="absolute -top-1 -right-1 bg-orange-100 rounded-full p-1.5">
-            <Navigation className="w-4 h-4 text-orange-600" />
-          </div>
-        </div>
-        <h3 className="text-xl font-semibold mb-2 text-gray-900">Capture Your Location</h3>
-        <p className="text-sm text-gray-600">
-          We need your location to provide better services
-        </p>
-        <Badge variant="secondary" className="mt-3">
-          <span className="text-xs">GPS required</span>
-        </Badge>
-      </div> */}
-
-      {formData.location.latitude ? (
+      {formData.location?.latitude ? (
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-5 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex items-start space-x-4">
             <div className="bg-green-100 rounded-full p-3 shrink-0">
@@ -53,7 +37,7 @@ const Step3Location = ({ formData, errors, locationLoading, captureLocation }) =
             <MapPin className="w-8 h-8 text-gray-400" />
           </div>
           <p className="text-sm font-medium text-gray-700 mb-1">No location captured yet</p>
-          <p className="text-xs text-gray-500">Click the button below to capture your current location</p>
+          <p className="text-xs text-gray-500">Click the button below to capture your business location</p>
         </div>
       )}
 
@@ -70,9 +54,9 @@ const Step3Location = ({ formData, errors, locationLoading, captureLocation }) =
         disabled={locationLoading}
         className={`
           w-full h-12 text-base font-medium shadow-md transition-all duration-200
-          ${formData.location.latitude 
+          ${formData.location?.latitude 
             ? 'bg-green-600 hover:bg-green-700' 
-            : 'bg-orange-600 hover:bg-orange-700'
+            : 'bg-blue-600 hover:bg-blue-700'
           }
         `}
       >
@@ -83,7 +67,7 @@ const Step3Location = ({ formData, errors, locationLoading, captureLocation }) =
           </>
         ) : (
           <>
-            {formData.location.latitude ? (
+            {formData.location?.latitude ? (
               <>
                 <Navigation className="mr-2 h-5 w-5" />
                 <span>Recapture Location</span>
@@ -91,7 +75,7 @@ const Step3Location = ({ formData, errors, locationLoading, captureLocation }) =
             ) : (
               <>
                 <MapPin className="mr-2 h-5 w-5" />
-                <span>Capture My Location</span>
+                <span>Capture Business Location</span>
               </>
             )}
           </>
@@ -99,16 +83,16 @@ const Step3Location = ({ formData, errors, locationLoading, captureLocation }) =
       </Button>
       
       {/* Info Card */}
-      <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
+      <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <div className="bg-orange-100 rounded-full p-2 shrink-0">
-            <Navigation className="w-4 h-4 text-orange-600" />
+          <div className="bg-blue-100 rounded-full p-2 shrink-0">
+            <Navigation className="w-4 h-4 text-blue-600" />
           </div>
-          <div className="text-sm text-orange-800">
-            <p className="font-medium mb-1">Why location access?</p>
-            <p className="text-xs text-orange-700">
-              Your location helps us connect you with relevant properties in your area 
-              and provide accurate service coverage information.
+          <div className="text-sm text-blue-800">
+            <p className="font-medium mb-1">Why business location?</p>
+            <p className="text-xs text-blue-700">
+              Your business location helps us verify your establishment and provide 
+              accurate service coverage information to potential clients.
             </p>
           </div>
         </div>
@@ -117,4 +101,4 @@ const Step3Location = ({ formData, errors, locationLoading, captureLocation }) =
   );
 };
 
-export default Step3Location;
+export default Step3BusinessLocation;

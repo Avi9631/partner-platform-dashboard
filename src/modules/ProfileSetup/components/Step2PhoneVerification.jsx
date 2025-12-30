@@ -15,7 +15,7 @@ const Step2PhoneVerification = ({
 }) => {
   return (
     <div className="space-y-4">
-      <div className="text-center mb-6">
+      {/* <div className="text-center mb-6">
         <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
           <span className="text-3xl">📱</span>
         </div>
@@ -23,7 +23,7 @@ const Step2PhoneVerification = ({
         <p className="text-sm text-gray-600">
           We&apos;ll send a verification code to {formData.phone}
         </p>
-      </div>
+      </div> */}
 
       {formData.phoneVerified ? (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -77,7 +77,8 @@ const Step2PhoneVerification = ({
                 )}
               </div>
 
-              <Button type="button" onClick={verifyOtp} className="w-full">
+              <div className="flex gap-2 ">
+                 <Button type="button" onClick={verifyOtp} className="w-full">
                 Verify Code
               </Button>
 
@@ -89,7 +90,9 @@ const Step2PhoneVerification = ({
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Resend Code
-              </Button>
+              </Button></div>
+
+             
             </div>
           )}
         </div>

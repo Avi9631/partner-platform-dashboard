@@ -4,9 +4,7 @@ import { cn } from '@/lib/utils';
 import { usePropertyFormV2 } from '../context/PropertyFormContextV2';
 import { getVisibleSteps } from '../config/stepConfiguration';
 import { Button } from '@/components/ui/button';
-import { propertyApi } from '@/services/propertyService';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { usePropertyPublish } from '../hooks/usePropertyPublish';
 
 export default function PropertyFormSidebar() {
   const { 
@@ -30,13 +29,12 @@ export default function PropertyFormSidebar() {
     formData
   } = usePropertyFormV2();
 
-  const [isPublishing, setIsPublishing] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const { publish, isPublishing } = usePropertyPublish(draftId, formData);
 
   const visibleSteps = getVisibleSteps(formDataWithType);
 
   const handleStepClick = (stepIndex) => {
-    // Allow navigation to any step (no locking)
     goToStep(stepIndex);
   };
 
@@ -48,51 +46,12 @@ export default function PropertyFormSidebar() {
   };
 
   const handlePublishClick = () => {
-    if (!draftId) {
-      toast.error("No Draft Found", {
-        description: "Please save your property details first before publishing.",
-      });
-      return;
-    }
-
-    // Show confirmation dialog
     setShowPublishDialog(true);
   };
 
   const handlePublish = async () => {
     setShowPublishDialog(false);
-
-    try {
-      setIsPublishing(true);
-      
-      // Prepare property data from formData
-      const propertyData = {
-        ...formData,
-        propertyName: formData.title || formData.propertyName || formData.customPropertyName,
-      };
-
-      console.log('Publishing property with data:', propertyData);
-
-      const response = await propertyApi.publishProperty(draftId, propertyData);
-
-      if (response.success) {
-        toast.success("🎉 Property Publishing Started!", {
-          description: response.data?.message || "Your property is being processed. You'll be notified once it's live.",
-          duration: 5000,
-        });
-
-      
-      } else {
-        throw new Error(response.message || 'Failed to publish property');
-      }
-    } catch (error) {
-      console.error('Error publishing property:', error);
-      toast.error("Publishing Failed", {
-        description: error.message || "Failed to publish property. Please try again.",
-      });
-    } finally {
-      setIsPublishing(false);
-    }
+    await publish();
   };
 
   return (

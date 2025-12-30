@@ -27,7 +27,7 @@ module.exports = {
                 background: 'hsl(var(--background))',
                 foreground: 'hsl(var(--foreground))',
                 primary: {
-                    DEFAULT: '#000000',
+                    DEFAULT: 'hsl(var(--primary))',
                     foreground: 'hsl(var(--primary-foreground))'
                 },
                 secondary: {
@@ -63,12 +63,34 @@ module.exports = {
                     'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
                     border: 'hsl(var(--sidebar-border))',
                     ring: 'hsl(var(--sidebar-ring))'
+                },
+                success: {
+                    DEFAULT: 'hsl(var(--success))',
+                    foreground: 'hsl(var(--success-foreground))'
+                },
+                warning: {
+                    DEFAULT: 'hsl(var(--warning))',
+                    foreground: 'hsl(var(--warning-foreground))'
+                },
+                info: {
+                    DEFAULT: 'hsl(var(--info))',
+                    foreground: 'hsl(var(--info-foreground))'
                 }
             },
             borderRadius: {
                 lg: 'var(--radius)',
                 md: 'calc(var(--radius) - 2px)',
-                sm: 'calc(var(--radius) - 4px)'
+                sm: 'calc(var(--radius) - 4px)',
+                xl: 'calc(var(--radius) + 4px)',
+                '2xl': 'calc(var(--radius) + 8px)'
+            },
+            boxShadow: {
+                'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+                'medium': '0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 30px -5px rgba(0, 0, 0, 0.04)',
+                'hard': '0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 20px 50px -10px rgba(0, 0, 0, 0.08)',
+            },
+            fontSize: {
+                '2xs': ['0.625rem', { lineHeight: '0.75rem' }],
             },
             keyframes: {
                 'accordion-down': {
@@ -95,6 +117,30 @@ module.exports = {
                     "0%": {transform: "translateX(0%)"},
                     "100%": {transform: "translateX(-50%)"},
                 },
+                "fade-in": {
+                    "0%": { opacity: "0", transform: "translateY(10px)" },
+                    "100%": { opacity: "1", transform: "translateY(0)" }
+                },
+                "fade-up": {
+                    "0%": { opacity: "0", transform: "translateY(20px)" },
+                    "100%": { opacity: "1", transform: "translateY(0)" }
+                },
+                "slide-in-right": {
+                    "0%": { opacity: "0", transform: "translateX(20px)" },
+                    "100%": { opacity: "1", transform: "translateX(0)" }
+                },
+                "slide-in-left": {
+                    "0%": { opacity: "0", transform: "translateX(-20px)" },
+                    "100%": { opacity: "1", transform: "translateX(0)" }
+                },
+                "shimmer": {
+                    "0%": { backgroundPosition: "-1000px 0" },
+                    "100%": { backgroundPosition: "1000px 0" }
+                },
+                "pulse-soft": {
+                    "0%, 100%": { opacity: "1" },
+                    "50%": { opacity: "0.8" }
+                }
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
@@ -102,7 +148,12 @@ module.exports = {
                 blink: 'blink 1s infinite',
                 'scroll-x-5': 'scroll-x 5s linear infinite',
                 'scroll-x-10': 'scroll-x 10s linear infinite',
-
+                'fade-in': 'fade-in 0.5s ease-out',
+                'fade-up': 'fade-up 0.6s ease-out',
+                'slide-in-right': 'slide-in-right 0.4s ease-out',
+                'slide-in-left': 'slide-in-left 0.4s ease-out',
+                'shimmer': 'shimmer 2s infinite',
+                'pulse-soft': 'pulse-soft 2s ease-in-out infinite'
             }
         }
     },

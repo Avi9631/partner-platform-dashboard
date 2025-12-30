@@ -335,8 +335,8 @@ const ProfileSetup = () => {
   // Show success screen if verification is pending or after submission
   if (isVerificationPending || isSubmitted) {
     return (
-      <div className="h-screen overflow-y-auto p-0 sm:p-4">
-        <div className="w-full min-h-screen sm:min-h-0 sm:max-w-2xl sm:mx-auto">
+      <div className="h-screen overflow-hidden p-0 sm:p-4">
+        <div className="w-full h-full sm:max-w-2xl sm:mx-auto">
           <SubmissionSuccess onGoHome={handleGoHome} workflowId={workflowId || user?.workflowId} />
         </div>
       </div>
@@ -344,62 +344,64 @@ const ProfileSetup = () => {
   }
 
   return (
-    <div className="h-screen overflow-y-auto p-0 sm:p-4">
-      <Card className="w-full min-h-screen sm:min-h-0 sm:max-w-2xl sm:mx-auto sm:rounded-lg sm:shadow-none">
-        <CardHeader className="space-y-1">
+    <div className="h-screen overflow-hidden p-0 sm:p-4 bg-gradient-to-br from-orange-50 via-orange-100 to-orange-200">
+      <Card className="w-full h-screen sm:h-[calc(100vh-2rem)] sm:max-w-2xl sm:mx-auto sm:rounded-lg sm:shadow-lg flex flex-col ">
+        <CardHeader className="space-y-1 flex-shrink-0">
           <CardTitle className="text-2xl font-bold text-center">
             Complete Your Profile
           </CardTitle>
-          <CardDescription className="text-center">
+          {/* <CardDescription className="text-center">
             Step {currentStep} of {totalSteps}: {getStepTitle()}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pb-8">
-          <div className="flex justify-center mb-4">
+          </CardDescription> */}
+          <div className="flex justify-center pt-4">
             <div className="overflow-x-auto max-w-full scrollbar-thin">
               <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
             </div>
           </div>
-
+        </CardHeader>
+        
+        <CardContent className="flex-1 overflow-y-auto">
           <form onSubmit={handleSubmit} className="space-y-6">
             {renderCurrentStep()}
-
-            <div className="flex justify-between pt-6 border-t">
-              {currentStep > 1 ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={isLoading}
-                >
-                  Previous
-                </Button>
-              ) : (
-                <div></div>
-              )}
-
-              {currentStep < totalSteps ? (
-                <Button type="button" onClick={handleNext} className="ml-auto">
-                  Next
-                </Button>
-              ) : (
-                <Button type="submit" className="ml-auto" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <FileCheck className="mr-2 h-4 w-4" />
-                      Submit for Verification
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
           </form>
         </CardContent>
+
+        <div className="flex-shrink-0 border-t px-6 py-4">
+          <div className="flex justify-between">
+            {currentStep > 1 ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={isLoading}
+              >
+                Previous
+              </Button>
+            ) : (
+              <div></div>
+            )}
+
+            {currentStep < totalSteps ? (
+              <Button type="button" onClick={handleNext} className="ml-auto">
+                Next
+              </Button>
+            ) : (
+              <Button onClick={handleSubmit} className="ml-auto" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <FileCheck className="mr-2 h-4 w-4" />
+                    Submit for Verification
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
       </Card>
     </div>
   );

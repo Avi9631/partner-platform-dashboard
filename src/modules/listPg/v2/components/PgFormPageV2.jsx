@@ -4,7 +4,6 @@ import { getStepComponent } from '../config/stepConfigurationPg';
 import { Button } from '@/components/ui/button';
 import { X, Save } from 'lucide-react';
 import PgFormSidebar from './PgFormSidebar';
-import SaveAndContinueFooter from './steps/SaveAndContinueFooter';
 
 function PgFormContentV2() {
   const navigate = useNavigate();
@@ -90,7 +89,7 @@ function PgFormContentV2() {
 
         {/* Step Content */}
         <div className="flex-1 overflow-y-auto bg-gradient-to-br from-orange-50/30 to-white dark:from-orange-950/10 dark:to-gray-950">
-          <div className="max-w-5xl mx-auto px-6 py-8 pb-24">
+          <div className="max-w-5xl mx-auto px-6 py-8">
             {isLoadingDraft ? (
               <div className="flex items-center justify-center h-full min-h-[400px]">
                 <div className="text-center">
@@ -103,18 +102,6 @@ function PgFormContentV2() {
             )}
           </div>
         </div>
-
-        {/* Fixed Footer */}
-        {!isLoadingDraft && (
-          <div className="flex-shrink-0">
-            <SaveAndContinueFooter
-              onBack={previousStep}
-              onSaveAndContinue={saveAndContinue}
-              showBack={currentStep > 0}
-              isLastStep={currentStep === getTotalSteps() - 1}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

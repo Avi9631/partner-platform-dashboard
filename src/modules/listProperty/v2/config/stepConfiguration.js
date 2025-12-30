@@ -1,21 +1,13 @@
 /**
- * Dynamic Step Configuration System
- * 
- * This configuration file defines all possible steps and their visibility conditions.
- * Steps can be shown/hidden based on:
- * - Property type
- * - Possession status
- * - Parking availability
- * - Any other form field value
+ * Simplified Step Configuration
+ * Dynamic step visibility based on property type and form data
  */
 
 import PropertyTypeStepV2 from '../components/steps/PropertyTypeStepV2';
 import LocationSelectionStepV2 from '../components/steps/LocationSelectionStepV2';
 import BasicDetailsStepV2 from '../components/steps/BasicDetailsStepV2';
 import BasicConfigurationStepV2 from '../components/steps/BasicConfigurationStepV2';
-import AreaDetailsStepV2 from '../components/steps/AreaDetailsStepV2';
 import FurnishingStepV2 from '../components/steps/FurnishingStepV2';
-import ParkingStepV2 from '../components/steps/ParkingStepV2';
 import LocationStepV2 from '../components/steps/LocationStepV2';
 import FloorDetailsStepV2 from '../components/steps/FloorDetailsStepV2';
 import LandAttributesStepV2 from '../components/steps/LandAttributesStepV2';
@@ -26,314 +18,131 @@ import AmenitiesStepV2 from '../components/steps/AmenitiesStepV2';
 import MediaUploadStepV2 from '../components/steps/MediaUploadStepV2';
 import PropertyPlanUploadStepV2 from '../components/steps/PropertyPlanUploadStepV2';
 import DocumentUploadStepV2 from '../components/steps/DocumentUploadStepV2';
-import ReviewAndSubmitV2 from '../components/steps/ReviewAndSubmitV2';
 
-// Step categories for better organization
-export const STEP_CATEGORIES = {
-  CORE: 'core',
-  BUILDING: 'building',
-  LAND: 'land',
-  OPTIONAL: 'optional',
-};
+// Property type groups for easier checks
+const BUILDING_TYPES = ['apartment', 'villa', 'duplex', 'independent_house', 'penthouse', 'studio', 'independent_floor'];
+const LAND_TYPES = ['plot', 'farmhouse', 'agricultural_land'];
+const APARTMENT_TYPES = ['apartment', 'penthouse'];
 
-// Property type groups
-export const PROPERTY_GROUPS = {
-  BUILDING: ['apartment', 'villa', 'duplex', 'independent_house', 'penthouse', 'studio', 'independent_floor'],
-  LAND: ['plot', 'farmhouse', 'agricultural_land'],
-  APARTMENT_LIKE: ['apartment', 'penthouse'],
-};
+const isBuilding = (type) => BUILDING_TYPES.includes(type);
+const isLand = (type) => LAND_TYPES.includes(type);
+const isApartment = (type) => APARTMENT_TYPES.includes(type);
 
-/**
- * Step Configuration
- * 
- * Each step has:
- * - id: unique identifier
- * - name: display name
- * - component: React component to render
- * - category: step category
- * - isVisible: function that determines if step should be shown based on form data
- * - order: base order for sorting
- */
-
-// ============================================================================
-// CORE STEPS (Always visible for all property types)
-// ============================================================================
-const CORE_STEPS = [
+// Simplified step configuration - flat array with visibility functions
+export const STEP_CONFIG = [
   {
     id: 'property-type',
     name: 'Property Type',
     component: PropertyTypeStepV2,
-    category: STEP_CATEGORIES.CORE,
     isVisible: () => true,
-    order: 0,
   },
   {
     id: 'location-selection',
     name: 'Location Selection',
     component: LocationSelectionStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: (formData) => !!formData.propertyType,
-    order: 1,
+    isVisible: (data) => !!data.propertyType,
   },
   {
     id: 'basic-details',
     name: 'Basic Details',
     component: BasicDetailsStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: (formData) => !!formData.propertyType,
-    order: 2,
+    isVisible: (data) => !!data.propertyType,
   },
-  {
-    id: 'pricing',
-    name: 'Pricing',
-    component: PricingStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: (formData) => !!formData.propertyType,
-    order: 9,
-  },
-  {
-    id: 'listing-info',
-    name: 'Listing Info',
-    component: ListingInfoStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: (formData) => !!formData.propertyType,
-    order: 11,
-  },
-  {
-    id: 'amenities',
-    name: 'Amenities',
-    component: AmenitiesStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: (formData) => !!formData.propertyType,
-    order: 12,
-  },
-  {
-    id: 'media-upload',
-    name: 'Media Upload',
-    component: MediaUploadStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: (formData) => !!formData.propertyType,
-    order: 13,
-  },
-  {
-    id: 'property-plan-upload',
-    name: 'Property Plans',
-    component: PropertyPlanUploadStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: (formData) => !!formData.propertyType,
-    order: 14,
-  },
-  {
-    id: 'document-upload',
-    name: 'Document Upload',
-    component: DocumentUploadStepV2,
-    category: STEP_CATEGORIES.CORE,
-    isVisible: (formData) => !!formData.propertyType,
-    order: 15,
-  },
-  // {
-  //   id: 'review-submit',
-  //   name: 'Review & Submit',
-  //   component: ReviewAndSubmitV2,
-  //   category: STEP_CATEGORIES.CORE,
-  //   isVisible: (formData) => !!formData.propertyType,
-  //   order: 16,
-  // },
-];
-
-// ============================================================================
-// BUILDING STEPS (Apartments, Villas, etc.)
-// ============================================================================
-const BUILDING_STEPS = [
   {
     id: 'basic-configuration',
     name: 'Basic Configuration',
     component: BasicConfigurationStepV2,
-    category: STEP_CATEGORIES.BUILDING,
-    isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-    order: 3,
+    isVisible: (data) => isBuilding(data.propertyType),
   },
-  // {
-  //   id: 'area-details',
-  //   name: 'Area Details',
-  //   component: AreaDetailsStepV2,
-  //   category: STEP_CATEGORIES.BUILDING,
-  //   isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-  //   order: 4,
-  // },
+  {
+    id: 'land-attributes',
+    name: 'Land Attributes',
+    component: LandAttributesStepV2,
+    isVisible: (data) => isLand(data.propertyType),
+  },
   {
     id: 'furnishing',
     name: 'Furnishing',
     component: FurnishingStepV2,
-    category: STEP_CATEGORIES.BUILDING,
-    isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-    order: 5,
+    isVisible: (data) => isBuilding(data.propertyType),
   },
-  // {
-  //   id: 'parking',
-  //   name: 'Parking',
-  //   component: ParkingStepV2,
-  //   category: STEP_CATEGORIES.BUILDING,
-  //   isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-  //   order: 6,
-  // },
   {
     id: 'location-attributes',
     name: 'Location Attributes',
     component: LocationStepV2,
-    category: STEP_CATEGORIES.BUILDING,
-    isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType),
-    order: 7,
+    isVisible: (data) => isBuilding(data.propertyType),
   },
   {
     id: 'floor-details',
     name: 'Floor Details',
     component: FloorDetailsStepV2,
-    category: STEP_CATEGORIES.BUILDING,
-    // Only for apartments and penthouses
-    isVisible: (formData) => PROPERTY_GROUPS.APARTMENT_LIKE.includes(formData.propertyType),
-    order: 8,
+    isVisible: (data) => isApartment(data.propertyType),
+  },
+  {
+    id: 'pricing',
+    name: 'Pricing',
+    component: PricingStepV2,
+    isVisible: (data) => !!data.propertyType,
   },
   {
     id: 'suitable-for',
     name: 'Suitable For',
     component: SuitableForStepV2,
-    category: STEP_CATEGORIES.BUILDING,
-    // Only visible for rent/lease, hidden for sale
-    isVisible: (formData) => PROPERTY_GROUPS.BUILDING.includes(formData.propertyType) && formData.listingType !== 'sale',
-    order: 10,
+    isVisible: (data) => isBuilding(data.propertyType) && data.listingType !== 'sale',
   },
-];
-
-// ============================================================================
-// LAND STEPS (Plots, Farmhouse, Agricultural Land)
-// ============================================================================
-const LAND_STEPS = [
   {
-    id: 'land-attributes',
-    name: 'Land Attributes',
-    component: LandAttributesStepV2,
-    category: STEP_CATEGORIES.LAND,
-    isVisible: (formData) => PROPERTY_GROUPS.LAND.includes(formData.propertyType),
-    order: 3,
+    id: 'listing-info',
+    name: 'Listing Info',
+    component: ListingInfoStepV2,
+    isVisible: (data) => !!data.propertyType,
+  },
+  {
+    id: 'amenities',
+    name: 'Amenities',
+    component: AmenitiesStepV2,
+    isVisible: (data) => !!data.propertyType,
+  },
+  {
+    id: 'media-upload',
+    name: 'Media Upload',
+    component: MediaUploadStepV2,
+    isVisible: (data) => !!data.propertyType,
+  },
+  {
+    id: 'property-plan-upload',
+    name: 'Property Plans',
+    component: PropertyPlanUploadStepV2,
+    isVisible: (data) => !!data.propertyType,
+  },
+  {
+    id: 'document-upload',
+    name: 'Document Upload',
+    component: DocumentUploadStepV2,
+    isVisible: (data) => !!data.propertyType,
   },
 ];
 
-// ============================================================================
-// OPTIONAL/CONDITIONAL STEPS
-// ============================================================================
-// Add conditional steps here based on specific field values
-const OPTIONAL_STEPS = [
-  // Example: Uncomment and implement as needed
-  
-  // {
-  //   id: 'possession-date-details',
-  //   name: 'Possession Date',
-  //   component: PossessionDateDetailsStepV2,
-  //   category: STEP_CATEGORIES.OPTIONAL,
-  //   isVisible: (formData) => formData.possessionStatus === 'under_construction',
-  //   order: 3.5,
-  // },
-  
-  // {
-  //   id: 'poa-documents',
-  //   name: 'POA Documents',
-  //   component: POADocumentsStepV2,
-  //   category: STEP_CATEGORIES.OPTIONAL,
-  //   isVisible: (formData) => formData.ownershipType === 'poa',
-  //   order: 3.6,
-  // },
-  
-  // {
-  //   id: 'ev-charging-details',
-  //   name: 'EV Charging Details',
-  //   component: EVChargingDetailsStepV2,
-  //   category: STEP_CATEGORIES.OPTIONAL,
-  //   isVisible: (formData) => formData.evChargingType && formData.evChargingType !== 'none',
-  //   order: 7.5,
-  // },
-];
+// Helper functions
+export const getVisibleSteps = (formData = {}) => 
+  STEP_CONFIG.filter(step => step.isVisible(formData));
 
-// ============================================================================
-// COMBINED STEP CONFIGURATION
-// ============================================================================
-export const STEP_CONFIG = [
-  ...CORE_STEPS,
-  ...BUILDING_STEPS,
-  ...LAND_STEPS,
-  ...OPTIONAL_STEPS,
-];
+export const getStepComponent = (stepIndex, formData = {}) => 
+  getVisibleSteps(formData)[stepIndex]?.component || null;
 
-/**
- * Get visible steps based on current form data
- * @param {Object} formData - Current form data including propertyType and other fields
- * @returns {Array} Array of visible step configurations
- */
-export const getVisibleSteps = (formData = {}) => {
-  return STEP_CONFIG
-    .filter(step => step.isVisible(formData))
-    .sort((a, b) => a.order - b.order);
-};
+export const getTotalVisibleSteps = (formData = {}) => 
+  getVisibleSteps(formData).length;
 
-/**
- * Get step component by index in visible steps
- * @param {number} stepIndex - Current step index
- * @param {Object} formData - Current form data
- * @returns {React.Component} Step component or null
- */
-export const getStepComponent = (stepIndex, formData = {}) => {
-  const visibleSteps = getVisibleSteps(formData);
-  const step = visibleSteps[stepIndex];
-  return step ? step.component : null;
-};
+export const getStepName = (stepIndex, formData = {}) => 
+  getVisibleSteps(formData)[stepIndex]?.name || '';
 
-/**
- * Get total number of visible steps
- * @param {Object} formData - Current form data
- * @returns {number} Total visible steps
- */
-export const getTotalVisibleSteps = (formData = {}) => {
-  return getVisibleSteps(formData).length;
-};
+export const isStepVisible = (stepId, formData = {}) => 
+  STEP_CONFIG.find(s => s.id === stepId)?.isVisible(formData) || false;
 
-/**
- * Get step name by index
- * @param {number} stepIndex - Current step index
- * @param {Object} formData - Current form data
- * @returns {string} Step name
- */
-export const getStepName = (stepIndex, formData = {}) => {
-  const visibleSteps = getVisibleSteps(formData);
-  const step = visibleSteps[stepIndex];
-  return step ? step.name : '';
-};
-
-/**
- * Check if a specific step ID is currently visible
- * @param {string} stepId - Step ID to check
- * @param {Object} formData - Current form data
- * @returns {boolean} Whether step is visible
- */
-export const isStepVisible = (stepId, formData = {}) => {
-  const step = STEP_CONFIG.find(s => s.id === stepId);
-  return step ? step.isVisible(formData) : false;
-};
-
-/**
- * Get step index by step ID (within visible steps)
- * @param {string} stepId - Step ID
- * @param {Object} formData - Current form data
- * @returns {number} Step index or -1 if not found
- */
-export const getStepIndexById = (stepId, formData = {}) => {
-  const visibleSteps = getVisibleSteps(formData);
-  return visibleSteps.findIndex(step => step.id === stepId);
-};
+export const getStepIndexById = (stepId, formData = {}) => 
+  getVisibleSteps(formData).findIndex(step => step.id === stepId);
 
 export default {
   STEP_CONFIG,
-  STEP_CATEGORIES,
-  PROPERTY_GROUPS,
   getVisibleSteps,
   getStepComponent,
   getTotalVisibleSteps,

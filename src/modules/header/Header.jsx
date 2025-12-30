@@ -80,7 +80,7 @@ export default function Header() {
                     My Profile
                   </Button>
                   
-                  {user?.accountType === 'BUSINESS' ? (
+                  {user?.business?.verificationStatus === 'APPROVED' ? (
                     <Button
                       variant="outline"
                       className="w-full justify-start"
@@ -148,7 +148,7 @@ export default function Header() {
                       My Profile
                     </Button>
                     
-                    {user?.accountType === 'BUSINESS' ? (
+                    {user?.business?.verificationStatus === 'APPROVED' ? (
                       <Button
                         variant="outline"
                         className="w-full justify-start"

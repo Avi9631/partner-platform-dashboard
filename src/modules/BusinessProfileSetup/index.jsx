@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/ui/button";
@@ -10,27 +10,30 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import { useToast } from "../../components/hooks/use-toast";
-import { Loader2, FileCheck } from "lucide-react";
+import { Loader2, FileCheck, X } from "lucide-react";
 
 // Import step components
 import StepIndicator from "../ProfileSetup/components/StepIndicator";
 import Step1BusinessInfo from "./components/Step1BusinessInfo";
 import Step2MultiPhoneVerification from "./components/Step2MultiPhoneVerification";
+import Step3BusinessLocation from "./components/Step3BusinessLocation";
 import Step3OwnerVideoVerification from "./components/Step3OwnerVideoVerification";
 import SubmissionSuccess from "./components/SubmissionSuccess";
 
 // Import custom hooks
 import { useCamera } from "../ProfileSetup/hooks/useCamera";
+import { useLocation } from "../ProfileSetup/hooks/useLocation";
 import { useMultiPhoneVerification } from "./hooks/useMultiPhoneVerification";
 
 const BusinessProfileSetup = () => {
-  const { checkAuthStatus } = useAuth();
+  const { checkAuthStatus, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [workflowId, setWorkflowId] = useState(null);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
   const [formData, setFormData] = useState({
     businessName: "",
@@ -38,17 +41,49 @@ const BusinessProfileSetup = () => {
     businessAddress: "",
     businessEmail: "",
     phoneNumbers: [], // Array of {phone, verified, otp, generatedOtp}
+    location: {
+      latitude: null,
+      longitude: null,
+      address: "",
+    },
     ownerVideo: null,
     ownerVideoPreview: null,
   });
   const [errors, setErrors] = useState({});
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   // Custom hooks
   const camera = useCamera(toast);
+  const location = useLocation(toast);
   const phoneVerification = useMultiPhoneVerification(toast);
+
+  // Check business status on mount
+  useEffect(() => {
+    const checkBusinessStatus = async () => {
+      try {
+        setIsCheckingStatus(true);
+        await checkAuthStatus();
+      } catch (error) {
+        console.error("Error checking business status:", error);
+      } finally {
+        setIsCheckingStatus(false);
+      }
+    };
+
+    checkBusinessStatus();
+  }, []); // Run only once on mount
+
+  // Monitor user business status changes
+  useEffect(() => {
+    if (!isCheckingStatus && user?.business && user.business.verificationStatus === "PENDING") {
+      setIsSubmitted(true);
+      if (user.business.businessId) {
+        setWorkflowId(user.business.businessId);
+      }
+    }
+  }, [user?.business?.verificationStatus, user?.business?.businessId, isCheckingStatus]);
 
   const validateStep = (step) => {
     const newErrors = {};
@@ -82,8 +117,15 @@ const BusinessProfileSetup = () => {
       }
     }
 
-    // Owner Video Verification Step
+    // Business Location Step
     if (step === 3) {
+      if (!formData.location.latitude || !formData.location.longitude) {
+        newErrors.location = "Please capture your business location";
+      }
+    }
+
+    // Owner Video Verification Step
+    if (step === 4) {
       if (!formData.ownerVideo) {
         newErrors.ownerVideo = "Owner/POC verification video is required";
       }
@@ -113,7 +155,7 @@ const BusinessProfileSetup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateStep(3)) {
+    if (!validateStep(4)) {
       return;
     }
 
@@ -125,6 +167,11 @@ const BusinessProfileSetup = () => {
       submitData.append("registrationNumber", formData.registrationNumber);
       submitData.append("businessAddress", formData.businessAddress);
       submitData.append("businessEmail", formData.businessEmail);
+      
+      // Add location data
+      submitData.append("latitude", formData.location.latitude);
+      submitData.append("longitude", formData.location.longitude);
+      submitData.append("address", formData.location.address);
       
       // Add verified phone numbers as JSON
       const verifiedPhones = formData.phoneNumbers
@@ -183,6 +230,20 @@ const BusinessProfileSetup = () => {
     navigate("/", { replace: true });
   };
 
+  // Location capture handler
+  const handleCaptureLocation = () => {
+    location.captureLocation((locationData) => {
+      setFormData((prev) => ({
+        ...prev,
+        location: locationData,
+      }));
+
+      if (errors.location) {
+        setErrors((prev) => ({ ...prev, location: undefined }));
+      }
+    });
+  };
+
   // Camera handlers for owner video verification
   const handleStartRecording = () => {
     camera.startRecording();
@@ -219,6 +280,8 @@ const BusinessProfileSetup = () => {
       case 2:
         return "Phone Verification";
       case 3:
+        return "Business Location";
+      case 4:
         return "Owner/POC Verification";
       default:
         return "";
@@ -246,6 +309,15 @@ const BusinessProfileSetup = () => {
         );
       case 3:
         return (
+          <Step3BusinessLocation
+            formData={formData}
+            errors={errors}
+            locationLoading={location.locationLoading}
+            captureLocation={handleCaptureLocation}
+          />
+        );
+      case 4:
+        return (
           <Step3OwnerVideoVerification
             formData={formData}
             errors={errors}
@@ -271,71 +343,93 @@ const BusinessProfileSetup = () => {
   // Show success screen after submission
   if (isSubmitted) {
     return (
-      <div className="h-screen overflow-y-auto p-0 sm:p-4">
-        <div className="w-full min-h-screen sm:min-h-0 sm:max-w-2xl sm:mx-auto">
+      <div className="fixed inset-0 overflow-hidden p-0 sm:p-4 bg-gradient-to-br from-orange-50 via-orange-100 to-orange-200">
+        <div className="w-full h-full sm:max-w-2xl sm:mx-auto">
           <SubmissionSuccess onGoHome={handleGoHome} workflowId={workflowId} />
         </div>
       </div>
     );
   }
 
+  // Show loading state while checking business status
+  if (isCheckingStatus) {
+    return (
+      <div className="fixed inset-0 overflow-hidden p-0 sm:p-4 bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 flex items-center justify-center">
+        <Card className="w-full max-w-md p-8">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+            <p className="text-lg font-medium text-gray-700">Checking business status...</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen   p-0 sm:p-4">
-      <Card className="w-full min-h-screen sm:min-h-0 sm:max-w-2xl sm:mx-auto sm:rounded-lg sm:shadow-none">
-        <CardHeader className="space-y-1">
+    <div className="fixed inset-0 overflow-hidden p-0 sm:p-4 bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
+      <Card className="w-full h-full sm:max-w-2xl sm:mx-auto sm:rounded-lg sm:shadow-lg flex flex-col overflow-hidden">
+        <CardHeader className="space-y-1 flex-shrink-0 relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleGoHome}
+            className="absolute right-4 top-4 h-8 w-8 rounded-full hover:bg-gray-100"
+          >
+            <X className="h-5 w-5" />
+          </Button>
           <CardTitle className="text-2xl font-bold text-center">
             Business Profile Setup
           </CardTitle>
-          <CardDescription className="text-center">
+          {/* <CardDescription className="text-center">
             Step {currentStep} of {totalSteps}: {getStepTitle()}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pb-8">
-          <div className="flex justify-center mb-4">
+          </CardDescription> */}
+          <div className="flex justify-center pt-4">
             <div className="overflow-x-auto max-w-full scrollbar-thin">
               <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
             </div>
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {renderCurrentStep()}
-
-            <div className="flex justify-between pt-6 border-t">
-              {currentStep > 1 ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={isLoading}
-                >
-                  Previous
-                </Button>
-              ) : (
-                <div></div>
-              )}
-
-              {currentStep < totalSteps ? (
-                <Button type="button" onClick={handleNext} className="ml-auto">
-                  Next
-                </Button>
-              ) : (
-                <Button type="submit" className="ml-auto" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <FileCheck className="mr-2 h-4 w-4" />
-                      Submit for Verification
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          </form>
+        </CardHeader>
+        
+        <CardContent className="flex-1 overflow-y-auto px-6">
+          {renderCurrentStep()}
         </CardContent>
+
+        <div className="flex-shrink-0 border-t px-6 py-4">
+          <div className="flex justify-between">
+            {currentStep > 1 ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={isLoading}
+              >
+                Previous
+              </Button>
+            ) : (
+              <div></div>
+            )}
+
+            {currentStep < totalSteps ? (
+              <Button type="button" onClick={handleNext} className="ml-auto">
+                Next
+              </Button>
+            ) : (
+              <Button type="button" onClick={handleSubmit} className="ml-auto" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <FileCheck className="mr-2 h-4 w-4" />
+                    Submit for Verification
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
       </Card>
     </div>
   );

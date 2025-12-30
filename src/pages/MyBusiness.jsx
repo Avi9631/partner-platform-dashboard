@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
@@ -48,7 +50,7 @@ export default function MyBusiness() {
         const userData = userResponse.data.user;
         setUser(userData);
 
-        if (userData.accountType === "BUSINESS" && userData.business) {
+        if (userData.business) {
           setBusiness(userData.business);
         }
       } catch (error) {
@@ -95,6 +97,42 @@ export default function MyBusiness() {
     );
   };
 
+  const InfoItem = ({ icon: Icon, label, value, className = "" }) => {
+    if (!value) return null;
+    return (
+      <div className={`space-y-2 ${className}`}>
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Icon className="h-4 w-4 text-orange-600" />
+          <span>{label}</span>
+        </div>
+        <p className="text-base font-medium text-foreground pl-6">{value}</p>
+      </div>
+    );
+  };
+
+  const DateInfoItem = ({ icon: Icon, label, date }) => {
+    if (!date) return null;
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Icon className="h-4 w-4 text-orange-600" />
+          <span>{label}</span>
+        </div>
+        <div className="pl-6">
+          <p className="text-base font-medium text-foreground">
+            {new Date(date).toLocaleString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -104,7 +142,7 @@ export default function MyBusiness() {
   }
 
   // If not an agency account
-  if (!user || user.accountType !== "BUSINESS") {
+  if (!user.business) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center p-4">
         <div className="max-w-2xl w-full">
@@ -205,91 +243,111 @@ export default function MyBusiness() {
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Business Information Card */}
-          <div>
-            <div className="space-y-3 pb-6">
+          <Card className="overflow-hidden">
+            <CardHeader className="space-y-3 pb-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
                   <Briefcase className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <CardTitle className="text-2xl">Business Details</CardTitle>
-                  <p className="text-sm text-muted-foreground">Your business information and registration</p>
+                  <CardDescription>
+                    Your business information and registration
+                  </CardDescription>
                 </div>
               </div>
-            </div>
-            <Card className="overflow-hidden">
-              <CardContent className="p-6 space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Business Name</label>
-                  <p className="mt-1 text-base text-card-foreground break-words">{business.businessName}</p>
-                </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-6">
+                <InfoItem
+                  icon={Building2}
+                  label="Business Name"
+                  value={business.businessName}
+                />
 
                 {business.registrationNumber && (
-                  <div className="pt-4 border-t border-border">
-                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      Registration Number
-                    </label>
-                    <p className="mt-1 text-base font-mono text-card-foreground break-words">{business.registrationNumber}</p>
-                  </div>
+                  <InfoItem
+                    icon={FileText}
+                    label="Registration Number"
+                    value={business.registrationNumber}
+                    className="font-mono"
+                  />
                 )}
 
-                <div className="pt-4 border-t border-border">
-                  <label className="text-sm font-medium text-muted-foreground">Business ID</label>
-                  <p className="mt-1 text-sm font-mono text-card-foreground break-all">{business.businessId}</p>
+                <InfoItem
+                  icon={Briefcase}
+                  label="Business ID"
+                  value={business.businessId}
+                  className="font-mono"
+                />
+
+                {/* Verification Status */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <CheckCircle className="h-4 w-4 text-orange-600" />
+                    <span>Verification Status</span>
+                  </div>
+                  <div className="pl-6">
+                    {getVerificationBadge(business.verificationStatus)}
+                  </div>
                 </div>
 
                 {business.verifiedAt && (
-                  <div className="pt-4 border-t border-border">
-                    <label className="text-sm font-medium text-muted-foreground">Verified On</label>
-                    <div className="mt-1 flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <p className="text-base text-card-foreground">
-                        {new Date(business.verifiedAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <Calendar className="h-4 w-4 text-orange-600" />
+                      <span>Verified On</span>
+                    </div>
+                    <div className="pl-6">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <p className="text-base font-medium text-foreground">
+                          {new Date(business.verifiedAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Contact Information Card */}
-          <div>
-            <div className="space-y-3 pb-6">
+          <Card className="overflow-hidden">
+            <CardHeader className="space-y-3 pb-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
                   <Mail className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <CardTitle className="text-2xl">Contact Information</CardTitle>
-                  <p className="text-sm text-muted-foreground">Business contact details and address</p>
+                  <CardDescription>
+                    Business contact details and address
+                  </CardDescription>
                 </div>
               </div>
-            </div>
-            <Card className="overflow-hidden">
-              <CardContent className="p-6 space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Mail className="w-4 h-4" />
-                    Email
-                  </label>
-                  <p className="mt-1 text-base text-card-foreground break-all">{business.businessEmail}</p>
-                </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-6">
+                <InfoItem
+                  icon={Mail}
+                  label="Email"
+                  value={business.businessEmail}
+                />
 
                 {business.businessPhone && business.businessPhone.length > 0 && (
-                  <div className="pt-4 border-t border-border">
-                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      Phone{business.businessPhone.length > 1 ? "s" : ""}
-                    </label>
-                    <div className="mt-1 space-y-1">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <Phone className="h-4 w-4 text-orange-600" />
+                      <span>Phone{business.businessPhone.length > 1 ? "s" : ""}</span>
+                    </div>
+                    <div className="pl-6 space-y-1">
                       {business.businessPhone.map((phoneObj, index) => (
-                        <p key={index} className="text-base text-card-foreground">
+                        <p key={index} className="text-base font-medium text-foreground">
                           {phoneObj.phone}
                         </p>
                       ))}
@@ -298,104 +356,95 @@ export default function MyBusiness() {
                 )}
 
                 {business.businessAddress && (
-                  <div className="pt-4 border-t border-border">
-                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      Address
-                    </label>
-                    <p className="mt-1 text-base text-card-foreground leading-relaxed break-words">{business.businessAddress}</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <MapPin className="h-4 w-4 text-orange-600" />
+                      <span>Address</span>
+                    </div>
+                    <p className="text-base font-medium text-foreground leading-relaxed pl-6 bg-muted/50 p-4 rounded-lg">
+                      {business.businessAddress}
+                    </p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Verification Notes - Full Width */}
         {business.verificationNotes && (
-          <div className="mt-12">
-            <div className="space-y-3 pb-6">
+          <Card className="mt-6 overflow-hidden">
+            <CardHeader className="space-y-3 pb-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
                   <CheckCircle className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <CardTitle className="text-2xl">Verification Details</CardTitle>
-                  <p className="text-sm text-muted-foreground">Business verification status and notes</p>
+                  <CardDescription>
+                    Business verification status and notes
+                  </CardDescription>
                 </div>
               </div>
-            </div>
-            <Card className="overflow-hidden">
-              <CardContent className="p-6">
-                <p className="text-base text-card-foreground leading-relaxed mb-4">
-                  {business.verificationNotes}
-                </p>
-                {business.verifiedAt && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t border-border">
-                    <Calendar className="w-4 h-4" />
-                    <span>
-                      Verified on {new Date(business.verifiedAt).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-base text-foreground leading-relaxed">
+                {business.verificationNotes}
+              </p>
+              {business.verifiedAt && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t border-border">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    Verified on {new Date(business.verifiedAt).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Timeline Section */}
         {(business.business_created_at || business.business_updated_at) && (
-          <div className="mt-12">
-            <div className="space-y-3 pb-6">
+          <Card className="mt-6 overflow-hidden">
+            <CardHeader className="space-y-3 pb-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
                   <Calendar className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl">Timeline</CardTitle>
-                  <p className="text-sm text-muted-foreground">Business account history and activity</p>
+                  <CardTitle className="text-2xl">Activity Timeline</CardTitle>
+                  <CardDescription>
+                    Business account history and recent activity
+                  </CardDescription>
                 </div>
               </div>
-            </div>
-            <Card className="overflow-hidden">
-              <CardContent className="p-6 space-y-3">
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-6">
                 {business.business_created_at && (
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4">
-                    <span className="text-sm font-medium text-muted-foreground">Created</span>
-                    <span className="text-sm sm:text-base text-card-foreground">
-                      {new Date(business.business_created_at).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
+                  <DateInfoItem
+                    icon={Calendar}
+                    label="Business Created"
+                    date={business.business_created_at}
+                  />
                 )}
+
                 {business.business_updated_at && (
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4 pt-3 border-t border-border">
-                    <span className="text-sm font-medium text-muted-foreground">Last Updated</span>
-                    <span className="text-sm sm:text-base text-card-foreground">
-                      {new Date(business.business_updated_at).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
+                  <DateInfoItem
+                    icon={Clock}
+                    label="Last Updated"
+                    date={business.business_updated_at}
+                  />
                 )}
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

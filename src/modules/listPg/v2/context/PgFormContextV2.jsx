@@ -165,6 +165,31 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
     }));
   }, []);
 
+  // Sanitize data to remove circular references and non-serializable values
+  const sanitizeData = useCallback((obj) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    
+    try {
+      return JSON.parse(JSON.stringify(obj));
+    } catch (error) {
+      console.warn('Error sanitizing data, manually filtering:', error);
+      const sanitized = {};
+      for (const key in obj) {
+        const value = obj[key];
+        if (
+          value !== null && 
+          value !== undefined &&
+          typeof value !== 'function' &&
+          !(value instanceof HTMLElement) &&
+          !(value instanceof Window)
+        ) {
+          sanitized[key] = value;
+        }
+      }
+      return sanitized;
+    }
+  }, []);
+
   // Save draft to backend
   const saveDraft = useCallback(async (updatedData) => {
     let currentDraftId = draftId;
@@ -193,14 +218,16 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
       }
     }
 
-    // Update draft with actual data
+    // Update draft with actual data (sanitized)
     try {
+      const dataToSave = sanitizeData(updatedData || formData);
+      
       console.log('Calling updateListingDraft API...', {
         draftId: currentDraftId,
-        dataKeys: Object.keys(updatedData || formData),
+        dataKeys: Object.keys(dataToSave),
       });
       
-      const response = await draftApi.updateListingDraft(currentDraftId, updatedData || formData);
+      const response = await draftApi.updateListingDraft(currentDraftId, dataToSave);
       
       console.log('API Response:', response);
       
@@ -215,7 +242,7 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
       console.error('❌ Failed to save PG draft:', error);
       return { success: false, error: error.message };
     }
-  }, [draftId, formData]);
+  }, [draftId, formData, sanitizeData]);
 
   // Navigate to next step with "Save & Continue"
   const saveAndContinue = useCallback(async (stepData) => {

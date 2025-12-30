@@ -16,7 +16,7 @@ function PropertyFormContentV2() {
     return null;
   }
   
-  const { currentStep, resetForm, propertyType, formDataWithType, isLoadingDraft, saveDraft, formData, saveAndContinue, previousStep, getTotalSteps } = context;
+  const { currentStep, resetForm, propertyType, formDataWithType, isLoading, saveDraft, formData, saveAndContinue, previousStep, getTotalSteps } = context;
 
   const handleClose = () => {
     if (window.confirm('Are you sure you want to close? Your progress is saved as draft.')) {
@@ -95,7 +95,7 @@ function PropertyFormContentV2() {
         {/* Step Content */}
         <div className="flex-1 overflow-y-auto bg-gradient-to-br from-orange-50/30 to-white dark:from-orange-950/10 dark:to-gray-950">
           <div className="max-w-5xl mx-auto px-6 py-8 pb-24">
-            {isLoadingDraft ? (
+            {isLoading ? (
               <div className="flex items-center justify-center h-full min-h-[400px]">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
@@ -109,7 +109,7 @@ function PropertyFormContentV2() {
         </div>
 
         {/* Fixed Footer */}
-        {!isLoadingDraft && (
+        {!isLoading && (
           <div className="flex-shrink-0">
             <SaveAndContinueFooter
               onBack={previousStep}

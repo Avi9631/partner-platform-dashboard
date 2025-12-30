@@ -51,11 +51,11 @@ export default function EditBusiness() {
         const userData = userResponse.data.user;
         setUser(userData);
 
-        if (userData.accountType !== "BUSINESS") {
+        if (!userData.business) {
           toast({
             variant: "destructive",
             title: "Access Denied",
-            description: "Business profile is only available for Agency accounts",
+            description: "No business profile found. Please create one first.",
           });
           navigate("/profile");
           return;
@@ -371,8 +371,8 @@ export default function EditBusiness() {
     );
   }
 
-  // If not an agency account (shouldn't reach here due to redirect in useEffect)
-  if (!user || user.accountType !== "BUSINESS") {
+  // If no business profile (shouldn't reach here due to redirect in useEffect)
+  if (!user || !user.business) {
     return null;
   }
 
