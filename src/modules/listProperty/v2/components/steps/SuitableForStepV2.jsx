@@ -1,11 +1,11 @@
 import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { Users } from 'lucide-react';
 import { Field, FieldGroup, FieldError } from '@/components/ui/field';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import suitableForSchema from '../../../schemas/suitableForSchema';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 const suitableForOptions = [
   { value: 'family', label: 'Family', icon: '👨‍👩‍👧‍👦' },
@@ -15,7 +15,7 @@ const suitableForOptions = [
 ];
 
 export default function SuitableForStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
 
   const methods = useForm({
     resolver: zodResolver(suitableForSchema),
@@ -39,6 +39,12 @@ export default function SuitableForStepV2() {
   const handleContinue = (data) => {
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleSubmit(handleContinue));
+    return () => setCurrentStepSubmitHandler(null);
+  }, [handleSubmit, handleContinue, setCurrentStepSubmitHandler]);
 
   // Only show for rent/lease
   const listingType = watch('listingType');
@@ -113,13 +119,6 @@ export default function SuitableForStepV2() {
             )}
           </div>
         </motion.div>
-
-        <SaveAndContinueFooter
-          onBack={previousStep}
-          onSaveAndContinue={handleSubmit(handleContinue)}
-          nextDisabled={!formState.isValid}
-          showBack={true}
-        />
       </div>
     </FormProvider>
   );

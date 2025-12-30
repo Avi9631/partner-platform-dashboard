@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/select';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import locationAttributesSchema from '../../../schemas/locationAttributesSchema';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 const facingOptions = [
   'East',
@@ -47,7 +46,7 @@ const propertyPositionOptions = [
 ];
 
 export default function LocationStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
 
   const methods = useForm({
     resolver: zodResolver(locationAttributesSchema),
@@ -80,6 +79,12 @@ export default function LocationStepV2() {
     console.log('Form submitted with data:', data);
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleSubmit(onSubmit));
+    return () => setCurrentStepSubmitHandler(null);
+  }, [handleSubmit, onSubmit, setCurrentStepSubmitHandler]);
 
   return (
     <FormProvider {...methods}>
@@ -225,11 +230,6 @@ export default function LocationStepV2() {
         </motion.div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <SaveAndContinueFooter
-            onBack={previousStep}
-            nextDisabled={!formState.isValid}
-            showBack={true}
-          />
         </form>
       </div>
     </FormProvider>

@@ -40,7 +40,6 @@ export default function EditProfile() {
     firstName: "",
     lastName: "",
     phone: "",
-    accountType: "INDIVIDUAL",
     latitude: "",
     longitude: "",
     address: "",
@@ -67,7 +66,6 @@ export default function EditProfile() {
           firstName: user.firstName || "",
           lastName: user.lastName || "",
           phone: phoneNumber,
-          accountType: user.accountType || "INDIVIDUAL",
           latitude: user.latitude || "",
           longitude: user.longitude || "",
           address: user.address || "",
@@ -490,24 +488,7 @@ export default function EditProfile() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="accountType" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <Briefcase className="h-4 w-4" />
-                Account Type <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.accountType}
-                onValueChange={(value) => handleChange("accountType", value)}
-              >
-                <SelectTrigger id="accountType" className="h-12">
-                  <SelectValue placeholder="Select account type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="INDIVIDUAL">Individual</SelectItem>
-                  <SelectItem value="BUSINESS">Agency</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+     
           </CardContent>
         </Card>
 

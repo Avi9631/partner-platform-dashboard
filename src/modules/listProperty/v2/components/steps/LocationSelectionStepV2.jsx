@@ -2,6 +2,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { MapPin } from 'lucide-react';
+import { useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import {
   FieldDescription,
@@ -13,7 +14,7 @@ import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import LocationPicker from '@/components/maps/LocationPicker';
 
 export default function LocationSelectionStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
 
   // Initialize React Hook Form with Zod validation
   // Default values defined here, populated from context if previously saved
@@ -35,6 +36,12 @@ export default function LocationSelectionStepV2() {
     // Pass step data to context to update formData JSON
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
+    return () => setCurrentStepSubmitHandler(null);
+  }, [form, onSubmit, setCurrentStepSubmitHandler]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -189,13 +196,6 @@ export default function LocationSelectionStepV2() {
             </p>
           </motion.div>
 
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onBack={previousStep}
-            onSaveAndContinue={form.handleSubmit(onSubmit)}
-            nextDisabled={!form.formState.isValid || !form.watch('coordinates')}
-            showBack={true}
-          />
         </form>
       </motion.div>
     </div>

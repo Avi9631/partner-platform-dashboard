@@ -16,7 +16,7 @@ function PropertyFormContentV2() {
     return null;
   }
   
-  const { currentStep, resetForm, propertyType, formDataWithType, isLoading, saveDraft, formData, saveAndContinue, previousStep, getTotalSteps } = context;
+  const { currentStep, resetForm, propertyType, formDataWithType, isLoading, saveDraft, formData, saveAndContinue, previousStep, getTotalSteps, currentStepSubmitHandler } = context;
 
   const handleClose = () => {
     if (window.confirm('Are you sure you want to close? Your progress is saved as draft.')) {
@@ -113,7 +113,15 @@ function PropertyFormContentV2() {
           <div className="flex-shrink-0">
             <SaveAndContinueFooter
               onBack={previousStep}
-              onSaveAndContinue={saveAndContinue}
+              onSaveAndContinue={async () => {
+                // If current step has registered a submit handler, use it
+                if (currentStepSubmitHandler) {
+                  await currentStepSubmitHandler();
+                } else {
+                  // No form in current step, just save and continue
+                  await saveAndContinue({});
+                }
+              }}
               showBack={currentStep > 0}
               isLastStep={currentStep === getTotalSteps() - 1}
             />

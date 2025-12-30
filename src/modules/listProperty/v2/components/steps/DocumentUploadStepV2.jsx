@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -41,7 +41,6 @@ import {
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import ProTipV2 from '../shared/ProTipV2';
 import { uploadMultipleFiles } from '@/lib/uploadUtils';
 
@@ -79,7 +78,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export default function DocumentUploadStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
   
   const [documents, setDocuments] = useState(formData?.documents || []);
   const [uploadErrors, setUploadErrors] = useState([]);
@@ -309,6 +308,12 @@ export default function DocumentUploadStepV2() {
     saveAndContinue(data);
   };
 
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleContinue);
+    return () => setCurrentStepSubmitHandler(null);
+  }, [handleContinue, setCurrentStepSubmitHandler]);
+
   // Pro tips for document upload
   const documentTips = [
     'Ensure all documents are clear and legible before uploading',
@@ -450,13 +455,6 @@ export default function DocumentUploadStepV2() {
           <ProTipV2 title="Document Upload Best Practices" tips={documentTips} />
         </div>
       </motion.div>
-
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        nextDisabled={!isValid}
-        showBack={true}
-      />
     </div>
   );
 }

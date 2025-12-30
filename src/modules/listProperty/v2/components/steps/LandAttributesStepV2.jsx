@@ -1,4 +1,5 @@
 import { Controller, useForm } from 'react-hook-form';
+import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Ruler, Fence, Droplets, Map, Mountain } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,6 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 const areaUnits = [
   { value: 'sqft', label: 'Square Feet' },
@@ -59,7 +59,7 @@ const soilTypes = [
 ];
 
 export default function LandAttributesStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
 
   const form = useForm({
     mode: 'onChange',
@@ -86,6 +86,12 @@ export default function LandAttributesStepV2() {
   const handleSubmit = (data) => {
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(handleSubmit));
+    return () => setCurrentStepSubmitHandler(null);
+  }, [form, handleSubmit, setCurrentStepSubmitHandler]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -405,14 +411,6 @@ export default function LandAttributesStepV2() {
               />
             </motion.div>
           </FieldGroup>
-
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onBack={previousStep}
-            onSaveAndContinue={form.handleSubmit(handleSubmit)}
-            nextDisabled={!isValid}
-            showBack={true}
-          />
         </form>
       </motion.div>
     </div>

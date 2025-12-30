@@ -231,16 +231,7 @@ export default function MyProfile() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-6">
-                <InfoItem
-                  icon={Shield}
-                  label="Account Type"
-                  value={
-                    user.accountType
-                      ? user.accountType.charAt(0) +
-                        user.accountType.slice(1).toLowerCase()
-                      : "Individual"
-                  }
-                />
+          
 
                 <InfoItem
                   icon={Hash}

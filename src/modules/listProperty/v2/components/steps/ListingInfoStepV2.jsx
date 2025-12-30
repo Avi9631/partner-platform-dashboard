@@ -1,14 +1,14 @@
 import { useForm, FormProvider } from 'react-hook-form';
+import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { FileText, Tag } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 export default function ListingInfoStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
 
   const methods = useForm({
     mode: 'onChange',
@@ -30,6 +30,12 @@ export default function ListingInfoStepV2() {
       saveAndContinue(data);
     }
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleContinue);
+    return () => setCurrentStepSubmitHandler(null);
+  }, [handleContinue, setCurrentStepSubmitHandler]);
 
   return (
     <FormProvider {...methods}>
@@ -104,13 +110,6 @@ export default function ListingInfoStepV2() {
             </div>
           </div>
         </motion.div>
-
-        <SaveAndContinueFooter
-          onBack={previousStep}
-          onSaveAndContinue={handleContinue}
-          nextDisabled={!isValid}
-          showBack={true}
-        />
       </div>
     </FormProvider>
   );

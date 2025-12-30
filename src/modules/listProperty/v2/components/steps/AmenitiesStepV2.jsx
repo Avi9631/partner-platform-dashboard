@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { motion } from 'motion/react';
 import PropTypes from 'prop-types';
@@ -48,10 +48,9 @@ const UNIT_AMENITIES_LIST = [
   { id: 'geyser', label: 'Geyser', icon: '🚿' },
 ];
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 export default function AmenitiesStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
 
   const methods = useForm({
     mode: 'onChange',
@@ -73,6 +72,12 @@ export default function AmenitiesStepV2() {
     const data = methods.getValues();
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleContinue);
+    return () => setCurrentStepSubmitHandler(null);
+  }, [methods, setCurrentStepSubmitHandler]);
 
   // Watch the current values
   const selectedFeatures = watch('features') || [];
@@ -273,14 +278,6 @@ export default function AmenitiesStepV2() {
             </div>
           </div>
         </motion.div>
-
-        <SaveAndContinueFooter
-          onBack={previousStep}
-          onSaveAndContinue={handleContinue}
-          nextDisabled={!isValid}
-          nextLabel="Review Listing"
-          showBack={true}
-        />
       </div>
     </FormProvider>
   );

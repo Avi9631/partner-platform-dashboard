@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -43,7 +43,6 @@ import {
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import ProTipV2 from '../shared/ProTipV2';
 import { uploadMultipleFiles } from '@/lib/uploadUtils';
 
@@ -81,7 +80,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export default function PropertyPlanUploadStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
   
   const [propertyPlans, setPropertyPlans] = useState(formData?.propertyPlans || []);
   const [uploadErrors, setUploadErrors] = useState([]);
@@ -323,6 +322,12 @@ export default function PropertyPlanUploadStepV2() {
     saveAndContinue(data);
   };
 
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleContinue);
+    return () => setCurrentStepSubmitHandler(null);
+  }, [handleContinue, setCurrentStepSubmitHandler]);
+
   // Pro tips for property plan upload
   const planTips = [
     'Upload clear, high-resolution floor plans for better visibility',
@@ -464,13 +469,6 @@ export default function PropertyPlanUploadStepV2() {
           <ProTipV2 title="Property Plan Best Practices" tips={planTips} />
         </div>
       </motion.div>
-
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleContinue}
-        nextDisabled={!isValid}
-        showBack={true}
-      />
     </div>
   );
 }

@@ -25,6 +25,7 @@ import {
   Briefcase,
   Calendar,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -39,7 +40,7 @@ export default function MyBusiness() {
     const loadBusinessProfile = async () => {
       try {
         setLoading(true);
-        
+
         const userResponse = await apiCall(`${backendUrl}/partnerUser/get`, {
           method: "POST",
           headers: {
@@ -154,10 +155,11 @@ export default function MyBusiness() {
               Business Profile Not Available
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">
-              This feature is only available for Agency accounts. Upgrade your account to access business features.
+              This feature is only available for Agency accounts. Upgrade your
+              account to access business features.
             </p>
-            <Button 
-              onClick={() => navigate("/edit-profile")} 
+            <Button
+              onClick={() => navigate("/edit-profile")}
               size="lg"
               className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg"
             >
@@ -182,10 +184,11 @@ export default function MyBusiness() {
               No Business Profile Yet
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">
-              Create your business profile to start managing your agency and unlock all features.
+              Create your business profile to start managing your agency and
+              unlock all features.
             </p>
-            <Button 
-              onClick={() => navigate("/edit-business")} 
+            <Button
+              onClick={() => navigate("/edit-business")}
               size="lg"
               className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg"
             >
@@ -205,12 +208,19 @@ export default function MyBusiness() {
         <div className="relative mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
             {/* Business Avatar/Icon */}
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-orange-300 to-orange-200 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-              <div className="relative h-32 w-32 border-4 border-white/30 shadow-2xl ring-4 ring-white/10 rounded-2xl bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm flex items-center justify-center">
-                <Building2 className="h-16 w-16 text-white" />
-              </div>
-            </div>
+            <Avatar className="relative h-32 w-32 border-4 border-white/30 shadow-2xl ring-4 ring-white/10">
+              {business.profileImage ? (
+                <AvatarImage
+                  src={`${backendUrl}${business.profileImage}`}
+                  alt={`${business.firstName} ${business.lastName}`}
+                  className="object-cover"
+                />
+              ) : (
+                <AvatarFallback className="text-4xl bg-gradient-to-br from-orange-400 to-orange-600 text-white font-bold">
+                  {business.nameInitial}
+                </AvatarFallback>
+              )}
+            </Avatar>
 
             {/* Business Header Info */}
             <div className="flex-1 text-center md:text-left space-y-4">
@@ -302,11 +312,14 @@ export default function MyBusiness() {
                       <div className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-green-600" />
                         <p className="text-base font-medium text-foreground">
-                          {new Date(business.verifiedAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
+                          {new Date(business.verifiedAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
+                          )}
                         </p>
                       </div>
                     </div>
@@ -324,7 +337,9 @@ export default function MyBusiness() {
                   <Mail className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl">Contact Information</CardTitle>
+                  <CardTitle className="text-2xl">
+                    Contact Information
+                  </CardTitle>
                   <CardDescription>
                     Business contact details and address
                   </CardDescription>
@@ -339,21 +354,27 @@ export default function MyBusiness() {
                   value={business.businessEmail}
                 />
 
-                {business.businessPhone && business.businessPhone.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <Phone className="h-4 w-4 text-orange-600" />
-                      <span>Phone{business.businessPhone.length > 1 ? "s" : ""}</span>
+                {business.businessPhone &&
+                  business.businessPhone.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <Phone className="h-4 w-4 text-orange-600" />
+                        <span>
+                          Phone{business.businessPhone.length > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                      <div className="pl-6 space-y-1">
+                        {business.businessPhone.map((phoneObj, index) => (
+                          <p
+                            key={index}
+                            className="text-base font-medium text-foreground"
+                          >
+                            {phoneObj.phone}
+                          </p>
+                        ))}
+                      </div>
                     </div>
-                    <div className="pl-6 space-y-1">
-                      {business.businessPhone.map((phoneObj, index) => (
-                        <p key={index} className="text-base font-medium text-foreground">
-                          {phoneObj.phone}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  )}
 
                 {business.businessAddress && (
                   <div className="space-y-2">
@@ -380,7 +401,9 @@ export default function MyBusiness() {
                   <CheckCircle className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl">Verification Details</CardTitle>
+                  <CardTitle className="text-2xl">
+                    Verification Details
+                  </CardTitle>
                   <CardDescription>
                     Business verification status and notes
                   </CardDescription>
@@ -395,7 +418,8 @@ export default function MyBusiness() {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t border-border">
                   <Calendar className="w-4 h-4" />
                   <span>
-                    Verified on {new Date(business.verifiedAt).toLocaleString("en-US", {
+                    Verified on{" "}
+                    {new Date(business.verifiedAt).toLocaleString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",

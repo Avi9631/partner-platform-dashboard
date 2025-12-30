@@ -19,6 +19,7 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
   const [draftId, setDraftId] = useState(initialDraftId || null);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({});
+  const [currentStepSubmitHandler, setCurrentStepSubmitHandler] = useState(null);
 
   // Load draft data on mount
   useEffect(() => {
@@ -94,7 +95,13 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
   const saveAndContinue = useCallback(async (stepData) => {
     const updatedFormData = { ...formData, ...stepData };
     updateFormData(stepData);
-    await saveDraft(updatedFormData);
+    
+    // Wait for draft to save before proceeding
+    const result = await saveDraft(updatedFormData);
+    if (!result.success) {
+      console.error('Failed to save draft:', result.error);
+      // Still continue even if save fails (user can retry later)
+    }
     
     setCompletedSteps(prev => new Set([...prev, currentStep]));
     
@@ -146,6 +153,8 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     setDraftId,
     saveDraft,
     isLoading,
+    currentStepSubmitHandler,
+    setCurrentStepSubmitHandler,
   };
 
   return (

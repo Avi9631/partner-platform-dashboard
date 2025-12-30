@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/field';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import geoTagSchema from '../../../schemas/geoTagSchema';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 // Maximum allowed distance in meters for successful geo-tagging
 const MAX_GEOTAG_DISTANCE_METERS = 1000;
@@ -34,7 +33,7 @@ const calculateDistance = (lat1, lng1, lat2, lng2) => {
 };
 
 export default function GeoTagStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
@@ -128,6 +127,12 @@ export default function GeoTagStepV2() {
     // Pass data to context
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
+    return () => setCurrentStepSubmitHandler(null);
+  }, [form, onSubmit, setCurrentStepSubmitHandler]);
 
   const geoTagStatus = form.watch('geoTagStatus');
   const isGeoTagSuccess = geoTagStatus === 'success';
@@ -304,14 +309,6 @@ export default function GeoTagStepV2() {
               You need to be within {MAX_GEOTAG_DISTANCE_METERS} meters of the property location for successful geo-tagging.
             </p>
           </motion.div>
-
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onBack={previousStep}
-            onSaveAndContinue={form.handleSubmit(onSubmit)}
-            nextDisabled={isGeoTagPending || isGeoTagFailed}
-            showBack={true}
-          />
         </form>
       </motion.div>
     </div>

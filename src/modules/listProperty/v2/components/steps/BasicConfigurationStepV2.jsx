@@ -21,10 +21,9 @@ import {
 } from '@/components/ui/select';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import basicConfigurationSchema from '../../../schemas/basicConfigurationSchema';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 export default function BasicConfigurationV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
   
   // Area configuration state (for additional/optional area types)
   const [areaConfig, setAreaConfig] = useState(formData?.areaConfig || []);
@@ -68,6 +67,12 @@ export default function BasicConfigurationV2() {
   const onSubmit = (data) => {
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
+    return () => setCurrentStepSubmitHandler(null);
+  }, [form, onSubmit, setCurrentStepSubmitHandler]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -379,13 +384,6 @@ export default function BasicConfigurationV2() {
             )}
           </div>
         </FieldGroup>
-
-        {/* Save & Continue Footer */}
-        <SaveAndContinueFooter
-          onBack={previousStep}
-           nextDisabled={!formState.isValid}
-          showBack={true}
-        />
       </form>
       </motion.div>
     </div>

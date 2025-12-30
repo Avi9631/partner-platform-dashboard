@@ -21,11 +21,10 @@ import {
 } from '@/components/ui/select';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import areaDetailsSchema from '../../../schemas/areaDetailsSchema';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import { createStepLogger } from '../../../utils/validationLogger';
 
 export default function AreaDetailsV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
   
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Area Details Step'), []);
@@ -91,6 +90,12 @@ export default function AreaDetailsV2() {
   const onError = (errors) => {
     logger.logSubmission(form.getValues(), errors);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
+    return () => setCurrentStepSubmitHandler(null);
+  }, [form, onSubmit, setCurrentStepSubmitHandler]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -347,13 +352,6 @@ export default function AreaDetailsV2() {
           </motion.div> */}
         </FieldGroup>
       </div>
-
-      <SaveAndContinueFooter
-        onBack={previousStep}
-        onSaveAndContinue={handleSubmit(onSubmit, onError)}
-        nextDisabled={!formState.isValid}
-        showBack={true}
-      />
     </div>
   );
 }

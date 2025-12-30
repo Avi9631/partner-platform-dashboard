@@ -16,11 +16,10 @@ import {
 } from '@/components/ui/select';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import floorDetailsSchema from '../../../schemas/floorDetailsSchema';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import { createStepLogger } from '../../../utils/validationLogger';
 
 export default function FloorDetailsStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
 
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Floor Details Step'), []);
@@ -55,6 +54,12 @@ export default function FloorDetailsStepV2() {
   const onError = (errors) => {
     logger.logSubmission(methods.getValues(), errors);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleSubmit(onSubmit));
+    return () => setCurrentStepSubmitHandler(null);
+  }, [handleSubmit, onSubmit, setCurrentStepSubmitHandler]);
 
   return (
     <FormProvider {...methods}>
@@ -189,11 +194,6 @@ export default function FloorDetailsStepV2() {
         </motion.div>
 
         <form onSubmit={handleSubmit(onSubmit, onError)}>
-          <SaveAndContinueFooter
-            onBack={previousStep}
-            nextDisabled={!formState.isValid}
-            showBack={true}
-          />
         </form>
       </div>
     </FormProvider>

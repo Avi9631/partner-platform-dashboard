@@ -38,7 +38,7 @@ import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import { createStepLogger } from '../../../utils/validationLogger';
 
 export default function BasicDetailsStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
 
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Basic Details Step'), []);
@@ -198,6 +198,12 @@ export default function BasicDetailsStepV2() {
     // Pass data to context
     saveAndContinue(submissionData);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
+    return () => setCurrentStepSubmitHandler(null);
+  }, [form, onSubmit, setCurrentStepSubmitHandler]);
 
   const onError = (errors) => {
     logger.logSubmission(form.getValues(), errors);
@@ -628,13 +634,6 @@ export default function BasicDetailsStepV2() {
             )}
           </FieldGroup>
 
-          {/* Save & Continue Footer */}
-          <SaveAndContinueFooter
-            onBack={previousStep}
-            onSaveAndContinue={form.handleSubmit(onSubmit)}
-            nextDisabled={!form.formState.isValid}
-            showBack={true}
-          />
         </form>
       </motion.div>
     </div>

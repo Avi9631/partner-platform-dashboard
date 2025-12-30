@@ -1,4 +1,5 @@
 import { useForm, FormProvider } from 'react-hook-form';
+import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { Sofa, Smartphone, CheckCircle } from 'lucide-react';
@@ -13,7 +14,6 @@ import {
 } from '@/components/ui/select';
 import furnishingAmenitiesSchema from '../../../schemas/furnishingAmenitiesSchema';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
-import SaveAndContinueFooter from '../SaveAndContinueFooter';
 
 const furnishingOptions = [
   { value: 'unfurnished', label: 'Unfurnished', description: 'No furniture or fittings' },
@@ -46,7 +46,7 @@ const flooringOptions = [
 ];
 
 export default function FurnishingStepV2() {
-  const { saveAndContinue, previousStep, formData } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
 
   // Create local form with defaults from context
   const methods = useForm({
@@ -70,6 +70,12 @@ export default function FurnishingStepV2() {
   const onSubmit = (data) => {
     saveAndContinue(data);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => handleSubmit(onSubmit));
+    return () => setCurrentStepSubmitHandler(null);
+  }, [handleSubmit, onSubmit, setCurrentStepSubmitHandler]);
 
   const toggleFlooringType = (type) => {
     const current = flooringTypes || [];
@@ -300,11 +306,6 @@ export default function FurnishingStepV2() {
         </motion.div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <SaveAndContinueFooter
-            onBack={previousStep}
-            nextDisabled={!formState.isValid}
-            showBack={true}
-          />
         </form>
       </div>
     </FormProvider>
