@@ -452,7 +452,7 @@ export default function DocumentUploadStepV2() {
           </div>
 
           {/* Pro Tip */}
-          <ProTipV2 title="Document Upload Best Practices" tips={documentTips} />
+          {/* <ProTipV2 title="Document Upload Best Practices" tips={documentTips} /> */}
         </div>
       </motion.div>
     </div>

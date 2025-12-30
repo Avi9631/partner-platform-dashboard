@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { apiCall } from "@/lib/apiClient";
 import { ArrowLeft, Save, User, Phone, MapPin, Briefcase, AlertCircle, Info } from "lucide-react";
 import LocationPicker from "@/components/maps/LocationPicker";
@@ -47,19 +48,12 @@ export default function EditProfile() {
 
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
-    const loadProfile = async () => {
+    if (!authLoading && user) {
+      setLoading(true);
       try {
-        setLoading(true);
-        const response = await apiCall(`${backendUrl}/partnerUser/get`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        const user = response.data.user;
         const phoneNumber = user.phone || "";
         setOriginalPhone(phoneNumber);
         setFormData({
@@ -71,7 +65,7 @@ export default function EditProfile() {
           address: user.address || "",
         });
       } catch (error) {
-        console.error("Error fetching user profile:", error);
+        console.error("Error loading user profile:", error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -80,9 +74,8 @@ export default function EditProfile() {
       } finally {
         setLoading(false);
       }
-    };
-    loadProfile();
-  }, [toast]);
+    }
+  }, [authLoading, user, toast]);
 
 
 

@@ -7,7 +7,7 @@ export default function SaveAndContinueFooter({
   onSaveAndContinue,
   nextDisabled = false,
   showBack = true,
-  nextLabel = 'Save & Continue',
+  nextLabel = 'Save',
   backLabel = 'Back',
   isLastStep = false,
   isLoading = false,
@@ -39,26 +39,17 @@ export default function SaveAndContinueFooter({
           type="submit"
           onClick={onSaveAndContinue}
           disabled={nextDisabled || isLoading}
-          className={`h-11 px-8 text-sm font-bold shadow-lg ${
-            isLastStep
-              ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-              : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
+          className="h-11 px-8 text-sm font-bold shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               {loadingText}
             </>
-          ) : isLastStep ? (
-            <>
-              <Save className="w-4 h-4 mr-2" />
-              Submit PG/Hostel
-            </>
           ) : (
             <>
+              <Save className="w-4 h-4 mr-2" />
               {nextLabel}
-              <ArrowRight className="w-4 h-4 ml-2" />
             </>
           )}
         </Button>

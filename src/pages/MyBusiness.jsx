@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/hooks/use-toast";
-import { apiCall } from "@/lib/apiClient";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Building2,
   Mail,
@@ -30,43 +30,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 export default function MyBusiness() {
-  const [business, setBusiness] = useState(null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const loadBusinessProfile = async () => {
-      try {
-        setLoading(true);
-
-        const userResponse = await apiCall(`${backendUrl}/partnerUser/get`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        const userData = userResponse.data.user;
-        setUser(userData);
-
-        if (userData.business) {
-          setBusiness(userData.business);
-        }
-      } catch (error) {
-        console.error("Error fetching business profile:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load business profile. Please try again.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadBusinessProfile();
-  }, [toast]);
+  const { user, isLoading: loading } = useAuth();
+  const business = user?.business;
 
   const getVerificationBadge = (status) => {
     const badges = {

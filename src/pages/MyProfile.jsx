@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/hooks/use-toast";
-import { apiCall } from "@/lib/apiClient";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Mail,
   Phone,
@@ -35,36 +35,9 @@ import {
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 export default function MyProfile() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        setLoading(true);
-        const response = await apiCall(`${backendUrl}/partnerUser/get`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        setUser(response.data.user);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load profile. Please try again.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadProfile();
-  }, [toast]);
+  const { user, isLoading: loading } = useAuth();
 
   const getInitials = (firstName, lastName) => {
     if (!firstName && !lastName) return "U";

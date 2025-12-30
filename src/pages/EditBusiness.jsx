@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { apiCall } from "@/lib/apiClient";
 import { ArrowLeft, Save, Building2, Mail, Phone, MapPin, FileText, AlertCircle, Info, Plus, Trash2, RefreshCw, CheckCircle2 } from "lucide-react";
 
@@ -21,7 +22,6 @@ export default function EditBusiness() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
-  const [user, setUser] = useState(null);
   const [newPhone, setNewPhone] = useState("");
   const [originalPhones, setOriginalPhones] = useState([]); // Track original verified phones
   const [otpLoading, setOtpLoading] = useState(false);
@@ -35,23 +35,14 @@ export default function EditBusiness() {
 
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
-    const loadBusinessProfile = async () => {
+    if (!authLoading && user) {
       try {
         setLoading(true);
 
-        const userResponse = await apiCall(`${backendUrl}/partnerUser/get`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        const userData = userResponse.data.user;
-        setUser(userData);
-
-        if (!userData.business) {
+        if (!user.business) {
           toast({
             variant: "destructive",
             title: "Access Denied",
@@ -61,8 +52,8 @@ export default function EditBusiness() {
           return;
         }
 
-        if (userData.business) {
-          const business = userData.business;
+        if (user.business) {
+          const business = user.business;
           
           // Parse phone numbers from API response with verification state
           let phoneNumbers = [];
@@ -106,7 +97,7 @@ export default function EditBusiness() {
           });
         }
       } catch (error) {
-        console.error("Error fetching business profile:", error);
+        console.error("Error loading business profile:", error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -115,9 +106,8 @@ export default function EditBusiness() {
       } finally {
         setLoading(false);
       }
-    };
-    loadBusinessProfile();
-  }, [toast, navigate]);
+    }
+  }, [authLoading, user, toast, navigate]);
 
 
 

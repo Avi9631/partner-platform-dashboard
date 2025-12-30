@@ -466,7 +466,7 @@ export default function PropertyPlanUploadStepV2() {
           </div>
 
           {/* Pro Tip */}
-          <ProTipV2 title="Property Plan Best Practices" tips={planTips} />
+          {/* <ProTipV2 title="Property Plan Best Practices" tips={planTips} /> */}
         </div>
       </motion.div>
     </div>

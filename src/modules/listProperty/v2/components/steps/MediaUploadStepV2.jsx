@@ -520,7 +520,7 @@ export default function MediaUploadStepV2() {
           </div>
 
           {/* Pro Tip */}
-          <ProTipV2 title="Media Best Practices" tips={mediaTips} />
+          {/* <ProTipV2 title="Media Best Practices" tips={mediaTips} /> */}
         </div>
       </motion.div>
     </div>
