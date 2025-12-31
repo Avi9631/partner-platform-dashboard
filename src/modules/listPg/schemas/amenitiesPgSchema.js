@@ -12,29 +12,7 @@ const amenitySchema = z.object({
 /**
  * Enhanced Schema for Common and Room Amenities matching JSON structure
  */
-const amenitiesPgSchema = z.object({
-  // Enhanced Common Amenities array matching JSON structure
-  commonAmenities: z.array(amenitySchema).default([]),
-  
-  // Legacy common amenities (array of strings for backward compatibility)
-  commonAmenitiesLegacy: z.array(z.string()).optional().default([]),
-  
-  // Room-specific amenities are now handled in the room types schema
-  // This is kept for any global room amenity settings
-  roomAmenities: z.array(z.string()).optional().default([]),
-}).refine(
-  (data) => {
-    // Ensure at least one format of amenities exists
-    if (data.commonAmenities.length === 0 && data.commonAmenitiesLegacy.length === 0) {
-      return true; // Allow empty amenities during form filling
-    }
-    return true;
-  },
-  {
-    message: 'Amenities validation passed',
-    path: ['commonAmenities'],
-  }
-);
+const amenitiesPgSchema = z.array(amenitySchema).default([]);
 
 export default amenitiesPgSchema;
 

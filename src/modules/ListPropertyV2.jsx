@@ -33,30 +33,11 @@ export default function ListPropertyV2Page() {
   const fetchListings = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await draftApi.getUserListingDrafts();
+      const response = await draftApi.getUserListingDrafts("PROPERTY");
       
       if (response.success && response.data) {
-        // Transform API data to match our component structure
-        const transformedListings = response.data.map(draft => ({
-          id: draft.draftId,
-          title: draft.draftData?.title || draft.draftData?.customPropertyName || 'Untitled Property',
-          location: draft.draftData?.location || draft.draftData?.city || 'Location not set',
-          propertyType: draft.draftData?.propertyType || 'Not specified',
-          bedrooms: draft.draftData?.bedrooms,
-          bathrooms: draft.draftData?.bathrooms,
-          area: draft.draftData?.area,
-          price: draft.draftData?.price || 'Price not set',
-          priceUnit: draft.draftData?.priceUnit || '',
-          status: draft.draftStatus?.toLowerCase() || 'draft',
-          image: draft.draftData?.mediaData?.[0]?.url || null,
-          views: draft.views || 0,
-          createdAt: new Date(draft.createdAt || draft.draft_created_at).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
-          }),
-        }));
-        setListings(transformedListings);
+        // Use raw API data without transformation
+        setListings(response.data);
       } else {
         setListings([]);
       }
@@ -143,9 +124,13 @@ export default function ListPropertyV2Page() {
   }, [fetchListings]);
 
   const filteredListings = listings.filter(listing => {
-    const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         listing.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || listing.status === statusFilter;
+    const title = listing.draftData?.title || listing.draftData?.customPropertyName || '';
+    const location = listing.draftData?.location || listing.draftData?.city || '';
+    const status = listing.draftStatus?.toLowerCase() || 'draft';
+    
+    const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -192,13 +177,13 @@ export default function ListPropertyV2Page() {
           />
           <StatsCard
             icon={<CheckCircle className="w-6 h-6" />}
-            value={listings.filter(l => l.status === 'published').length}
+            value={listings.filter(l => l.draftStatus?.toLowerCase() === 'published').length}
             label="Published"
             color="green"
           />
           <StatsCard
             icon={<Clock className="w-6 h-6" />}
-            value={listings.filter(l => l.status === 'draft').length}
+            value={listings.filter(l => l.draftStatus?.toLowerCase() === 'draft').length}
             label="Drafts"
             color="orange"
           />
@@ -330,7 +315,43 @@ function PropertyCard({ listing, index, onEdit, onDelete }) {
     },
   };
 
-  const config = statusConfig[listing.status] || statusConfig.draft;
+  // Extract data from raw API structure
+  const draftId = listing.draftId;
+  const title = listing.draftData?.title || listing.draftData?.customPropertyName || listing.draftData?.projectName || 'Untitled Property';
+  const location = listing.draftData?.locality || listing.draftData?.city || 'Location not set';
+  const propertyType = listing.draftData?.propertyType || 'Not specified';
+  const bedrooms = listing.draftData?.bedrooms;
+  const bathrooms = listing.draftData?.bathrooms;
+  
+  // Area details
+  const superArea = listing.draftData?.superArea;
+  const carpetArea = listing.draftData?.carpetArea;
+  const area = superArea || carpetArea || listing.draftData?.area;
+  
+  // Pricing from pricing array
+  const pricingData = listing.draftData?.pricing?.[0];
+  const price = pricingData?.value ? `₹${(parseInt(pricingData.value) / 100000).toFixed(2)}L` : (listing.draftData?.price || 'Price not set');
+  
+  const listingType = listing.draftData?.listingType || 'sale';
+  const furnishingStatus = listing.draftData?.furnishingStatus || '';
+  const floorNumber = listing.draftData?.floorNumber;
+  const totalFloors = listing.draftData?.totalFloors;
+  
+  const status = listing.draftStatus?.toLowerCase() || 'draft';
+  const image = listing.draftData?.mediaData?.[0]?.url || null;
+  const views = listing.views || 0;
+  const createdAt = new Date(listing.createdAt || listing.draft_created_at).toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  });
+  const updatedAt = listing.updatedAt ? new Date(listing.updatedAt).toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  }) : null;
+
+  const config = statusConfig[status] || statusConfig.draft;
   const StatusIcon = config.icon;
 
   return (
@@ -345,10 +366,10 @@ function PropertyCard({ listing, index, onEdit, onDelete }) {
       <Card className="overflow-hidden border-2 border-gray-200 dark:border-gray-700 hover:border-orange-400 dark:hover:border-orange-500 transition-all duration-300 shadow-lg hover:shadow-2xl bg-white dark:bg-gray-900">
         {/* Image Section */}
         <div className="relative h-48 overflow-hidden bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
-          {listing.image ? (
+          {image ? (
             <img 
-              src={listing.image} 
-              alt={listing.title}
+              src={image} 
+              alt={title}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
@@ -382,13 +403,13 @@ function PropertyCard({ listing, index, onEdit, onDelete }) {
                   <Eye className="w-4 h-4 mr-2" />
                   View
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(listing.id)}>
+                <DropdownMenuItem onClick={() => onEdit(draftId)}>
                   <Edit2 className="w-4 h-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   className="text-red-600"
-                  onClick={() => onDelete(listing.id)}
+                  onClick={() => onDelete(draftId)}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete
@@ -403,65 +424,94 @@ function PropertyCard({ listing, index, onEdit, onDelete }) {
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                {listing.title}
+                {title}
               </h3>
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-1">
                 <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                <span className="truncate">{listing.location}</span>
+                <span className="truncate">{location}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-500 font-mono">
+                  <span className="font-semibold">ID:</span>
+                  <span className="truncate">{draftId}</span>
+                </div>
+                <Badge variant="secondary" className="text-xs capitalize">
+                  {listingType}
+                </Badge>
               </div>
             </div>
           </div>
         </CardHeader>
 
         <CardContent className="pb-3">
-          {/* Property Type Badge */}
-          <div className="mb-3">
+          {/* Property Type and Furnishing */}
+          <div className="flex flex-wrap gap-2 mb-3">
             <Badge variant="outline" className="text-xs font-medium">
               <Building2 className="w-3 h-3 mr-1" />
-              {listing.propertyType}
+              {propertyType}
             </Badge>
+            {furnishingStatus && (
+              <Badge variant="outline" className="text-xs font-medium capitalize">
+                {furnishingStatus.replace('_', ' ')}
+              </Badge>
+            )}
           </div>
 
           {/* Property Details */}
           <div className="grid grid-cols-3 gap-2 mb-4">
-            {listing.bedrooms && (
+            {bedrooms && (
               <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
                 <Bed className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{listing.bedrooms}</span>
+                <span className="font-semibold">{bedrooms} BHK</span>
               </div>
             )}
-            {listing.bathrooms && (
+            {bathrooms && (
               <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
                 <Bath className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{listing.bathrooms}</span>
+                <span className="font-semibold">{bathrooms}</span>
               </div>
             )}
-            {listing.area && (
+            {area && (
               <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
                 <Square className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{listing.area}</span>
+                <span className="font-semibold">{area} sq.ft</span>
               </div>
             )}
           </div>
+
+          {/* Floor Info */}
+          {floorNumber && totalFloors && (
+            <div className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              <span className="font-medium">Floor:</span> {floorNumber}/{totalFloors}
+            </div>
+          )}
 
           {/* Price */}
           <div className="flex items-baseline gap-2">
             <DollarSign className="w-5 h-5 text-orange-500" />
             <span className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">
-              {listing.price}
+              {price}
             </span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">{listing.priceUnit}</span>
           </div>
         </CardContent>
 
-        <CardFooter className="pt-0 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center">
-            <Calendar className="w-3 h-3 mr-1" />
-            <span>{listing.createdAt}</span>
-          </div>
-          <div className="flex items-center">
-            <Eye className="w-3 h-3 mr-1" />
-            <span>{listing.views} views</span>
+        <CardFooter className="pt-3 border-t border-gray-100 dark:border-gray-800">
+          <div className="w-full space-y-2">
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center">
+                <Calendar className="w-3 h-3 mr-1" />
+                <span>Created: {createdAt}</span>
+              </div>
+              <div className="flex items-center">
+                <Eye className="w-3 h-3 mr-1" />
+                <span>{views} views</span>
+              </div>
+            </div>
+            {updatedAt && (
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="font-medium">Last updated:</span> {updatedAt}
+              </div>
+            )}
           </div>
         </CardFooter>
       </Card>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
@@ -58,10 +58,10 @@ export default function PricingStepV2() {
   }, [formState.errors, logger]);
 
   // Handle form submission
-  const onSubmit = (data) => {
+  const onSubmit = useCallback((data) => {
     logger.logSubmission(data, formState.errors);
     saveAndContinue(data);
-  };
+  }, [logger, formState.errors, saveAndContinue]);
 
   const onError = (errors) => {
     logger.logSubmission(form.getValues(), errors);

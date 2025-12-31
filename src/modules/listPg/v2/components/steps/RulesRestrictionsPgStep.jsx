@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'motion/react';
+import { z } from 'zod';
 import { 
   Shield,
   Clock,
@@ -84,8 +85,13 @@ export default function RulesRestrictionsPgStep() {
 
   const logger = useMemo(() => createStepLogger('Rules & Restrictions PG Step V2'), []);
 
+  // Wrap the array schema in an object for form compatibility
+  const formSchema = useMemo(() => z.object({
+    rules: rulesRestrictionsPgSchema
+  }), []);
+
   const form = useForm({
-    resolver: zodResolver(rulesRestrictionsPgSchema),
+    resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
       rules: formData?.rules || [],
@@ -165,7 +171,7 @@ export default function RulesRestrictionsPgStep() {
 
   // Export rules as JSON
   const exportRules = () => {
-    const rulesData = form.getValues('rules');
+    const rulesData = form.getValues();
     const dataStr = JSON.stringify(rulesData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -483,7 +489,7 @@ export default function RulesRestrictionsPgStep() {
           )}
 
           {/* Validation Errors */}
-          {form.formState.errors.rules && (
+          {form.formState.errors.root && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -494,7 +500,7 @@ export default function RulesRestrictionsPgStep() {
                 <div>
                   <h4 className="font-medium text-red-800 dark:text-red-400">Rules Validation Error</h4>
                   <p className="text-sm text-red-600 dark:text-red-300 mt-1">
-                    {form.formState.errors.rules.message}
+                    {form.formState.errors.root.message}
                   </p>
                 </div>
               </div>

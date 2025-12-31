@@ -26,7 +26,8 @@ export default function PropertyFormSidebar() {
     propertyType,
     setPropertyType,
     draftId,
-    formData
+    formData,
+    areAllStepsValid
   } = usePropertyFormV2();
 
   const [showPublishDialog, setShowPublishDialog] = useState(false);
@@ -181,7 +182,7 @@ export default function PropertyFormSidebar() {
       <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/20 dark:to-gray-900">
         <Button
           onClick={handlePublishClick}
-          disabled={isPublishing || !draftId}
+          disabled={isPublishing || !draftId || !areAllStepsValid}
           className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPublishing ? (
@@ -196,6 +197,15 @@ export default function PropertyFormSidebar() {
             </>
           )}
         </Button>
+
+        {!areAllStepsValid && draftId && (
+          <div className="mt-3 flex items-start gap-2 text-xs text-amber-600 dark:text-amber-400">
+            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-1.5 flex-shrink-0" />
+            <p>
+              Please complete all required fields in each step to enable publishing.
+            </p>
+          </div>
+        )}
 
         {/* <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
           <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-1.5 flex-shrink-0" />

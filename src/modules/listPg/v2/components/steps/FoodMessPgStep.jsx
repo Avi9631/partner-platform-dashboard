@@ -203,6 +203,11 @@ export default function FoodMessPgStep() {
     logger.logSubmission(form.getValues(), errors);
   };
 
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit, onError));
+  }, [form.handleSubmit]);
+
   const isNonVegAllowed = form.watch('foodMess.foodType') !== 'Veg';
   const selectedDayIndexFromName = DAYS_OF_WEEK.indexOf(selectedDay);
 

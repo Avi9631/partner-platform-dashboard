@@ -12,9 +12,6 @@ import AmenitiesPgStep from '../components/steps/AmenitiesPgStep';
 import FoodMessPgStep from '../components/steps/FoodMessPgStep';
 import RulesRestrictionsPgStep from '../components/steps/RulesRestrictionsPgStep';
 import MediaUploadPgStep from '../components/steps/MediaUploadPgStep';
-import AvailabilityPgStep from '../components/steps/AvailabilityPgStep';
-import SafetyCompliancePgStep from '../components/steps/SafetyCompliancePgStep';
-import ReviewAndSubmitPgStep from '../components/steps/ReviewAndSubmitPgStep';
 
 // Step categories for better organization
 export const STEP_CATEGORIES = {

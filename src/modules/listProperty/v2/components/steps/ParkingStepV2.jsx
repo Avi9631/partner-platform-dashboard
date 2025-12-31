@@ -1,5 +1,5 @@
 import { useForm, FormProvider } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { Car, Wind, Zap, Users, Shield } from 'lucide-react';
@@ -39,9 +39,9 @@ export default function ParkingStepV2() {
 
   const { watch, setValue, register, handleSubmit, formState } = methods;
 
-  const onSubmit = (data) => {
+  const onSubmit = useCallback((data) => {
     saveAndContinue(data);
-  };
+  }, [saveAndContinue]);
 
   // Register submit handler with context
   useEffect(() => {

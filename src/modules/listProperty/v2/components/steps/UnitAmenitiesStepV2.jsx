@@ -1,5 +1,5 @@
 import { useForm, FormProvider } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { Sofa, Smartphone, CheckCircle } from 'lucide-react';
@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import furnishingAmenitiesSchema from '../../../schemas/furnishingAmenitiesSchema';
+import unitAmenitiesSchema from '../../../schemas/unitAmenitiesSchema';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 
 const furnishingOptions = [
@@ -50,12 +50,13 @@ export default function FurnishingStepV2() {
 
   // Create local form with defaults from context
   const methods = useForm({
-    resolver: zodResolver(furnishingAmenitiesSchema),
+    resolver: zodResolver(unitAmenitiesSchema),
     mode: 'onChange',
     defaultValues: {
       furnishingStatus: formData?.furnishingStatus || 'unfurnished',
       furnishingDetails: formData?.furnishingDetails || {},
       flooringTypes: formData?.flooringTypes || [],
+      amenities: formData?.amenities || [],
       // Phase 1 enhancements
       smartHomeDevices: formData?.smartHomeDevices || [],
       furnitureCondition: formData?.furnitureCondition || undefined,
@@ -67,9 +68,9 @@ export default function FurnishingStepV2() {
   const furnishingDetails = watch('furnishingDetails');
   const flooringTypes = watch('flooringTypes');
 
-  const onSubmit = (data) => {
+  const onSubmit = useCallback((data) => {
     saveAndContinue(data);
-  };
+  }, [saveAndContinue]);
 
   // Register submit handler with context
   useEffect(() => {
@@ -111,10 +112,10 @@ export default function FurnishingStepV2() {
               className="mb-6"
             >
               <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-                Furnishing
+                Unit Amenities
               </h2>
               <p className="text-muted-foreground text-sm">
-                Describe the furnishing and flooring of your property
+                Furnishing, flooring and unit-level amenities
               </p>
             </motion.div>
 

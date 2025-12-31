@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'motion/react';
+import { z } from 'zod';
 import { 
   Wifi,
   Car,
@@ -34,31 +35,18 @@ export default function AmenitiesPgStep() {
   
   const logger = useMemo(() => createStepLogger('Amenities PG Step V2'), []);
 
+  // Wrap the array schema in an object for form compatibility
+  const formSchema = useMemo(() => z.object({
+    amenities: amenitiesPgSchema
+  }), []);
+
   const form = useForm({
-    resolver: zodResolver(amenitiesPgSchema),
+    resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
-      commonAmenities: formData?.commonAmenities || [],
-      commonAmenitiesLegacy: formData?.commonAmenitiesLegacy || [],
-      roomAmenities: formData?.roomAmenities || [],
+      amenities: formData?.amenities || [],
     },
   });
-
-  // Initialize commonAmenities from legacy format if needed
-  useEffect(() => {
-    if (formData?.commonAmenitiesLegacy?.length > 0 && (!formData?.commonAmenities || formData.commonAmenities.length === 0)) {
-      const convertedAmenities = formData.commonAmenitiesLegacy.map(legacyId => {
-        const amenityData = COMMON_AMENITIES_LIST.find(a => a.id === legacyId);
-        return amenityData ? {
-          name: amenityData.name,
-          available: true,
-          icon: amenityData.icon
-        } : null;
-      }).filter(Boolean);
-      
-      form.setValue('commonAmenities', convertedAmenities);
-    }
-  }, [formData, form]);
 
   // Log validation errors
   useEffect(() => {
@@ -69,13 +57,13 @@ export default function AmenitiesPgStep() {
 
   // Toggle amenity selection
   const toggleAmenity = (amenityData) => {
-    const currentAmenities = form.getValues('commonAmenities');
+    const currentAmenities = form.getValues('amenities');
     const existingIndex = currentAmenities.findIndex(a => a.name === amenityData.name);
     
     if (existingIndex >= 0) {
       // Remove amenity
       const updatedAmenities = currentAmenities.filter((_, i) => i !== existingIndex);
-      form.setValue('commonAmenities', updatedAmenities);
+      form.setValue('amenities', updatedAmenities);
     } else {
       // Add amenity
       const newAmenity = {
@@ -83,13 +71,14 @@ export default function AmenitiesPgStep() {
         available: true,
         icon: amenityData.icon
       };
-      form.setValue('commonAmenities', [...currentAmenities, newAmenity]);
+      form.setValue('amenities', [...currentAmenities, newAmenity]);
     }
   };
 
   // Check if amenity is selected
   const isAmenitySelected = (amenityName) => {
-    return form.watch('commonAmenities').some(a => a.name === amenityName);
+    const amenities = form.watch('amenities') || [];
+    return amenities.some(a => a.name === amenityName);
   };
 
   const onSubmit = (data) => {
@@ -100,6 +89,11 @@ export default function AmenitiesPgStep() {
   const onError = (errors) => {
     logger.logSubmission(form.getValues(), errors);
   };
+
+  // Register submit handler with context
+  useEffect(() => {
+    setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit, onError));
+  }, [form.handleSubmit]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">

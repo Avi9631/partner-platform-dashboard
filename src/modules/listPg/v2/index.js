@@ -35,6 +35,3 @@ export { default as AmenitiesPgStep } from './components/steps/AmenitiesPgStep';
 export { default as FoodMessPgStep } from './components/steps/FoodMessPgStep';
 export { default as RulesRestrictionsPgStep } from './components/steps/RulesRestrictionsPgStep';
 export { default as MediaUploadPgStep } from './components/steps/MediaUploadPgStep';
-export { default as AvailabilityPgStep } from './components/steps/AvailabilityPgStep';
-export { default as SafetyCompliancePgStep } from './components/steps/SafetyCompliancePgStep';
-export { default as ReviewAndSubmitPgStep } from './components/steps/ReviewAndSubmitPgStep';

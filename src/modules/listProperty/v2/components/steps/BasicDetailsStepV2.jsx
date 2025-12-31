@@ -185,7 +185,7 @@ export default function BasicDetailsStepV2() {
   }, [currentPage, projectNameSearch, hasMoreProjectNames, loadingProjectNames, fetchProjectNames]);
 
   // Handle form submission
-  const onSubmit = (data) => {
+  const onSubmit = useCallback((data) => {
     logger.logSubmission(data, form.formState.errors);
     
     // If "Not Listed" is selected, use customPropertyName as the projectName
@@ -197,7 +197,7 @@ export default function BasicDetailsStepV2() {
     
     // Pass data to context
     saveAndContinue(submissionData);
-  };
+  }, [logger, form.formState.errors, saveAndContinue]);
 
   // Register submit handler with context
   useEffect(() => {

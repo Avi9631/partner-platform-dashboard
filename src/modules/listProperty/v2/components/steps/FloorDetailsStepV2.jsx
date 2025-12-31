@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
@@ -46,10 +46,10 @@ export default function FloorDetailsStepV2() {
     }
   }, [formState.errors, logger]);
 
-  const onSubmit = (data) => {
+  const onSubmit = useCallback((data) => {
     logger.logSubmission(data, formState.errors);
     saveAndContinue(data);
-  };
+  }, [logger, formState.errors, saveAndContinue]);
 
   const onError = (errors) => {
     logger.logSubmission(methods.getValues(), errors);

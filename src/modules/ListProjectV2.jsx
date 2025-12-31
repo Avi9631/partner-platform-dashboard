@@ -33,7 +33,7 @@ export default function ListProjectV2Page() {
   const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await draftApi.getUserListingDrafts('PROPERTY');
+      const response = await draftApi.getUserListingDrafts('PROJECT');
       
       if (response.success && response.data) {
         // Transform API data to match our component structure

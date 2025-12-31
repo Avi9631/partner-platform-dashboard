@@ -1,7 +1,7 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Compass, Eye, MapPin } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -75,10 +75,10 @@ export default function LocationStepV2() {
     });
   }, [formState.isValid, formState.errors, watch]);
 
-  const onSubmit = (data) => {
+  const onSubmit = useCallback((data) => {
     console.log('Form submitted with data:', data);
     saveAndContinue(data);
-  };
+  }, [saveAndContinue]);
 
   // Register submit handler with context
   useEffect(() => {

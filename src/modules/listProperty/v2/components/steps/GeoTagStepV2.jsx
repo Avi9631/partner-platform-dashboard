@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
@@ -123,10 +123,10 @@ export default function GeoTagStepV2() {
   };
 
   // Handle form submission
-  const onSubmit = (data) => {
+  const onSubmit = useCallback((data) => {
     // Pass data to context
     saveAndContinue(data);
-  };
+  }, [saveAndContinue]);
 
   // Register submit handler with context
   useEffect(() => {

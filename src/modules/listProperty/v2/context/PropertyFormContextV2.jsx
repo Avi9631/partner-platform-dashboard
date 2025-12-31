@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { getTotalVisibleSteps, getVisibleSteps } from '../config/stepConfiguration';
 import { draftApi } from '@/services/draftService';
+import { validateAllSteps } from '../utils/schemaMapping';
 
 const PropertyFormContextV2 = createContext(null);
 
@@ -121,9 +122,7 @@ const getCompletedStepsFromData = (formData) => {
         
       case 'media-upload':
         hasData = !!(
-          (formData.images && Array.isArray(formData.images) && formData.images.length > 0) ||
-          (formData.videos && Array.isArray(formData.videos) && formData.videos.length > 0) ||
-          formData.virtualTourUrl
+          (formData.mediaData && Array.isArray(formData.mediaData) && formData.mediaData.length > 0)
         );
         break;
         
@@ -171,6 +170,7 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({});
   const [currentStepSubmitHandler, setCurrentStepSubmitHandler] = useState(null);
+  const [areAllStepsValid, setAreAllStepsValid] = useState(false);
 
   // Load draft data on mount
   useEffect(() => {
@@ -224,6 +224,19 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     ...formData,
     propertyType,
   }), [formData, propertyType]);
+
+  // Validate all steps whenever formData or propertyType changes
+  useEffect(() => {
+    const visibleSteps = getVisibleSteps(formDataWithType);
+    const validationResult = validateAllSteps(visibleSteps, formDataWithType);
+    setAreAllStepsValid(validationResult.allValid);
+    
+    if (!validationResult.allValid) {
+      console.log('⚠️ Invalid steps:', validationResult.invalidSteps);
+    } else {
+      console.log('✅ All steps are valid');
+    }
+  }, [formDataWithType]);
 
   const getTotalSteps = useCallback(() => {
     return getTotalVisibleSteps(formDataWithType);
@@ -322,6 +335,7 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     isLoading,
     currentStepSubmitHandler,
     setCurrentStepSubmitHandler,
+    areAllStepsValid,
   };
 
   return (

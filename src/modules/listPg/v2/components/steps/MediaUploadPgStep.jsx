@@ -123,12 +123,17 @@ export default function MediaUploadPgStepV2() {
   const isDuplicateFile = useCallback(
     (newFile) => {
       return mediaList.some((media) => {
-        if (!media.file) return false;
-        return (
-          media.file.name === newFile.name &&
-          media.file.size === newFile.size &&
-          media.file.lastModified === newFile.lastModified
-        );
+        // Check against file object if it exists (during upload)
+        if (media.file) {
+          return (
+            media.file.name === newFile.name &&
+            media.file.size === newFile.size &&
+            media.file.lastModified === newFile.lastModified
+          );
+        }
+        // For uploaded files, we can't reliably check duplicates without file object
+        // But we can check if a file with same name and size was already uploaded
+        return false;
       });
     },
     [mediaList]
@@ -195,6 +200,8 @@ export default function MediaUploadPgStepV2() {
         title: "",
         category: "",
         description: "",
+        docType: "",
+        fileSize: file.size,
         type: isImage ? "image" : "video",
         uploading: true,
         uploadProgress: 0,
@@ -203,8 +210,7 @@ export default function MediaUploadPgStepV2() {
       }));
 
       // Add to media list immediately to show uploading state
-      const updatedMedia = [...mediaList, ...tempMediaItems];
-      setMediaList(updatedMedia);
+      setMediaList((prevList) => [...prevList, ...tempMediaItems]);
 
       // Step 3: Upload files to S3
       setIsUploading(true);
@@ -228,29 +234,43 @@ export default function MediaUploadPgStepV2() {
         );
 
         // Step 4: Update media items with upload results
-        const finalMediaItems = tempMediaItems.map((item, index) => {
+        const tempMediaIds = tempMediaItems.map(item => item.id);
+        const successfulUploads = [];
+        const failedIds = [];
+
+        tempMediaItems.forEach((item, index) => {
           const result = uploadResults[index];
           if (result.success) {
-            return {
+            successfulUploads.push({
               ...item,
               uploading: false,
               uploadProgress: 100,
               url: result.url,
               key: result.key,
               file: null, // Remove file object after upload
-            };
+            });
           } else {
             newErrors.push(`${result.file.name}: ${result.error}`);
-            return null; // Remove failed uploads
+            failedIds.push(item.id);
+            // Revoke preview URL for failed uploads
+            if (item.preview) {
+              URL.revokeObjectURL(item.preview);
+            }
           }
-        }).filter(Boolean);
+        });
 
-        // Update media list with uploaded items
-        const finalList = [
-          ...mediaList,
-          ...finalMediaItems,
-        ];
-        setMediaList(finalList);
+        // Update media list: remove temp items and add successful uploads
+        setMediaList((prevList) => {
+          const withoutTempItems = prevList.filter(
+            (media) => !tempMediaIds.includes(media.id)
+          );
+          return [...withoutTempItems, ...successfulUploads];
+        });
+
+        // Update form value
+        const finalList = mediaList.filter(
+          (media) => !tempMediaIds.includes(media.id)
+        ).concat(successfulUploads);
         setValue("mediaData", finalList, { shouldValidate: true });
 
         if (newErrors.length > 0) {
@@ -263,8 +283,17 @@ export default function MediaUploadPgStepV2() {
         setUploadErrors(newErrors);
         setTimeout(() => setUploadErrors([]), 5000);
 
-        // Remove uploading items on error
-        setMediaList(mediaList);
+        // Remove temp uploading items on error
+        const tempMediaIds = tempMediaItems.map(item => item.id);
+        setMediaList((prevList) => {
+          // Revoke preview URLs for failed items
+          prevList.forEach((media) => {
+            if (tempMediaIds.includes(media.id) && media.preview) {
+              URL.revokeObjectURL(media.preview);
+            }
+          });
+          return prevList.filter((media) => !tempMediaIds.includes(media.id));
+        });
       } finally {
         setIsUploading(false);
         setUploadProgress({});
@@ -310,28 +339,49 @@ export default function MediaUploadPgStepV2() {
   );
 
   // Handle form submission
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     // Remove any potential duplicates before saving
     const uniqueMedia = mediaList.filter((media, index, self) => {
       // Keep the item if it's the first occurrence with this URL
       return (
         index ===
         self.findIndex(
-          (m) => m.url === media.url || m.key === media.key
+          (m) => m.url === media.url
         )
       );
     });
 
     // Only save media that has been successfully uploaded (has URL)
-    const validMedia = uniqueMedia.filter((media) => media.url);
+    // Filter to include only schema-required fields
+    const validMedia = uniqueMedia
+      .filter((media) => media.url)
+      .map((media) => ({
+        url: media.url,
+        title: media.title || "",
+        category: media.category || "",
+        description: media.description || "",
+        docType: media.docType || "",
+        fileSize: media.fileSize,
+      }));
 
     saveAndContinue({ mediaData: validMedia });
-  };
+  }, [mediaList, saveAndContinue]);
 
   // Register submit handler with context
   useEffect(() => {
     setCurrentStepSubmitHandler(() => handleContinue);
-  }, [handleContinue]);
+  }, [handleContinue, setCurrentStepSubmitHandler]);
+
+  // Cleanup preview URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      mediaList.forEach((media) => {
+        if (media.preview && media.preview.startsWith('blob:')) {
+          URL.revokeObjectURL(media.preview);
+        }
+      });
+    };
+  }, []);
 
   // Pro tips for media upload
   const mediaTips = [

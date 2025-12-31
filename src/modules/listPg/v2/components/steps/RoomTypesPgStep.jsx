@@ -72,6 +72,7 @@ import { usePgFormV2 } from "../../context/PgFormContextV2";
 import roomTypesPgSchema from "../../../schemas/roomTypesPgSchema";
 import { createStepLogger } from "../../../../listProperty/utils/validationLogger";
 import { uploadMultipleFiles } from "@/lib/uploadUtils";
+import { z } from "zod";
 
 // Room amenities list matching JSON structure
 const ROOM_AMENITIES = [
@@ -126,8 +127,13 @@ export default function RoomTypesPgStep() {
 
   const logger = useMemo(() => createStepLogger("Room Types PG Step V2"), []);
 
+  // Wrap the array schema in an object for form compatibility with useFieldArray
+  const formSchema = useMemo(() => z.object({
+    roomTypes: roomTypesPgSchema
+  }), []);
+
   const form = useForm({
-    resolver: zodResolver(roomTypesPgSchema),
+    resolver: zodResolver(formSchema),
     mode: "onChange",
     defaultValues: {
       roomTypes: formData?.roomTypes?.length > 0 ? formData.roomTypes : [],
@@ -444,11 +450,11 @@ export default function RoomTypesPgStep() {
       return;
     }
 
-    // Create temporary image items with previews
+    // Create temporary image items
     const tempImages = validFiles.map((file, index) => ({
       id: `img-${Date.now()}-${index}`,
       file,
-      preview: URL.createObjectURL(file),
+      fileSize: file.size,
       uploading: true,
       uploadProgress: 0,
       url: null,
@@ -485,11 +491,8 @@ export default function RoomTypesPgStep() {
                 const result = uploadResults[tempIndex];
                 if (result.success) {
                   return {
-                    ...img,
-                    uploading: false,
-                    uploadProgress: 100,
                     url: result.url,
-                    file: null, // Remove file object after upload
+                    fileSize: img.fileSize,
                   };
                 } else {
                   newErrors.push(`${result.file.name}: ${result.error}`);
@@ -530,10 +533,6 @@ export default function RoomTypesPgStep() {
   const removeImage = (imageIndex) => {
     if (tempRoomData) {
       const newImages = [...(tempRoomData.images || [])];
-      // Revoke the preview URL to free memory
-      if (newImages[imageIndex]?.preview) {
-        URL.revokeObjectURL(newImages[imageIndex].preview);
-      }
       newImages.splice(imageIndex, 1);
       setTempRoomData((prev) => ({
         ...prev,
@@ -1265,7 +1264,7 @@ export default function RoomTypesPgStep() {
                               >
                                 <div className="aspect-video rounded-lg overflow-hidden border-2 border-muted">
                                   <img
-                                    src={image.preview || image.url}
+                                    src={image.url || (image.file ? URL.createObjectURL(image.file) : '')}
                                     alt={`Room image ${index + 1}`}
                                     className="w-full h-full object-cover"
                                   />

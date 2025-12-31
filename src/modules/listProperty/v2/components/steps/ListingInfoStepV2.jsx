@@ -1,5 +1,5 @@
 import { useForm, FormProvider } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { FileText, Tag } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -24,12 +24,12 @@ export default function ListingInfoStepV2() {
   
   const isValid = !!(title && description);
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     if (isValid) {
       const data = methods.getValues();
       saveAndContinue(data);
     }
-  };
+  }, [isValid, methods, saveAndContinue]);
 
   // Register submit handler with context
   useEffect(() => {

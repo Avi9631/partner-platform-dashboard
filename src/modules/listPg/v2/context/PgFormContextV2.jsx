@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback, useMemo, useEffect } 
 import { useForm, FormProvider as RHFFormProvider } from 'react-hook-form';
 import { getTotalVisibleSteps, getVisibleSteps } from '../config/stepConfigurationPg';
 import { draftApi } from '@/services/draftService';
+import { toast } from 'sonner';
 
 const PgFormContextV2 = createContext(null);
 
@@ -67,14 +68,13 @@ const getCompletedStepsFromData = (formData) => {
           Array.isArray(formData.roomTypes) && 
           formData.roomTypes.length > 0 &&
           formData.roomTypes.some(room => 
-            hasValue(room.type) || 
-            hasValue(room.price) || 
-            hasValue(room.sharing) ||
-            hasValue(room.deposit) ||
-            hasValue(room.availableRooms) ||
-            hasValue(room.roomType) ||
-            hasValue(room.sharingType) ||
-            hasValue(room.rent)
+            hasValue(room.name) || 
+            hasValue(room.category) || 
+            hasValue(room.roomSize) ||
+            (room.pricing && Array.isArray(room.pricing) && room.pricing.length > 0) ||
+            (room.amenities && Array.isArray(room.amenities) && room.amenities.length > 0) ||
+            hasValue(room.refundPolicy) ||
+            (room.images && Array.isArray(room.images) && room.images.length > 0)
           )
         );
         console.log('🔍 room-types hasData:', hasData);
@@ -358,7 +358,7 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
   }, []);
 
   // Save draft to backend
-  const saveDraft = useCallback(async (updatedData) => {
+  const saveDraft = useCallback(async (updatedData, showToast = true) => {
     let currentDraftId = draftId;
     
     // If no draft ID exists, create a new draft first
@@ -400,13 +400,31 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
       
       if (response.success) {
         console.log('✅ PG draft saved successfully to backend');
+        if (showToast) {
+          toast.success('Draft saved successfully', {
+            description: 'Your changes have been saved',
+            duration: 3000,
+          });
+        }
         return { success: true, data: response, draftId: currentDraftId };
       } else {
         console.warn('⚠️ PG draft save returned unsuccessful response:', response);
+        if (showToast) {
+          toast.error('Failed to save draft', {
+            description: response.message || 'Unknown error occurred',
+            duration: 4000,
+          });
+        }
         return { success: false, message: response.message || 'Unknown error' };
       }
     } catch (error) {
       console.error('❌ Failed to save PG draft:', error);
+      if (showToast) {
+        toast.error('Error saving draft', {
+          description: error.message || 'An unexpected error occurred',
+          duration: 4000,
+        });
+      }
       return { success: false, error: error.message };
     }
   }, [draftId, formData, sanitizeData]);
@@ -423,12 +441,23 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
       
       // Save to backend
       console.log('Saving PG draft to backend...', { draftId, stepData });
-      const saveResult = await saveDraft(updatedFormData);
+      toast.loading('Saving draft...', { id: 'save-draft' });
+      const saveResult = await saveDraft(updatedFormData, false); // Don't show toast from saveDraft
       
       if (saveResult.success) {
         console.log('PG draft saved successfully');
+        toast.success('Progress saved!', {
+          id: 'save-draft',
+          description: 'Moving to next step',
+          duration: 2000,
+        });
       } else {
         console.warn('PG draft save unsuccessful, but continuing to next step');
+        toast.error('Failed to save', {
+          id: 'save-draft',
+          description: saveResult.message || 'An error occurred',
+          duration: 3000,
+        });
       }
       
       // Mark current step as completed

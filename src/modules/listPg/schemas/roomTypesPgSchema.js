@@ -26,8 +26,6 @@ const roomAmenitySchema = z.object({
  * Enhanced Schema for availability object matching JSON structure
  */
 const availabilitySchema = z.object({
-  totalBeds: z.number().min(0, "Total beds cannot be negative"),
-  availableBeds: z.number().min(0, "Available beds cannot be negative"),
   soldOut: z.boolean().default(false),
   nextAvailability: z.string().default("Immediate"),
 });
@@ -36,9 +34,9 @@ const availabilitySchema = z.object({
  * Schema for room images
  */
 const roomImageSchema = z.object({
-  url: z.string().optional(), // URL after upload (optional until uploaded)
-  file: z.any().optional(), // For file upload
-  preview: z.string().optional(), // For preview URL before upload
+  url: z.string().url('Invalid media URL'),
+  file: z.any().optional(),
+  fileSize: z.number().optional(),
 });
 
 /**
@@ -99,8 +97,6 @@ const roomTypeSchema = z
 
     // Enhanced Availability Object - matching JSON structure
     availability: availabilitySchema.optional().default({
-      totalBeds: 0,
-      availableBeds: 0,
       soldOut: false,
       nextAvailability: "Immediate",
     }),
@@ -110,21 +106,7 @@ const roomTypeSchema = z
 
     // Room images
     images: z.array(roomImageSchema).default([]).optional(),
-  })
-  .refine(
-    (room) => {
-      // Enhanced validation for availability
-      if (room.availability) {
-        return room.availability.availableBeds <= room.availability.totalBeds;
-      }
-
-      return true;
-    },
-    {
-      message: "Available beds/rooms cannot exceed total beds/rooms",
-      path: ["availability"],
-    }
-  )
+  }) 
   .refine(
     (room) => {
       // Ensure at least basic pricing structure exists
@@ -142,33 +124,19 @@ const roomTypeSchema = z
 /**
  * Enhanced Schema for Room Types array matching JSON structure
  */
-const roomTypesPgSchema = z.object({
-  // Primary roomTypes array matching JSON structure
-  roomTypes: z
-    .array(roomTypeSchema)
-    .min(1, "Please add at least one room type")
-    .refine(
-      (rooms) => {
-        // Validate each room type has unique names
-        const names = rooms.map((room) => room.name.toLowerCase().trim());
-        return new Set(names).size === names.length;
-      },
-      {
-        message: "Room type names must be unique",
-      }
-    )
-    .refine(
-      (rooms) => {
-        // Validate availability consistency
-        return rooms.every((room) => {
-          return room.availability.availableBeds <= room.availability.totalBeds;
-        });
-      },
-      {
-        message: "Available beds cannot exceed total beds for any room type",
-      }
-    ),
-});
+const roomTypesPgSchema = z
+  .array(roomTypeSchema)
+  .min(1, "Please add at least one room type")
+  .refine(
+    (rooms) => {
+      // Validate each room type has unique names
+      const names = rooms.map((room) => room.name.toLowerCase().trim());
+      return new Set(names).size === names.length;
+    },
+    {
+      message: "Room type names must be unique",
+    }
+  ) 
 
 export default roomTypesPgSchema;
 export { roomTypeSchema };

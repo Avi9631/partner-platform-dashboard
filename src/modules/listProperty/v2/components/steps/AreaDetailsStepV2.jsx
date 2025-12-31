@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Maximize, Plus, Trash2 } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
@@ -78,14 +78,14 @@ export default function AreaDetailsV2() {
   };
 
   // Handle form submission
-  const onSubmit = (data) => {
+  const onSubmit = useCallback((data) => {
     const submitData = {
       ...data,
       areaConfig, // Include area config array
     };
     logger.logSubmission(submitData, formState.errors);
     saveAndContinue(submitData);
-  };
+  }, [areaConfig, logger, formState.errors, saveAndContinue]);
 
   const onError = (errors) => {
     logger.logSubmission(form.getValues(), errors);

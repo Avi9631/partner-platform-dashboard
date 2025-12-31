@@ -1,5 +1,5 @@
 import { useForm, FormProvider, Controller } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { Users } from 'lucide-react';
@@ -36,9 +36,9 @@ export default function SuitableForStepV2() {
     onChange(updated);
   };
 
-  const handleContinue = (data) => {
+  const handleContinue = useCallback((data) => {
     saveAndContinue(data);
-  };
+  }, [saveAndContinue]);
 
   // Register submit handler with context
   useEffect(() => {

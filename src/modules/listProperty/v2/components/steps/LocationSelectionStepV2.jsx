@@ -2,7 +2,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
 import { MapPin } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Switch } from '@/components/ui/switch';
 import {
   FieldDescription,
@@ -32,10 +32,10 @@ export default function LocationSelectionStepV2() {
   });
 
   // Handle form submission - update context only on save & continue
-  const onSubmit = (data) => {
+  const onSubmit = useCallback((data) => {
     // Pass step data to context to update formData JSON
     saveAndContinue(data);
-  };
+  }, [saveAndContinue]);
 
   // Register submit handler with context
   useEffect(() => {

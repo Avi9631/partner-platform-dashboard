@@ -1,17 +1,21 @@
 import { z } from 'zod';
 
 /**
- * Enhanced Furnishing & Amenities Schema
- * Phase 1 Enhancement - Step 6: Furnishing
+ * Unit Amenities Schema
+ * Step 1: Furnishing + Unit Level Amenities
+ * 
+ * Includes furnishing details and flat/unit-specific amenities
  */
-const furnishingAmenitiesSchema = z.object({
+const unitAmenitiesSchema = z.object({
+  // Furnishing Details
   furnishingStatus: z.enum(['unfurnished', 'semi', 'fully'], {
     required_error: 'Please select furnishing status',
   }),
+  
   flooringTypes: z.array(z.string()).optional(),
+  
   furnishingDetails: z.record(z.boolean()).optional(),
   
-  // NEW: Phase 1 enhancements
   smartHomeDevices: z.array(z.enum([
     'smart_door_lock',
     'smart_lights',
@@ -33,6 +37,27 @@ const furnishingAmenitiesSchema = z.object({
     'needs_repair',
     'not_applicable'
   ]).optional(),
+  
+  // Unit Amenities (Flat/Unit Level)
+  amenities: z.array(z.enum([
+    'air_conditioning',
+    'modular_kitchen',
+    'furnished',
+    'semi_furnished',
+    'wardrobe',
+    'balcony',
+    'servant_room',
+    'study_room',
+    'pooja_room',
+    'private_terrace',
+    'private_garden',
+    'internet_wifi',
+    'intercom',
+    'gas_pipeline',
+    'water_purifier',
+    'geyser',
+    'pets_allowed',
+  ])).optional().default([]),
 });
 
-export default furnishingAmenitiesSchema;
+export default unitAmenitiesSchema;

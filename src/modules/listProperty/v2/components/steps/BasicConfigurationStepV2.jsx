@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'motion/react';
@@ -64,9 +64,9 @@ export default function BasicConfigurationV2() {
     setAreaConfig(areaConfig.filter((_, i) => i !== index));
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = useCallback((data) => {
     saveAndContinue(data);
-  };
+  }, [saveAndContinue]);
 
   // Register submit handler with context
   useEffect(() => {

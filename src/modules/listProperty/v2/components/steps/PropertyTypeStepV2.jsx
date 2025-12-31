@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Building2, Home, TreePine, LandPlot, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -42,12 +42,12 @@ export default function PropertyTypeStepV2() {
     await saveDraft({ propertyType: type });
   };
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     if (selectedType) {
       // Pass property type data to context and move to next step
       saveAndContinue({ propertyType: selectedType });
     }
-  };
+  }, [selectedType, saveAndContinue]);
 
   // Auto-advance only when user actively selects a type (not when returning to this step)
   useEffect(() => {

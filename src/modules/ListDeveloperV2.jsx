@@ -19,6 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { developerDraftApi } from '@/services/developerDraftService';
 import { useToast } from '@/components/hooks/use-toast';
+import draftApi from '@/services/draftService';
 
 export default function ListDeveloperV2Page() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export default function ListDeveloperV2Page() {
   const fetchDevelopers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await developerDraftApi.getUserDeveloperDrafts();
+      const response = await developerDraftApi.getUserDeveloperDrafts("DEVELEOPER");
       
       if (response.success && response.data) {
         // Transform API data to match our component structure
@@ -64,10 +65,7 @@ export default function ListDeveloperV2Page() {
   const handleAddNewDeveloper = async () => {
     try {
       setIsCreatingDraft(true);
-      const response = await developerDraftApi.createDeveloperDraft({
-        status: 'draft',
-        formData: {},
-      });
+       const response = await draftApi.createListingDraft('DEVELOPER');
 
       console.log(response);
       
