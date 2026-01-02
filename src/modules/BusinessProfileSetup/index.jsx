@@ -17,7 +17,6 @@ import StepIndicator from "../ProfileSetup/components/StepIndicator";
 import Step1BusinessInfo from "./components/Step1BusinessInfo";
 import Step2MultiPhoneVerification from "./components/Step2MultiPhoneVerification";
 import Step3BusinessLocation from "./components/Step3BusinessLocation";
-import Step3OwnerVideoVerification from "./components/Step3OwnerVideoVerification";
 import SubmissionSuccess from "./components/SubmissionSuccess";
 
 // Import custom hooks
@@ -46,13 +45,11 @@ const BusinessProfileSetup = () => {
       longitude: null,
       address: "",
     },
-    ownerVideo: null,
-    ownerVideoPreview: null,
   });
   const [errors, setErrors] = useState({});
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   // Custom hooks
   const camera = useCamera(toast);
@@ -83,6 +80,11 @@ const BusinessProfileSetup = () => {
         setWorkflowId(user.business.businessId);
       }
     }
+
+        if (user?.business && user.business.verificationStatus === "APPROVED") {
+          navigate("/", { replace: true });
+        }
+
   }, [user?.business?.verificationStatus, user?.business?.businessId, isCheckingStatus]);
 
   const validateStep = (step) => {
@@ -124,13 +126,6 @@ const BusinessProfileSetup = () => {
       }
     }
 
-    // Owner Video Verification Step
-    if (step === 4) {
-      if (!formData.ownerVideo) {
-        newErrors.ownerVideo = "Owner/POC verification video is required";
-      }
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -155,7 +150,7 @@ const BusinessProfileSetup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateStep(4)) {
+    if (!validateStep(3)) {
       return;
     }
 
@@ -178,10 +173,6 @@ const BusinessProfileSetup = () => {
         .filter(p => p.verified)
         .map(p => ({ phone: p.phone }));
       submitData.append("businessPhones", JSON.stringify(verifiedPhones));
-
-      if (formData.ownerVideo) {
-        submitData.append("ownerVideo", formData.ownerVideo);
-      }
 
       const response = await fetch(`${backendUrl}/partnerUser/businessOnboarding`, {
         method: "POST",
@@ -244,35 +235,6 @@ const BusinessProfileSetup = () => {
     });
   };
 
-  // Camera handlers for owner video verification
-  const handleStartRecording = () => {
-    camera.startRecording();
-  };
-
-  const handleStopRecording = async () => {
-    const result = await camera.stopRecording();
-    if (result) {
-      setFormData((prev) => ({
-        ...prev,
-        ownerVideo: result.file,
-        ownerVideoPreview: result.previewUrl,
-      }));
-
-      if (errors.ownerVideo) {
-        setErrors((prev) => ({ ...prev, ownerVideo: undefined }));
-      }
-    }
-  };
-
-  const handleRetakeVideo = () => {
-    setFormData((prev) => ({
-      ...prev,
-      ownerVideo: null,
-      ownerVideoPreview: null,
-    }));
-    camera.startCamera();
-  };
-
   const getStepTitle = () => {
     switch (currentStep) {
       case 1:
@@ -281,8 +243,6 @@ const BusinessProfileSetup = () => {
         return "Phone Verification";
       case 3:
         return "Business Location";
-      case 4:
-        return "Owner/POC Verification";
       default:
         return "";
     }
@@ -314,25 +274,6 @@ const BusinessProfileSetup = () => {
             errors={errors}
             locationLoading={location.locationLoading}
             captureLocation={handleCaptureLocation}
-          />
-        );
-      case 4:
-        return (
-          <Step3OwnerVideoVerification
-            formData={formData}
-            errors={errors}
-            isCameraActive={camera.isCameraActive}
-            cameraLoading={camera.cameraLoading}
-            cameraError={camera.cameraError}
-            isRecording={camera.isRecording}
-            recordingTime={camera.recordingTime}
-            videoRef={camera.videoRef}
-            canvasRef={camera.canvasRef}
-            startCamera={camera.startCamera}
-            stopCamera={camera.stopCamera}
-            startRecording={handleStartRecording}
-            stopRecording={handleStopRecording}
-            retakeVideo={handleRetakeVideo}
           />
         );
       default:
