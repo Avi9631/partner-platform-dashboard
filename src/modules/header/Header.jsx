@@ -103,6 +103,16 @@ export default function Header() {
                   )}
                   
                   <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      window.location.href = '/credit-management';
+                    }}
+                  >
+                    Credit Management
+                  </Button>
+                  
+                  <Button
                     onClick={logout}
                     variant="destructive"
                     className="w-full justify-start mt-4"
@@ -169,6 +179,16 @@ export default function Header() {
                         Upgrade to Business Account
                       </Button>
                     )}
+                    
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        window.location.href = '/credit-management';
+                      }}
+                    >
+                      Credit Management
+                    </Button>
                     
                     <Button
                       onClick={logout}
