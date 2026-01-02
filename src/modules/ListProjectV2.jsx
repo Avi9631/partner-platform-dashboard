@@ -2,23 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  PlusCircle, MapPin, Building2, Calendar, DollarSign, 
-  Edit2, Trash2, Eye, MoreVertical, Home,
-  Users, Square, Search, Clock, CheckCircle, XCircle, Loader2,
-  TrendingUp, Building
+  PlusCircle, Building2, CheckCircle, Loader2,
+  TrendingUp, Eye
 } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { draftApi } from '@/services/draftService';
 import { useToast } from '@/components/hooks/use-toast';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import ProjectCard from './listProject/ProjectCard';
 
 export default function ListProjectV2Page() {
   const navigate = useNavigate();
@@ -279,177 +271,7 @@ function StatsCard({ icon, value, label, color }) {
   );
 }
 
-// Project Card Component
-function ProjectCard({ project, index }) {
-  const navigate = useNavigate();
-  
-  const statusConfig = {
-    upcoming: { 
-      color: 'blue', 
-      label: 'Upcoming', 
-      icon: Clock,
-      badgeClass: 'bg-blue-500 hover:bg-blue-600'
-    },
-    under_construction: { 
-      color: 'orange', 
-      label: 'Under Construction', 
-      icon: TrendingUp,
-      badgeClass: 'bg-orange-500 hover:bg-orange-600'
-    },
-    ready_to_move: { 
-      color: 'green', 
-      label: 'Ready to Move', 
-      icon: CheckCircle,
-      badgeClass: 'bg-green-500 hover:bg-green-600'
-    },
-    completed: { 
-      color: 'purple', 
-      label: 'Completed', 
-      icon: XCircle,
-      badgeClass: 'bg-purple-500 hover:bg-purple-600'
-    },
-  };
 
-  const config = statusConfig[project.status] || statusConfig.under_construction;
-  const StatusIcon = config.icon;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ delay: index * 0.1 }}
-      whileHover={{ y: -8 }}
-      className="group"
-    >
-      <Card className="overflow-hidden border-2 border-gray-200 dark:border-gray-700 hover:border-orange-400 dark:hover:border-orange-500 transition-all duration-300 shadow-lg hover:shadow-2xl bg-white dark:bg-gray-900">
-        {/* Image Section */}
-        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
-          {project.image ? (
-            <img 
-              src={project.image} 
-              alt={project.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Building className="w-20 h-20 text-orange-300 dark:text-orange-700" />
-            </div>
-          )}
-          
-          {/* Status Badge */}
-          <div className="absolute top-3 right-3">
-            <Badge className={`${config.badgeClass} text-white font-semibold px-3 py-1 shadow-lg flex items-center`}>
-              <StatusIcon className="w-3 h-3 mr-1" />
-              {config.label}
-            </Badge>
-          </div>
-
-          {/* Actions Menu */}
-          <div className="absolute top-3 left-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="h-8 w-8 bg-white/90 hover:bg-white shadow-lg"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => navigate(`/list-project/${project.id}`)}>
-                  <Eye className="w-4 h-4 mr-2" />
-                  View
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate(`/list-project/${project.id}`)}>
-                  <Edit2 className="w-4 h-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        {/* Content Section */}
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                {project.name}
-              </h3>
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
-                <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                <span className="truncate">{project.location}</span>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-500">
-                by {project.developer}
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="pb-3">
-          {/* Project Type Badge */}
-          <div className="mb-3">
-            <Badge variant="outline" className="text-xs font-medium">
-              <Building2 className="w-3 h-3 mr-1" />
-              {project.projectType}
-            </Badge>
-          </div>
-
-          {/* Project Details */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {project.totalUnits && (
-              <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Home className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{project.totalUnits}</span>
-              </div>
-            )}
-            {project.configurations && (
-              <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Users className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{project.configurations}</span>
-              </div>
-            )}
-            {project.area && (
-              <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <Square className="w-4 h-4 mr-1" />
-                <span className="font-semibold">{project.area}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Price Range */}
-          <div className="flex items-baseline gap-2">
-            <DollarSign className="w-5 h-5 text-orange-500" />
-            <div className="flex flex-col">
-              <span className="text-xl font-extrabold text-orange-600 dark:text-orange-400">
-                {project.priceRange}
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Price Range</span>
-            </div>
-          </div>
-        </CardContent>
-
-        <CardFooter className="pt-0 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center">
-            <Calendar className="w-3 h-3 mr-1" />
-            <span>{project.launchDate}</span>
-          </div>
-          <div className="flex items-center">
-            <Eye className="w-3 h-3 mr-1" />
-            <span>{project.views} views</span>
-          </div>
-        </CardFooter>
-      </Card>
-    </motion.div>
-  );
-}
 
 // Empty State Component
 function EmptyState({ searchQuery, onAddNew, isCreating }) {

@@ -101,11 +101,7 @@ const router = createBrowserRouter([
           {
             path: "list-property",
             element: <ListPropertyV2 />,
-          },
-          {
-            path: "list-property-v2",
-            element: <ListPropertyV2 />,
-          },
+          }, 
           {
             path: "list-pg-hostel",
             element: <ListPgHostelV2 />,

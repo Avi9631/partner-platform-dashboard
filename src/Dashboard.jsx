@@ -12,7 +12,7 @@ function Dashboard() {
       title: "Manage Properties",
       description: "Add, edit, and manage property listings",
       icon: Building2,
-      path: "/list-property-v2",
+      path: "/list-property",
       color: "text-orange-600",
       bgColor: "bg-orange-50",
       hoverBg: "from-orange-500 to-orange-600",

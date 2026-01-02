@@ -105,7 +105,7 @@ const SignIn = () => {
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-2xl shadow-xl"
+              className="inline-flex items-center gap-3  "
             >
               <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Building2 className="w-7 h-7 text-white" />
@@ -122,7 +122,7 @@ const SignIn = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-5xl font-extrabold text-gray-900 leading-tight"
+              className="text-3xl font-extrabold text-gray-900 leading-tight"
             >
               Manage Your <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-orange-500">
@@ -158,7 +158,7 @@ const SignIn = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6 + index * 0.1 }}
                 whileHover={{ scale: 1.03, x: 5 }}
-                className="flex items-center gap-4 bg-white/80 backdrop-blur-md px-6 py-4 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-white/50"
+                className="flex items-center gap-4 transition-all duration-30"
               >
                 <div className={`w-12 h-12 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center shadow-lg transform transition-transform group-hover:rotate-6`}>
                   <feature.icon className="w-6 h-6 text-white" />

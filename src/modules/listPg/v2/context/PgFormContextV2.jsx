@@ -106,16 +106,11 @@ const getCompletedStepsFromData = (formData) => {
         break;
         
       case 'rules-restrictions':
-        // Check if any rules or restrictions are mentioned
+        // Rules are optional - mark as complete if rules array exists (even if empty)
+        // or if it has at least one valid rule
         hasData = !!(
-          hasValue(formData.rules) || 
-          hasValue(formData.restrictions) ||
-          hasValue(formData.gateClosingTime) ||
-          hasValue(formData.visitingHours) ||
-          hasValue(formData.occupancyRules) ||
-          hasValue(formData.guestPolicy) ||
-          hasValue(formData.noticePeriod) ||
-          (formData.restrictionsList && formData.restrictionsList.length > 0)
+          formData.rules !== undefined && 
+          Array.isArray(formData.rules)
         );
         break;
         
@@ -460,8 +455,10 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
         });
       }
       
-      // Mark current step as completed
-      setCompletedSteps(prev => new Set([...prev, currentStep]));
+      // Recalculate completed steps based on the updated data
+      const newCompletedSteps = getCompletedStepsFromData(updatedFormData);
+      setCompletedSteps(newCompletedSteps);
+      console.log('✅ Completed steps updated after save:', Array.from(newCompletedSteps));
       
       // Move to next step
       const totalSteps = getTotalSteps();
@@ -471,7 +468,11 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
     } catch (error) {
       console.error('Error in saveAndContinue:', error);
       // Still proceed to next step even if save fails
-      setCompletedSteps(prev => new Set([...prev, currentStep]));
+      // Recalculate completed steps based on current formData
+      const updatedFormData = { ...formData, ...stepData };
+      const newCompletedSteps = getCompletedStepsFromData(updatedFormData);
+      setCompletedSteps(newCompletedSteps);
+      
       const totalSteps = getTotalSteps();
       if (currentStep < totalSteps - 1) {
         setCurrentStep(currentStep + 1);
