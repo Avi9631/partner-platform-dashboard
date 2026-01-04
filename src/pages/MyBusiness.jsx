@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const backendUrl = import.meta.env.VITE_API_URL || "https://partner-platform-backend.onrender.com";
 
 export default function MyBusiness() {
   const navigate = useNavigate();

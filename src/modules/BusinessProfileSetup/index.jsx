@@ -48,7 +48,7 @@ const BusinessProfileSetup = () => {
   });
   const [errors, setErrors] = useState({});
 
-  const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const backendUrl = import.meta.env.VITE_API_URL || "https://partner-platform-backend.onrender.com";
   const totalSteps = 3;
 
   // Custom hooks

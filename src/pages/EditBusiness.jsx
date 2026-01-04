@@ -16,7 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiCall } from "@/lib/apiClient";
 import { ArrowLeft, Save, Building2, Mail, Phone, MapPin, FileText, AlertCircle, Info, Plus, Trash2, RefreshCw, CheckCircle2 } from "lucide-react";
 
-const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const backendUrl = import.meta.env.VITE_API_URL || "https://partner-platform-backend.onrender.com";
 
 export default function EditBusiness() {
   const [loading, setLoading] = useState(true);

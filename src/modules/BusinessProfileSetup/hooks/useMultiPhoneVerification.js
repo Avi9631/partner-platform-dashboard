@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { apiCall } from "../../../lib/apiClient";
 
-const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const backendUrl = import.meta.env.VITE_API_URL || "https://partner-platform-backend.onrender.com";
 
 export const useMultiPhoneVerification = (toast) => {
   const [otpLoading, setOtpLoading] = useState(false);

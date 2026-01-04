@@ -4,7 +4,7 @@
  * and retrying the original request
  */
 
-const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const backendUrl = import.meta.env.VITE_API_URL || "https://partner-platform-backend.onrender.com";
 
 let isRefreshing = false;
 let refreshPromise = null;

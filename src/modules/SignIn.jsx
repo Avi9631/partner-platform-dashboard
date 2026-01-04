@@ -19,7 +19,7 @@ const SignIn = () => {
   const [loadingProvider, setLoadingProvider] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const redirectUri = searchParams.get("redirectUri") || "/";
-  const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const backendUrl = import.meta.env.VITE_API_URL || "https://partner-platform-backend.onrender.com";
   const { scrollY } = useScroll();
   const headerOpacity = useTransform(scrollY, [0, 100], [0, 1]);
 
