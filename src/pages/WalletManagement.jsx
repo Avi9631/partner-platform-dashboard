@@ -55,7 +55,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { creditApi } from "@/services/creditService";
+import { walletApi } from "@/services/walletService";
 
 // Stats Card Component
 function StatsCard({ icon, value, label, color }) {
@@ -85,7 +85,7 @@ function StatsCard({ icon, value, label, color }) {
   );
 }
 
-export default function CreditManagement() {
+export default function WalletManagement() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
@@ -106,16 +106,16 @@ export default function CreditManagement() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // Fetch credit balance
+  // Fetch wallet balance
   const fetchBalance = async () => {
     try {
-      const response = await creditApi.getBalance();
+      const response = await walletApi.getBalance();
       setBalance(response.data?.balance ?? 0);
     } catch (error) {
       console.error("Error fetching balance:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch credit balance",
+        description: "Failed to fetch wallet balance",
         variant: "destructive",
       });
     }
@@ -143,7 +143,7 @@ export default function CreditManagement() {
         params.endDate = endDate;
       }
       
-      const response = await creditApi.getTransactions(params);
+      const response = await walletApi.getTransactions(params);
       setTransactions(response.data?.transactions || []);
       setTotalPages(response.data?.totalPages || 1);
       setTotalTransactions(response.data?.total || 0);
@@ -189,10 +189,10 @@ export default function CreditManagement() {
 
     try {
       setRechargeLoading(true);
-      await creditApi.recharge(amount);
+      await walletApi.recharge(amount);
       toast({
         title: "Success",
-        description: "Credits recharged successfully!",
+        description: "Wallet recharged successfully!",
       });
       setRechargeDialogOpen(false);
       setRechargeAmount("");
@@ -200,10 +200,10 @@ export default function CreditManagement() {
       fetchBalance();
       fetchTransactions(page);
     } catch (error) {
-      console.error("Error recharging credits:", error);
+      console.error("Error recharging wallet:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to recharge credits",
+        description: error.message || "Failed to recharge wallet",
         variant: "destructive",
       });
     } finally {
@@ -266,8 +266,8 @@ export default function CreditManagement() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold mb-2">Credit Management</h1>
-              <p className="text-orange-100 text-sm md:text-base">Manage your credits and view transaction history</p>
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-2">Wallet Management</h1>
+              <p className="text-orange-100 text-sm md:text-base">Manage your wallet and view transaction history</p>
             </div>
             <Button
               size="lg"
@@ -275,7 +275,7 @@ export default function CreditManagement() {
               className="h-12 px-8 text-sm font-bold bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:scale-105 transition-all duration-300 self-start md:self-auto"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Recharge Credits
+              Recharge Wallet
             </Button>
           </div>
         </div>
@@ -299,13 +299,13 @@ export default function CreditManagement() {
           <StatsCard
             icon={<ArrowUpRight className="w-6 h-6" />}
             value={transactions.filter(t => t.transactionType?.toLowerCase() === 'credit').length}
-            label="Credits Received"
+            label="Funds Received"
             color="green"
           />
           <StatsCard
             icon={<ArrowDownRight className="w-6 h-6" />}
             value={transactions.filter(t => t.transactionType?.toLowerCase() === 'debit').length}
-            label="Credits Used"
+            label="Funds Used"
             color="purple"
           />
         </div>
@@ -440,7 +440,7 @@ export default function CreditManagement() {
               <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
                 {transactionType !== "all" || startDate || endDate
                   ? "Try adjusting your filters to find what you're looking for."
-                  : "Start by recharging your credits to see your transaction history."}
+                  : "Start by recharging your wallet to see your transaction history."}
               </p>
               {!(transactionType !== "all" || startDate || endDate) && (
                 <Button
@@ -608,15 +608,15 @@ export default function CreditManagement() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-orange-600" />
-              Recharge Credits
+              Recharge Wallet
             </DialogTitle>
             <DialogDescription>
-              Enter the amount you want to add to your credit balance
+              Enter the amount you want to add to your wallet balance
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount (Credits)</Label>
+              <Label htmlFor="amount">Amount (Funds)</Label>
               <Input
                 id="amount"
                 type="number"
@@ -651,7 +651,7 @@ export default function CreditManagement() {
                   You will receive:
                 </p>
                 <p className="text-2xl font-bold text-orange-600">
-                  {parseFloat(rechargeAmount).toFixed(2)} Credits
+                  {parseFloat(rechargeAmount).toFixed(2)} Funds
                 </p>
               </div>
             )}

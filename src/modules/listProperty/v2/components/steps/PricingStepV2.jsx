@@ -25,7 +25,7 @@ import pricingInformationSchema from '../../../schemas/pricingInformationSchema'
 import { createStepLogger } from '../../../utils/validationLogger';
 
 export default function PricingStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
 
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Pricing Information Step'), []);
@@ -72,6 +72,11 @@ export default function PricingStepV2() {
     setCurrentStepSubmitHandler(() => handleSubmit(onSubmit));
     return () => setCurrentStepSubmitHandler(null);
   }, [handleSubmit, onSubmit, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(form.formState.isValid);
+  }, [form.formState.isValid, setCurrentStepIsValid]);
 
   // Helper function to get pricing type options based on listing type
   const getPricingTypeOptions = () => {
@@ -163,20 +168,7 @@ export default function PricingStepV2() {
 
       <div>
         <FieldGroup>
-          {/* Info: Listing Type from Basic Details */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800"
-          >
-            <p className="text-sm text-blue-900 dark:text-blue-100">
-              <span className="font-semibold">Listing Type:</span> For <span className="capitalize font-semibold">{listingType}</span>
-              <span className="text-xs block mt-1 text-blue-700 dark:text-blue-300">
-                (Set in Basic Details step. Go back to change it.)
-              </span>
-            </p>
-          </motion.div>
+         
 
           {/* Dynamic Pricing Items */}
           <motion.div

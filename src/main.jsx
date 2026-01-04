@@ -18,7 +18,7 @@ import MyProfile from "./pages/MyProfile.jsx";
 import EditProfile from "./pages/EditProfile.jsx";
 import MyBusiness from "./pages/MyBusiness.jsx";
 import EditBusiness from "./pages/EditBusiness.jsx";
-import CreditManagement from "./pages/CreditManagement.jsx";
+import WalletManagement from "./pages/WalletManagement.jsx";
 import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
 import BusinessProfileSetup from "./modules/BusinessProfileSetup/index.jsx";
 import { DeveloperFormPageV2 } from "./modules/listDeveloper/v2/index.js";
@@ -124,8 +124,8 @@ const router = createBrowserRouter([
             element: <EditBusiness />,
           },
           {
-            path: "credit-management",
-            element: <CreditManagement />,
+            path: "wallet-management",
+            element: <WalletManagement />,
           },
         ],
       },

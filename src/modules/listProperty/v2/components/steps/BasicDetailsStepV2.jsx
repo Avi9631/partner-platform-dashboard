@@ -38,7 +38,7 @@ import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import { createStepLogger } from '../../../utils/validationLogger';
 
 export default function BasicDetailsStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
 
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Basic Details Step'), []);
@@ -204,6 +204,11 @@ export default function BasicDetailsStepV2() {
     setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
     return () => setCurrentStepSubmitHandler(null);
   }, [form, onSubmit, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(form.formState.isValid);
+  }, [form.formState.isValid, setCurrentStepIsValid]);
 
   const onError = (errors) => {
     logger.logSubmission(form.getValues(), errors);

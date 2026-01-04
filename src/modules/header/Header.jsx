@@ -106,10 +106,10 @@ export default function Header() {
                     variant="outline"
                     className="w-full justify-start"
                     onClick={() => {
-                      window.location.href = '/credit-management';
+                      window.location.href = '/wallet-management';
                     }}
                   >
-                    Credit Management
+                    Wallet Management
                   </Button>
                   
                   <Button
@@ -184,10 +184,10 @@ export default function Header() {
                       variant="outline"
                       className="w-full justify-start"
                       onClick={() => {
-                        window.location.href = '/credit-management';
+                        window.location.href = '/wallet-management';
                       }}
                     >
-                      Credit Management
+                      Wallet Management
                     </Button>
                     
                     <Button

@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 
 export default function ListingInfoStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
 
   const methods = useForm({
     mode: 'onChange',
@@ -36,6 +36,11 @@ export default function ListingInfoStepV2() {
     setCurrentStepSubmitHandler(() => handleContinue);
     return () => setCurrentStepSubmitHandler(null);
   }, [handleContinue, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(methods.formState.isValid);
+  }, [methods.formState.isValid, setCurrentStepIsValid]);
 
   return (
     <FormProvider {...methods}>

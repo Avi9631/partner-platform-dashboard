@@ -24,7 +24,7 @@ import { apiCall } from "@/lib/apiClient";
 import { ArrowLeft, Save, User, Phone, MapPin, Briefcase, AlertCircle, Info } from "lucide-react";
 import LocationPicker from "@/components/maps/LocationPicker";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+const backendUrl = process.env.VITE_API_URL || "http://localhost:3000";
 
 export default function EditProfile() {
   const [loading, setLoading] = useState(true);

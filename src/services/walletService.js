@@ -1,11 +1,11 @@
 import { apiCall } from "../lib/apiClient";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+const backendUrl = process.env.VITE_API_URL || "http://localhost:3000";
 
-export const creditApi = {
-  // Get credit balance
+export const walletApi = {
+  // Get wallet balance
   getBalance: async () => {
-    return apiCall(`${backendUrl}/api/credit/balance`);
+    return apiCall(`${backendUrl}/api/wallet/balance`);
   },
 
   // Get transaction history
@@ -18,18 +18,18 @@ export const creditApi = {
     if (params.endDate) queryParams.append("endDate", params.endDate);
 
     const queryString = queryParams.toString();
-    const url = `${backendUrl}/api/credit/transactions${queryString ? `?${queryString}` : ""}`;
+    const url = `${backendUrl}/api/wallet/transactions${queryString ? `?${queryString}` : ""}`;
     return apiCall(url);
   },
 
-  // Get credit statistics
+  // Get wallet statistics
   getStats: async () => {
-    return apiCall(`${backendUrl}/api/credit/stats`);
+    return apiCall(`${backendUrl}/api/wallet/stats`);
   },
 
-  // Add credits (Admin only)
-  addCredits: async (userId, amount, reason, metadata = {}) => {
-    return apiCall(`${backendUrl}/api/credit/add`, {
+  // Add funds (Admin only)
+  addFunds: async (userId, amount, reason, metadata = {}) => {
+    return apiCall(`${backendUrl}/api/wallet/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -38,9 +38,9 @@ export const creditApi = {
     });
   },
 
-  // Deduct credits (Admin only)
-  deductCredits: async (userId, amount, reason, metadata = {}) => {
-    return apiCall(`${backendUrl}/api/credit/deduct`, {
+  // Deduct funds (Admin only)
+  deductFunds: async (userId, amount, reason, metadata = {}) => {
+    return apiCall(`${backendUrl}/api/wallet/deduct`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -49,9 +49,9 @@ export const creditApi = {
     });
   },
 
-  // Check if user has sufficient credits
-  checkSufficientCredits: async (amount) => {
-    return apiCall(`${backendUrl}/api/credit/check`, {
+  // Check if user has sufficient funds
+  checkSufficientFunds: async (amount) => {
+    return apiCall(`${backendUrl}/api/wallet/check`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -61,4 +61,4 @@ export const creditApi = {
   },
 };
 
-export default creditApi;
+export default walletApi;

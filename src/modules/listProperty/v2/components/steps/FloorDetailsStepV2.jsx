@@ -19,7 +19,7 @@ import floorDetailsSchema from '../../../schemas/floorDetailsSchema';
 import { createStepLogger } from '../../../utils/validationLogger';
 
 export default function FloorDetailsStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
 
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Floor Details Step'), []);
@@ -60,6 +60,11 @@ export default function FloorDetailsStepV2() {
     setCurrentStepSubmitHandler(() => handleSubmit(onSubmit));
     return () => setCurrentStepSubmitHandler(null);
   }, [handleSubmit, onSubmit, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(methods.formState.isValid);
+  }, [methods.formState.isValid, setCurrentStepIsValid]);
 
   return (
     <FormProvider {...methods}>

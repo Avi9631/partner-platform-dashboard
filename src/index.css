@@ -257,4 +257,29 @@
   display: none;
 }
 
+/* Animation for head movement arrows */
+@keyframes bounce-horizontal {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+}
 
+@keyframes bounce-horizontal-reverse {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-6px);
+  }
+}
+
+.animate-bounce-horizontal {
+  animation: bounce-horizontal 1s ease-in-out infinite;
+}
+
+.animate-bounce-horizontal-reverse {
+  animation: bounce-horizontal-reverse 1s ease-in-out infinite;
+}

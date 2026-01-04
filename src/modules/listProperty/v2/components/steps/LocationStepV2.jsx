@@ -46,7 +46,7 @@ const propertyPositionOptions = [
 ];
 
 export default function LocationStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
 
   const methods = useForm({
     resolver: zodResolver(locationAttributesSchema),
@@ -85,6 +85,11 @@ export default function LocationStepV2() {
     setCurrentStepSubmitHandler(() => handleSubmit(onSubmit));
     return () => setCurrentStepSubmitHandler(null);
   }, [handleSubmit, onSubmit, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(methods.formState.isValid);
+  }, [methods.formState.isValid, setCurrentStepIsValid]);
 
   return (
     <FormProvider {...methods}>

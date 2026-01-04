@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   CheckCircle2,
@@ -31,11 +31,16 @@ import { draftApi } from '@/services/draftService';
 import { useToast } from '@/components/hooks/use-toast';
 
 export default function ReviewAndSubmitV2() {
-  const { previousStep, propertyType, isBuildingType, formData, draftId } = usePropertyFormV2();
+  const { previousStep, propertyType, isBuildingType, formData, draftId, setCurrentStepIsValid } = usePropertyFormV2();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState(null);
   const { toast } = useToast();
+
+  // Review step is always valid (user just needs to review and submit)
+  useEffect(() => {
+    setCurrentStepIsValid(true);
+  }, [setCurrentStepIsValid]);
 
   const handleSubmit = async () => {
     try {

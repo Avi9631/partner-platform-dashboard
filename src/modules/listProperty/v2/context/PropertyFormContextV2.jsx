@@ -170,6 +170,7 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({});
   const [currentStepSubmitHandler, setCurrentStepSubmitHandler] = useState(null);
+  const [currentStepIsValid, setCurrentStepIsValid] = useState(true);
   const [areAllStepsValid, setAreAllStepsValid] = useState(false);
 
   // Load draft data on mount
@@ -335,6 +336,8 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     isLoading,
     currentStepSubmitHandler,
     setCurrentStepSubmitHandler,
+    currentStepIsValid,
+    setCurrentStepIsValid,
     areAllStepsValid,
   };
 

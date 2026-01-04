@@ -12,6 +12,7 @@ export default function SaveAndContinueFooter({
   isLastStep = false,
   isLoading = false,
   loadingText = 'Saving...',
+  isStepValid = true,
 }) {
   return (
     <motion.div
@@ -38,7 +39,7 @@ export default function SaveAndContinueFooter({
         <Button
           type="submit"
           onClick={onSaveAndContinue}
-          disabled={nextDisabled || isLoading}
+          disabled={nextDisabled || isLoading || !isStepValid}
           className="h-11 px-8 text-sm font-bold shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (

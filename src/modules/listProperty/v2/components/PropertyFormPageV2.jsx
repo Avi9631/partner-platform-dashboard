@@ -16,7 +16,7 @@ function PropertyFormContentV2() {
     return null;
   }
   
-  const { currentStep, resetForm, propertyType, formDataWithType, isLoading, saveDraft, formData, saveAndContinue, previousStep, getTotalSteps, currentStepSubmitHandler, draftId } = context;
+  const { currentStep, resetForm, propertyType, formDataWithType, isLoading, saveDraft, formData, saveAndContinue, previousStep, getTotalSteps, currentStepSubmitHandler, draftId, currentStepIsValid } = context;
 
   const handleClose = () => {
     if (window.confirm('Are you sure you want to close? Your progress is saved as draft.')) {
@@ -121,6 +121,7 @@ function PropertyFormContentV2() {
               }}
               showBack={currentStep > 0}
               isLastStep={currentStep === getTotalSteps() - 1}
+              isStepValid={currentStepIsValid}
             />
           </div>
         )}

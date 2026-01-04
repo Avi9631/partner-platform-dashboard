@@ -29,9 +29,14 @@ const propertyTypes = [
 ];
 
 export default function PropertyTypeStepV2() {
-  const { setPropertyType, saveAndContinue, formData, saveDraft } = usePropertyFormV2();
+  const { setPropertyType, saveAndContinue, formData, saveDraft, setCurrentStepIsValid } = usePropertyFormV2();
   const [selectedType, setSelectedType] = useState(formData?.propertyType || null);
   const [hasUserSelected, setHasUserSelected] = useState(false);
+
+  // PropertyType step is always valid once a type is selected
+  useEffect(() => {
+    setCurrentStepIsValid(!!selectedType);
+  }, [selectedType, setCurrentStepIsValid]);
 
   const handleSelectType = async (type) => {
     setSelectedType(type);

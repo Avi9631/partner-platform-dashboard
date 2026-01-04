@@ -23,7 +23,7 @@ import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import basicConfigurationSchema from '../../../schemas/basicConfigurationSchema';
 
 export default function BasicConfigurationV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
   
   // Area configuration state (for additional/optional area types)
   const [areaConfig, setAreaConfig] = useState(formData?.areaConfig || []);
@@ -73,6 +73,11 @@ export default function BasicConfigurationV2() {
     setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
     return () => setCurrentStepSubmitHandler(null);
   }, [form, onSubmit, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(form.formState.isValid);
+  }, [form.formState.isValid, setCurrentStepIsValid]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">

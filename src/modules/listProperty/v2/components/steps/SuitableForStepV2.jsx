@@ -15,7 +15,7 @@ const suitableForOptions = [
 ];
 
 export default function SuitableForStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
 
   const methods = useForm({
     resolver: zodResolver(suitableForSchema),
@@ -45,6 +45,11 @@ export default function SuitableForStepV2() {
     setCurrentStepSubmitHandler(() => handleSubmit(handleContinue));
     return () => setCurrentStepSubmitHandler(null);
   }, [handleSubmit, handleContinue, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(methods.formState.isValid);
+  }, [methods.formState.isValid, setCurrentStepIsValid]);
 
   // Only show for rent/lease
   const listingType = watch('listingType');

@@ -14,7 +14,7 @@ import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import LocationPicker from '@/components/maps/LocationPicker';
 
 export default function LocationSelectionStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
 
   // Initialize React Hook Form with Zod validation
   // Default values defined here, populated from context if previously saved
@@ -42,6 +42,11 @@ export default function LocationSelectionStepV2() {
     setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
     return () => setCurrentStepSubmitHandler(null);
   }, [form, onSubmit, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(form.formState.isValid);
+  }, [form.formState.isValid, setCurrentStepIsValid]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">

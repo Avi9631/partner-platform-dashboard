@@ -108,7 +108,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export default function MediaUploadStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
 
   // Ensure all media items have IDs when loading from draft
   const normalizeMediaData = (mediaData) => {
@@ -407,6 +407,11 @@ export default function MediaUploadStepV2() {
     setCurrentStepSubmitHandler(() => handleContinue);
     return () => setCurrentStepSubmitHandler(null);
   }, [handleContinue, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(isValid);
+  }, [isValid, setCurrentStepIsValid]);
 
   // Pro tips for media upload
   const mediaTips = [

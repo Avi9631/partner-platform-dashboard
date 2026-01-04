@@ -24,7 +24,7 @@ import areaDetailsSchema from '../../../schemas/areaDetailsSchema';
 import { createStepLogger } from '../../../utils/validationLogger';
 
 export default function AreaDetailsV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
   
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Area Details Step'), []);
@@ -96,6 +96,11 @@ export default function AreaDetailsV2() {
     setCurrentStepSubmitHandler(() => form.handleSubmit(onSubmit));
     return () => setCurrentStepSubmitHandler(null);
   }, [form, onSubmit, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(form.formState.isValid);
+  }, [form.formState.isValid, setCurrentStepIsValid]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">

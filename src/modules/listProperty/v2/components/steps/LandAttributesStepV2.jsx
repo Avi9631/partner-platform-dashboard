@@ -59,7 +59,7 @@ const soilTypes = [
 ];
 
 export default function LandAttributesStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
 
   const form = useForm({
     mode: 'onChange',
@@ -92,6 +92,11 @@ export default function LandAttributesStepV2() {
     setCurrentStepSubmitHandler(() => form.handleSubmit(handleSubmit));
     return () => setCurrentStepSubmitHandler(null);
   }, [form, handleSubmit, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(form.formState.isValid);
+  }, [form.formState.isValid, setCurrentStepIsValid]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">

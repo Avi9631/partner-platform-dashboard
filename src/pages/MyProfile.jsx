@@ -32,7 +32,7 @@ import {
   FileText,
 } from "lucide-react";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+const backendUrl = process.env.VITE_API_URL || "http://localhost:3000";
 
 export default function MyProfile() {
   const navigate = useNavigate();

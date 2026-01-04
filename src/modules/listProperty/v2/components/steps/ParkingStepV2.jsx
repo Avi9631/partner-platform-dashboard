@@ -17,7 +17,7 @@ import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import parkingUtilitiesSchema from '../../../schemas/parkingUtilitiesSchema';
 
 export default function ParkingStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
 
   // Create local form with defaults from context
   const methods = useForm({
@@ -48,6 +48,11 @@ export default function ParkingStepV2() {
     setCurrentStepSubmitHandler(() => handleSubmit(onSubmit));
     return () => setCurrentStepSubmitHandler(null);
   }, [handleSubmit, onSubmit, setCurrentStepSubmitHandler]);
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(methods.formState.isValid);
+  }, [methods.formState.isValid, setCurrentStepIsValid]);
 
   return (
     <FormProvider {...methods}>

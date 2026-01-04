@@ -1,6 +1,19 @@
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
-import { Loader2, Video, VideoOff, RefreshCw, User, ArrowRight, ArrowLeft, Shield, Camera, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Loader2,
+  Video,
+  VideoOff,
+  RefreshCw,
+  User,
+  ArrowRight,
+  ArrowLeft,
+  Shield,
+  Camera,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Step4ProfileImage = ({
   formData,
@@ -21,30 +34,14 @@ const Step4ProfileImage = ({
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
     <div className="space-y-4">
-      {/* <div className="text-center mb-6">
-        <div className="relative inline-block">
-          <Video className="w-16 h-16 mx-auto text-orange-600 mb-4" />
-          <div className="absolute -top-1 -right-1 bg-orange-100 rounded-full p-1.5">
-            <Camera className="w-4 h-4 text-orange-600" />
-          </div>
-        </div>
-        <h3 className="text-xl font-semibold mb-2 text-gray-900">Record Verification Video</h3>
-        <p className="text-sm text-gray-600">
-          Record a short video following the instructions
-        </p>
-        <Badge variant="secondary" className="mt-3">
-          <span className="text-xs">5-10 seconds required</span>
-        </Badge>
-      </div> */}
-
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left side: Camera/Video */}
-        <div className="flex-shrink-0">
+        <div className="flex-1">
           {formData.profileVideoPreview ? (
             // Show recorded video preview
             <div className="relative group">
@@ -59,7 +56,7 @@ const Step4ProfileImage = ({
           ) : isCameraActive ? (
             // Show live camera feed
             <div className="relative">
-              <div className="w-64 h-64 rounded-2xl overflow-hidden border-3 border-orange-400 bg-gray-900 shadow-xl">
+              <div className="  h-64 rounded-2xl overflow-hidden border-3 border-orange-400 bg-gray-900 shadow-xl">
                 <video
                   ref={videoRef}
                   autoPlay
@@ -69,7 +66,7 @@ const Step4ProfileImage = ({
                 />
               </div>
               <canvas ref={canvasRef} className="hidden" />
-              
+
               {isRecording && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
                   <span className="bg-red-500 text-white text-sm px-4 py-2 rounded-full flex items-center gap-2 shadow-lg animate-pulse">
@@ -78,13 +75,15 @@ const Step4ProfileImage = ({
                   </span>
                 </div>
               )}
-              
+
               {!isRecording && (
                 <div className="mt-3 text-center">
                   <div className="bg-orange-50 border border-orange-200 rounded-lg py-1.5 px-3 inline-block">
                     <p className="text-sm text-orange-600 flex items-center gap-2">
                       <Camera className="w-4 h-4" />
-                      {cameraLoading ? "Loading camera..." : "Position yourself in the frame"}
+                      {cameraLoading
+                        ? "Loading camera..."
+                        : "Position yourself in the frame"}
                     </p>
                   </div>
                 </div>
@@ -92,75 +91,83 @@ const Step4ProfileImage = ({
             </div>
           ) : (
             // Show placeholder when camera is not active
-            <div className="w-64 h-64 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-3 border-dashed border-gray-300 shadow-inner">
+            <div className="  h-64 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-3 border-dashed border-gray-300 shadow-inner">
               <div className="text-center">
                 <User className="w-24 h-24 text-gray-400 mx-auto mb-3" />
-                <p className="text-sm text-gray-500 font-medium">Camera not started</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right side: Instructions */}
-        <div className="flex-1 space-y-3">
-          {isRecording && (
-            <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 rounded-lg p-3 shadow-sm">
-              <p className="text-sm font-semibold text-orange-800 mb-2 flex items-center gap-2">
-                <Video className="w-4 h-4" />
-                Follow these steps:
-              </p>
-              <div className="space-y-2 text-xs text-orange-700">
-                <div className="flex items-center gap-2 bg-white/60 rounded-lg p-2 border border-orange-100">
-                  <div className="bg-orange-100 rounded-full p-1.5 shrink-0">
-                    <ArrowRight className="w-3.5 h-3.5 text-orange-600" />
-                  </div>
-                  <span><strong>Step 1:</strong> Move head from left to right</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/60 rounded-lg p-2 border border-orange-100">
-                  <div className="bg-orange-100 rounded-full p-1.5 shrink-0">
-                    <ArrowLeft className="w-3.5 h-3.5 text-orange-600" />
-                  </div>
-                  <span><strong>Step 2:</strong> Move head from right to left</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-            <div className="flex items-start gap-2 mb-2">
-              <div className="bg-gray-200 rounded-full p-1.5 shrink-0">
-                <Video className="w-3.5 h-3.5 text-gray-700" />
-              </div>
-              <p className="text-xs font-semibold text-gray-800">Video Requirements:</p>
-            </div>
-            <ul className="text-xs text-gray-600 space-y-1.5 ml-9">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-gray-500 mt-0.5 shrink-0" />
-                <span>Ensure your face is clearly visible and well-lit</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-gray-500 mt-0.5 shrink-0" />
-                <span>Follow the head movement instructions during recording</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-gray-500 mt-0.5 shrink-0" />
-                <span>Recording will be approximately 5-10 seconds</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-3">
-            <div className="flex items-start gap-2">
-              <div className="bg-yellow-100 rounded-full p-1.5 shrink-0">
-                <Shield className="w-4 h-4 text-yellow-700" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-yellow-900 mb-0.5">Privacy Notice</p>
-                <p className="text-xs text-yellow-800 leading-snug">
-                  This video is used only for verification purposes and will be stored 
-                  securely according to our privacy policy. Your data is protected and encrypted.
+                <p className="text-sm text-gray-500 font-medium">
+                  Camera not started
                 </p>
               </div>
+            </div>
+          )}
+
+          <Alert className="mt-4 " variant="destructive">
+            <Shield />
+            <AlertTitle  className="text-sm">Privacy & Security</AlertTitle>
+            <AlertDescription className="text-xs">
+              Used only for verification. Stored securely with encryption.
+            </AlertDescription>
+          </Alert>
+        </div>
+
+        {/* Right side: Demo Video */}
+        <div className="flex-1">
+
+             <div className="  h-64 rounded-2xl overflow-hidden border-3 border-blue-400 bg-gray-900 shadow-xl mb-4">
+              <div className="w-full h-full flex items-center justify-center">
+                {/* Replace this with actual demo video URL */}
+                <div className="text-center p-8">
+                  <div className="relative inline-block mb-4">
+                    <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center animate-pulse">
+                      <Video className="w-10 h-10 text-blue-300" />
+                    </div>
+                    <div className="absolute inset-0 rounded-full border-4 border-blue-400/30 animate-ping"></div>
+                  </div>
+                  <p className="text-blue-200 text-sm font-semibold">
+                    Demo Video
+                  </p>
+                  <p className="text-blue-300/70 text-xs mt-1">Coming soon</p>
+                </div>
+                {/* Uncomment and use when demo video is available:
+                <video
+                  src="/demo/head-movement-verification.mp4"
+                  className="w-full h-full object-cover"
+                  controls
+                  poster="/demo/video-thumbnail.jpg"
+                />
+                */}
+              </div>
+            </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 shadow-lg">
+        
+         
+
+            {/* Instructions */}
+           
+
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-gray-900 mb-2">
+                Requirements:
+              </p>
+              <ul className="text-xs text-gray-700 space-y-1.5">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
+                  <span>Good lighting and clear face visibility</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
+                  <span>Smooth head movements as shown</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
+                  <span>Keep face centered in frame</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
+                  <span>Video duration: 5-10 seconds</span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -175,7 +182,9 @@ const Step4ProfileImage = ({
                 <div className="bg-red-100 rounded-full p-2 shrink-0">
                   <AlertCircle className="w-5 h-5 text-red-600" />
                 </div>
-                <p className="text-sm text-red-700 font-medium">{cameraError}</p>
+                <p className="text-sm text-red-700 font-medium">
+                  {cameraError}
+                </p>
               </div>
             </div>
           )}
@@ -184,7 +193,9 @@ const Step4ProfileImage = ({
             <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 w-full animate-in fade-in duration-200">
               <div className="flex items-center justify-center gap-2">
                 <AlertCircle className="w-4 h-4 text-red-600" />
-                <p className="text-sm text-red-600 font-medium">{errors.profileVideo}</p>
+                <p className="text-sm text-red-600 font-medium">
+                  {errors.profileVideo}
+                </p>
               </div>
             </div>
           )}

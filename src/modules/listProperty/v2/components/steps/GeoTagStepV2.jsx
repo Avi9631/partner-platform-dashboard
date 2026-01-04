@@ -33,7 +33,7 @@ const calculateDistance = (lat1, lng1, lat2, lng2) => {
 };
 
 export default function GeoTagStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
@@ -53,6 +53,11 @@ export default function GeoTagStepV2() {
       geoTagTimestamp: formData?.geoTagTimestamp || null,
     },
   });
+
+  // Track validation state
+  useEffect(() => {
+    setCurrentStepIsValid(form.formState.isValid);
+  }, [form.formState.isValid, setCurrentStepIsValid]);
 
   // Function to get current location
   const getCurrentLocation = () => {
