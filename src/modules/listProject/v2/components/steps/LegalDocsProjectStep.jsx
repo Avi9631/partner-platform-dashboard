@@ -27,7 +27,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { apiCall } from "@/lib/apiClient";
 
-const backendUrl = process.env.VITE_API_URL || "http://localhost:3000";
+const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 // Maximum file sizes
 const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10MB

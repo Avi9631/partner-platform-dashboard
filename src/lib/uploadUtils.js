@@ -4,7 +4,7 @@
 
 import { apiCall } from "./apiClient";
 
-const backendUrl = process.env.VITE_API_URL || "http://localhost:3000";
+const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 /**
  * Generate presigned URLs from backend

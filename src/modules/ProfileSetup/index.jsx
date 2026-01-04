@@ -55,7 +55,7 @@ const ProfileSetup = () => {
   });
   const [errors, setErrors] = useState({});
 
-  const backendUrl = process.env.VITE_API_URL || "http://localhost:3000";
+  const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
   const totalSteps = 4;
 
   // Custom hooks

@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const backendUrl = process.env.VITE_API_URL || "http://localhost:3000";
+  const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   const logout = useCallback(async () => {
     try {
