@@ -2,13 +2,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PgFormProviderV2, usePgFormV2 } from '../context/PgFormContextV2';
 import { getStepComponent } from '../config/stepConfigurationPg';
 import { Button } from '@/components/ui/button';
-import { X, Save } from 'lucide-react';
+import { X, Save, Menu } from 'lucide-react';
+import { useState } from 'react';
 import PgFormSidebar from './PgFormSidebar';
 import SaveAndContinueFooter from './steps/SaveAndContinueFooter';
 
 function PgFormContentV2() {
   const navigate = useNavigate();
   const context = usePgFormV2();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Safety check for context
   if (!context) {
@@ -51,23 +53,38 @@ function PgFormContentV2() {
   return (
     <div className="fixed inset-0 flex bg-gray-50 dark:bg-gray-950 z-10">
       {/* Sidebar */}
-      <PgFormSidebar />
+      <PgFormSidebar 
+        isMobileOpen={isMobileMenuOpen}
+        setIsMobileOpen={setIsMobileMenuOpen}
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-0">
         {/* Top Header */}
         <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-          <div className="px-6 py-4 flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                New PG/Hostel Listing
-              </h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Fill in the details below. Changes are auto-saved.
-              </p>
+          <div className="px-4 md:px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* Mobile Menu Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+              
+              <div>
+                <h1 className="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  New PG/Hostel Listing
+                </h1>
+                <p className="text-xs md:text-sm text-muted-foreground mt-0.5 hidden sm:block">
+                  Fill in the details below. Changes are auto-saved.
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
                 <div className={`w-2 h-2 rounded-full ${draftId ? 'bg-green-500' : 'bg-gray-400'}`} />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   {draftId ? 'Draft Saved' : 'Not Saved'}
@@ -87,7 +104,7 @@ function PgFormContentV2() {
 
         {/* Step Content */}
         <div className="flex-1 overflow-y-auto bg-gradient-to-br from-orange-50/30 to-white dark:from-orange-950/10 dark:to-gray-950">
-          <div className="max-w-5xl mx-auto px-6 py-8 pb-32">
+          <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-32">
             {isLoadingDraft ? (
               <div className="flex items-center justify-center h-full min-h-[400px]">
                 <div className="text-center">
