@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'motion/react';
-import { Check, ChevronRight, Rocket, Loader2, X } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Check, ChevronRight, Rocket, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePgFormV2 } from '../context/PgFormContextV2';
 import { getVisibleSteps } from '../config/stepConfigurationPg';
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { usePgPublish } from '../hooks/usePgPublish';
 
-export default function PgFormSidebar({ isMobileOpen, setIsMobileOpen }) {
+export default function PgFormSidebar() {
   const { 
     currentStep, 
     goToStep, 
@@ -35,10 +35,6 @@ export default function PgFormSidebar({ isMobileOpen, setIsMobileOpen }) {
   const handleStepClick = (stepIndex) => {
     // Allow navigation to any step (no locking)
     goToStep(stepIndex);
-    // Close mobile drawer after selecting a step
-    if (setIsMobileOpen) {
-      setIsMobileOpen(false);
-    }
   };
 
   const handlePublishClick = () => {
@@ -51,44 +47,7 @@ export default function PgFormSidebar({ isMobileOpen, setIsMobileOpen }) {
   };
 
   return (
-    <>
-      {/* Mobile Overlay */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsMobileOpen(false)}
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{
-          x: isMobileOpen ? 0 : '-100%',
-        }}
-        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-screen fixed md:sticky top-0 left-0 z-50 md:translate-x-0"
-      >
-      {/* Mobile Close Button */}
-      <div className="md:hidden p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Navigation
-        </h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMobileOpen(false)}
-          className="hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <X className="w-5 h-5" />
-        </Button>
-      </div>
-
+    <aside className="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-screen sticky top-0">
       {/* Header */}
       {/* <div className="p-6 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent mb-2">
@@ -265,7 +224,6 @@ export default function PgFormSidebar({ isMobileOpen, setIsMobileOpen }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </motion.aside>
-    </>
+    </aside>
   );
 }
