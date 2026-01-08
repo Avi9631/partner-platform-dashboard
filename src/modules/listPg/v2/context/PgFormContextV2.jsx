@@ -9,6 +9,7 @@ const PgFormContextV2 = createContext(null);
 /**
  * Helper function to determine which steps have data
  * Returns a Set of step indices that have completed data
+ * Supports both nested (stepName: {fields}) and flat structure for backwards compatibility
  */
 const getCompletedStepsFromData = (formData) => {
   const completedSteps = new Set();
@@ -26,48 +27,54 @@ const getCompletedStepsFromData = (formData) => {
     let hasData = false;
 
     switch (step.id) {
-      case 'basic-details':
+      case 'basic-details': {
+        const stepData = formData['basic-details'] || {};
         // Check if any basic detail field is filled
         hasData = !!(
-          hasValue(formData.pgHostelName) || 
-          hasValue(formData.propertyFor) || 
-          hasValue(formData.pgHostelType) ||
-          hasValue(formData.description) ||
-          hasValue(formData.establishedYear) ||
-          hasValue(formData.totalFloors) ||
-          hasValue(formData.ownerName) ||
-          hasValue(formData.ownerContact)
+          hasValue(stepData.pgHostelName) || hasValue(formData.pgHostelName) ||
+          hasValue(stepData.propertyFor) || hasValue(formData.propertyFor) ||
+          hasValue(stepData.pgHostelType) || hasValue(formData.pgHostelType) ||
+          hasValue(stepData.description) || hasValue(formData.description) ||
+          hasValue(stepData.establishedYear) || hasValue(formData.establishedYear) ||
+          hasValue(stepData.totalFloors) || hasValue(formData.totalFloors) ||
+          hasValue(stepData.ownerName) || hasValue(formData.ownerName) ||
+          hasValue(stepData.ownerContact) || hasValue(formData.ownerContact)
         );
         break;
+      }
         
-      case 'location-details':
+      case 'location-details': {
+        const stepData = formData['location-details'] || {};
         // Check if location details are provided (address or coordinates)
         hasData = !!(
-          hasValue(formData.address) || 
-          hasValue(formData.city) ||
-          hasValue(formData.state) ||
-          hasValue(formData.pincode) ||
-          hasValue(formData.latitude) || 
-          hasValue(formData.longitude) ||
-          hasValue(formData.locationDetails) ||
-          hasValue(formData.landmark) ||
-          hasValue(formData.locality)
+          hasValue(stepData.address) || hasValue(formData.address) ||
+          hasValue(stepData.city) || hasValue(formData.city) ||
+          hasValue(stepData.state) || hasValue(formData.state) ||
+          hasValue(stepData.pincode) || hasValue(formData.pincode) ||
+          hasValue(stepData.latitude) || hasValue(formData.latitude) ||
+          hasValue(stepData.longitude) || hasValue(formData.longitude) ||
+          hasValue(stepData.locationDetails) || hasValue(formData.locationDetails) ||
+          hasValue(stepData.landmark) || hasValue(formData.landmark) ||
+          hasValue(stepData.locality) || hasValue(formData.locality)
         );
         break;
+      }
         
-      case 'room-types':
+      case 'room-types': {
+        const stepData = formData['room-types'] || {};
+        const roomTypes = stepData.roomTypes || formData.roomTypes;
         // Check if room types are defined with valid data
         console.log('🔍 Checking room-types:', {
-          hasRoomTypes: !!formData.roomTypes,
-          isArray: Array.isArray(formData.roomTypes),
-          length: formData.roomTypes?.length,
-          roomTypes: formData.roomTypes
+          hasRoomTypes: !!roomTypes,
+          isArray: Array.isArray(roomTypes),
+          length: roomTypes?.length,
+          roomTypes: roomTypes
         });
         hasData = !!(
-          formData.roomTypes && 
-          Array.isArray(formData.roomTypes) && 
-          formData.roomTypes.length > 0 &&
-          formData.roomTypes.some(room => 
+          roomTypes && 
+          Array.isArray(roomTypes) && 
+          roomTypes.length > 0 &&
+          roomTypes.some(room => 
             hasValue(room.name) || 
             hasValue(room.category) || 
             hasValue(room.roomSize) ||
@@ -79,51 +86,67 @@ const getCompletedStepsFromData = (formData) => {
         );
         console.log('🔍 room-types hasData:', hasData);
         break;
+      }
         
-      case 'amenities':
+      case 'amenities': {
+        const stepData = formData['amenities'] || {};
         // Check if any amenity is selected (using commonAmenities field)
         hasData = !!(
+          (stepData.commonAmenities && Array.isArray(stepData.commonAmenities) && stepData.commonAmenities.length > 0) ||
           (formData.commonAmenities && Array.isArray(formData.commonAmenities) && formData.commonAmenities.length > 0) ||
+          (stepData.commonAmenitiesLegacy && Array.isArray(stepData.commonAmenitiesLegacy) && stepData.commonAmenitiesLegacy.length > 0) ||
           (formData.commonAmenitiesLegacy && Array.isArray(formData.commonAmenitiesLegacy) && formData.commonAmenitiesLegacy.length > 0) ||
+          (stepData.amenities && typeof stepData.amenities === 'object' && Object.keys(stepData.amenities).length > 0) ||
           (formData.amenities && typeof formData.amenities === 'object' && Object.keys(formData.amenities).length > 0)
         );
         break;
+      }
         
-      case 'food-mess':
+      case 'food-mess': {
+        const stepData = formData['food-mess'] || {};
         // Check if food/mess options are defined (using foodMess field)
         hasData = !!(
+          (stepData.foodMess && typeof stepData.foodMess === 'object' && Object.keys(stepData.foodMess).length > 0) ||
           (formData.foodMess && typeof formData.foodMess === 'object' && Object.keys(formData.foodMess).length > 0) ||
-          formData.foodAvailable !== undefined || 
-          formData.messAvailable !== undefined ||
-          hasValue(formData.foodType) ||
-          hasValue(formData.messCharges) ||
-          hasValue(formData.mealsIncluded) ||
-          hasValue(formData.foodTimings) ||
-          formData.breakfastIncluded !== undefined ||
-          formData.lunchIncluded !== undefined ||
-          formData.dinnerIncluded !== undefined
+          stepData.foodAvailable !== undefined || formData.foodAvailable !== undefined ||
+          stepData.messAvailable !== undefined || formData.messAvailable !== undefined ||
+          hasValue(stepData.foodType) || hasValue(formData.foodType) ||
+          hasValue(stepData.messCharges) || hasValue(formData.messCharges) ||
+          hasValue(stepData.mealsIncluded) || hasValue(formData.mealsIncluded) ||
+          hasValue(stepData.foodTimings) || hasValue(formData.foodTimings) ||
+          stepData.breakfastIncluded !== undefined || formData.breakfastIncluded !== undefined ||
+          stepData.lunchIncluded !== undefined || formData.lunchIncluded !== undefined ||
+          stepData.dinnerIncluded !== undefined || formData.dinnerIncluded !== undefined
         );
         break;
+      }
         
-      case 'rules-restrictions':
+      case 'rules-restrictions': {
+        const stepData = formData['rules-restrictions'] || {};
         // Rules are optional - mark as complete if rules array exists (even if empty)
         // or if it has at least one valid rule
         hasData = !!(
-          formData.rules !== undefined && 
-          Array.isArray(formData.rules)
+          (stepData.rules !== undefined && Array.isArray(stepData.rules)) ||
+          (formData.rules !== undefined && Array.isArray(formData.rules))
         );
         break;
+      }
         
-      case 'media-upload':
+      case 'media-upload': {
+        const stepData = formData['media-upload'] || {};
         // Check if any media files are uploaded (using mediaData field)
         hasData = !!(
+          (stepData.mediaData && Array.isArray(stepData.mediaData) && stepData.mediaData.length > 0) ||
           (formData.mediaData && Array.isArray(formData.mediaData) && formData.mediaData.length > 0) ||
+          (stepData.images && Array.isArray(stepData.images) && stepData.images.length > 0) ||
           (formData.images && Array.isArray(formData.images) && formData.images.length > 0) ||
+          (stepData.videos && Array.isArray(stepData.videos) && stepData.videos.length > 0) ||
           (formData.videos && Array.isArray(formData.videos) && formData.videos.length > 0) ||
-          hasValue(formData.virtualTourUrl) ||
-          hasValue(formData.coverImage)
+          hasValue(stepData.virtualTourUrl) || hasValue(formData.virtualTourUrl) ||
+          hasValue(stepData.coverImage) || hasValue(formData.coverImage)
         );
         break;
+      }
         
       case 'availability':
         // Check if availability information is provided
@@ -309,22 +332,56 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
     }
   }, [formData]);
 
-  // Memoize the form data with propertyType
-  const formDataWithType = useMemo(() => ({
-    ...formData,
-   }), [formData,  ]);
+  /**
+   * Helper to flatten nested formData for backwards compatibility with validation
+   * Converts { stepId: { field1: value1 } } to { field1: value1, field2: value2, ... }
+   */
+  const flattenFormData = useCallback((nestedData) => {
+    const flattened = {};
+    Object.entries(nestedData).forEach(([key, value]) => {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        // Merge step data into flattened object
+        Object.assign(flattened, value);
+      } else {
+        // Keep top-level primitives (backwards compatibility)
+        flattened[key] = value;
+      }
+    });
+    return flattened;
+  }, []);
+
+  // Memoize the form data (flattened for validation)
+  const formDataWithType = useMemo(() => {
+    return flattenFormData(formData);
+  }, [formData, flattenFormData]);
 
   // Get total steps
   const getTotalSteps = useCallback(() => {
     return getTotalVisibleSteps(formDataWithType);
   }, [formDataWithType]);
 
-  // Update form data in context
-  const updateFormData = useCallback((stepData) => {
+  /**
+   * Update form data for a specific step
+   * @param {string} stepId - The ID of the step (e.g., 'basic-details')
+   * @param {Object} stepData - The data for that step
+   */
+  const updateFormData = useCallback((stepId, stepData) => {
+    if (!stepId) {
+      console.warn('updateFormData called without stepId, using flat structure');
+      // Fallback to flat structure if no stepId provided (backwards compatibility)
+      setFormData(prev => ({ ...prev, ...stepData }));
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
-      ...stepData,
+      [stepId]: {
+        ...(prev[stepId] || {}),
+        ...stepData,
+      }
     }));
+    
+    console.log(`📝 Updated PG form data for step: ${stepId}`, stepData);
   }, []);
 
   // Sanitize data to remove circular references and non-serializable values
@@ -425,14 +482,27 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
   }, [draftId, formData, sanitizeData]);
 
   // Navigate to next step with "Save & Continue"
-  const saveAndContinue = useCallback(async (stepData) => {
+  const saveAndContinue = useCallback(async (stepData, stepId) => {
     try {
-      // Update form data in context first
-      const updatedFormData = { ...formData, ...stepData };
+      // Get current step ID from visible steps
+      const visibleSteps = getVisibleSteps(formDataWithType);
+      const currentStepId = stepId || visibleSteps[currentStep]?.id;
       
-      if (stepData) {
-        updateFormData(stepData);
+      if (!currentStepId) {
+        console.error('Could not determine current step ID');
+        return;
       }
+      
+      // Update form data with nested structure
+      const updatedFormData = {
+        ...formData,
+        [currentStepId]: {
+          ...(formData[currentStepId] || {}),
+          ...stepData,
+        }
+      };
+      
+      updateFormData(currentStepId, stepData);
       
       // Save to backend
       console.log('Saving PG draft to backend...', { draftId, stepData });
@@ -514,6 +584,15 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
     return Math.round((currentStep / (totalSteps - 1)) * 100);
   }, [currentStep, getTotalSteps]);
 
+  /**
+   * Get data for a specific step
+   * @param {string} stepId - The step ID
+   * @returns {Object} The step's data
+   */
+  const getStepData = useCallback((stepId) => {
+    return formData[stepId] || {};
+  }, [formData]);
+
   const value = {
     currentStep,
     setCurrentStep,
@@ -530,6 +609,7 @@ export const PgFormProviderV2 = ({ children, onClose, initialDraftId, editingDra
     formData,
     updateFormData,
     formDataWithType,
+    getStepData,
     draftId,
     setDraftId,
     saveDraft,

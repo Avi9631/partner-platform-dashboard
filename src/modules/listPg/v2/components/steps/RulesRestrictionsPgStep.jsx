@@ -76,8 +76,11 @@ const ICON_MAP = {
   Shield
 };
 
+const STEP_ID = 'rules-restrictions';
+
 export default function RulesRestrictionsPgStep() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const stepData = getStepData(STEP_ID);
   const [editingRuleIndex, setEditingRuleIndex] = useState(-1);
   const [newRule, setNewRule] = useState({ key: '', value: '' });
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -94,7 +97,7 @@ export default function RulesRestrictionsPgStep() {
     resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
-      rules: formData?.rules || [],
+      rules: stepData?.rules || [],
     },
   });
 

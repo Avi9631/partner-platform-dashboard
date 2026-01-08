@@ -32,25 +32,28 @@ const calculateDistance = (lat1, lng1, lat2, lng2) => {
   return distance;
 };
 
+const STEP_ID = 'geo-tag';
+
 export default function GeoTagStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, formDataWithType, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [distance, setDistance] = useState(null);
 
-  // Get property coordinates from saved formData
-  const propertyCoordinates = formData?.coordinates;
+  // Get property coordinates from formDataWithType (set in location step)
+  const propertyCoordinates = formDataWithType?.coordinates;
 
   // Initialize React Hook Form with Zod validation
   const form = useForm({
     resolver: zodResolver(geoTagSchema),
     mode: 'onChange',
     defaultValues: {
-      geoTagStatus: formData?.geoTagStatus || 'pending',
-      geoTagCoordinates: formData?.geoTagCoordinates || null,
-      geoTagDistance: formData?.geoTagDistance || null,
-      geoTagTimestamp: formData?.geoTagTimestamp || null,
+      geoTagStatus: stepData?.geoTagStatus || 'pending',
+      geoTagCoordinates: stepData?.geoTagCoordinates || null,
+      geoTagDistance: stepData?.geoTagDistance || null,
+      geoTagTimestamp: stepData?.geoTagTimestamp || null,
     },
   });
 
@@ -183,8 +186,8 @@ export default function GeoTagStepV2() {
                     <div className="space-y-1 text-xs text-muted-foreground">
                       <p>Latitude: {propertyCoordinates.lat.toFixed(6)}</p>
                       <p>Longitude: {propertyCoordinates.lng.toFixed(6)}</p>
-                      {formData?.addressText && (
-                        <p className="mt-2 text-sm">{formData.addressText}</p>
+                      {formDataWithType?.addressText && (
+                        <p className="mt-2 text-sm">{formDataWithType.addressText}</p>
                       )}
                     </div>
                   ) : (

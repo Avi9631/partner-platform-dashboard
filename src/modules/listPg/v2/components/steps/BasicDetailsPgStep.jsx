@@ -32,8 +32,11 @@ import { usePgFormV2 } from "../../context/PgFormContextV2";
 import basicDetailsPgSchema from "../../../schemas/basicDetailsPgSchema";
 import { createStepLogger } from "../../../../listProperty/utils/validationLogger";
 
+const STEP_ID = 'basic-details';
+
 export default function BasicDetailsPgStep() {
-  const { saveAndContinue, formData, setPropertyType, setCurrentStepSubmitHandler } = usePgFormV2();
+  const { saveAndContinue, getStepData, setPropertyType, setCurrentStepSubmitHandler } = usePgFormV2();
+  const stepData = getStepData(STEP_ID);
  
   const logger = useMemo(
     () => createStepLogger("Basic Details PG Step V2"),
@@ -61,16 +64,16 @@ export default function BasicDetailsPgStep() {
     mode: "onChange",
     defaultValues: {
       // Main property details
-      propertyName: formData?.propertyName || formData?.title || "",
-       genderAllowed: formData?.genderAllowed || "Gents",
+      propertyName: stepData?.propertyName || stepData?.title || "",
+       genderAllowed: stepData?.genderAllowed || "Gents",
 
       // Description object
-      description: formData?.description || "",
+      description: stepData?.description || "",
 
       // Brand management
       isBrandManaged:
-        formData?.isBrandManaged || formData?.managedByBrand || false,
-      brandName: formData?.brandName || "",
+        stepData?.isBrandManaged || stepData?.managedByBrand || false,
+      brandName: stepData?.brandName || "",
  
   
 

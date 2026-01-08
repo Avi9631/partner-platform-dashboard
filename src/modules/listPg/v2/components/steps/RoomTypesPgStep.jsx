@@ -111,8 +111,11 @@ const PRICING_TYPES = [
   "Booking Amount",
 ];
 
+const STEP_ID = 'room-types';
+
 export default function RoomTypesPgStep() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const stepData = getStepData(STEP_ID);
   const [showAmenitiesDialog, setShowAmenitiesDialog] = useState(false);
   const [selectedAmenitiesRoomIndex, setSelectedAmenitiesRoomIndex] =
     useState(0);
@@ -136,7 +139,7 @@ export default function RoomTypesPgStep() {
     resolver: zodResolver(formSchema),
     mode: "onChange",
     defaultValues: {
-      roomTypes: formData?.roomTypes?.length > 0 ? formData.roomTypes : [],
+      roomTypes: stepData?.roomTypes?.length > 0 ? stepData.roomTypes : [],
     },
   });
 

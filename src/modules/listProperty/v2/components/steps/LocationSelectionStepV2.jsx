@@ -13,8 +13,11 @@ import locationSelectionSchema from '../../../schemas/locationSelectionSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import LocationPicker from '@/components/maps/LocationPicker';
 
+const STEP_ID = 'location-selection';
+
 export default function LocationSelectionStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   // Initialize React Hook Form with Zod validation
   // Default values defined here, populated from context if previously saved
@@ -22,12 +25,12 @@ export default function LocationSelectionStepV2() {
     resolver: zodResolver(locationSelectionSchema),
     mode: 'onChange',
     defaultValues: {
-      coordinates: formData?.coordinates || null,
-      showMapExact: formData?.showMapExact || false,
-      city: formData?.city || '',
-      locality: formData?.locality || '',
-      addressText: formData?.addressText || '',
-      landmark: formData?.landmark || '',
+      coordinates: stepData?.coordinates || null,
+      showMapExact: stepData?.showMapExact || false,
+      city: stepData?.city || '',
+      locality: stepData?.locality || '',
+      addressText: stepData?.addressText || '',
+      landmark: stepData?.landmark || '',
     },
   });
 

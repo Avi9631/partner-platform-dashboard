@@ -29,13 +29,16 @@ const FEATURES_LIST = [
 
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 
+const STEP_ID = 'property-amenities';
+
 export default function PropertyAmenitiesStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   const methods = useForm({
     mode: 'onChange',
     defaultValues: {
-      features: formData?.features || [],
+      features: stepData?.features || [],
     },
   });
 

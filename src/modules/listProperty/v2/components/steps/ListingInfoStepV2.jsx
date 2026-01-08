@@ -7,14 +7,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 
+const STEP_ID = 'listing-info';
+
 export default function ListingInfoStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   const methods = useForm({
     mode: 'onChange',
     defaultValues: {
-      title: formData?.title || '',
-      description: formData?.description || '',
+      title: stepData?.title || '',
+      description: stepData?.description || '',
     },
   });
 

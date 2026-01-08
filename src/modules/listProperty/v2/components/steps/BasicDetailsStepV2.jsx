@@ -37,8 +37,11 @@ import basicDetailsSchema from '../../../schemas/basicDetailsSchema';
 import SaveAndContinueFooter from '../SaveAndContinueFooter';
 import { createStepLogger } from '../../../utils/validationLogger';
 
+const STEP_ID = 'basic-details';
+
 export default function BasicDetailsStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Basic Details Step'), []);
@@ -48,14 +51,14 @@ export default function BasicDetailsStepV2() {
     resolver: zodResolver(basicDetailsSchema),
     mode: 'onChange',
     defaultValues: {
-      listingType: formData?.listingType || 'sale',
-      ownershipType: formData?.ownershipType || 'freehold',
-      projectName: formData?.projectName || '',
-      customPropertyName: formData?.customPropertyName || '',
-      reraIds: formData?.reraIds || [],
-      ageOfProperty: formData?.ageOfProperty || '',
-      possessionStatus: formData?.possessionStatus || 'ready',
-      possessionDate: formData?.possessionDate || '',
+      listingType: stepData?.listingType || 'sale',
+      ownershipType: stepData?.ownershipType || 'freehold',
+      projectName: stepData?.projectName || '',
+      customPropertyName: stepData?.customPropertyName || '',
+      reraIds: stepData?.reraIds || [],
+      ageOfProperty: stepData?.ageOfProperty || '',
+      possessionStatus: stepData?.possessionStatus || 'ready',
+      possessionDate: stepData?.possessionDate || '',
     },
   });
 

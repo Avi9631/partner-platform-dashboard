@@ -81,11 +81,14 @@ const DEFAULT_CATEGORIES = [
   "Other",
 ];
 
+const STEP_ID = 'media-upload';
+
 export default function MediaUploadPgStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const stepData = getStepData(STEP_ID);
 
   // Unified media list (both images and videos)
-  const [mediaList, setMediaList] = useState(formData?.mediaData || []);
+  const [mediaList, setMediaList] = useState(stepData?.mediaData || []);
   const [uploadErrors, setUploadErrors] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -93,7 +96,7 @@ export default function MediaUploadPgStepV2() {
   // Track all categories (default + user-added)
   const [allCategories, setAllCategories] = useState(() => {
     // Extract unique categories from existing media
-    const existingCategories = (formData?.mediaData || [])
+    const existingCategories = (stepData?.mediaData || [])
       .map((item) => item.category)
       .filter(Boolean);
     const uniqueExisting = [...new Set(existingCategories)];
@@ -106,7 +109,7 @@ export default function MediaUploadPgStepV2() {
   const methods = useForm({
     mode: "onChange",
     defaultValues: {
-      mediaData: formData?.mediaData || [],
+      mediaData: stepData?.mediaData || [],
     },
   });
 

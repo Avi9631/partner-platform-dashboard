@@ -45,16 +45,19 @@ const propertyPositionOptions = [
   { value: 'rear', label: 'Rear Unit', description: 'Property at the back of the complex' },
 ];
 
+const STEP_ID = 'location-attributes';
+
 export default function LocationStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   const methods = useForm({
     resolver: zodResolver(locationAttributesSchema),
     mode: 'onChange',
     defaultValues: {
-      facing: formData?.facing || '',
-      view: formData?.view || '',
-      propertyPosition: formData?.propertyPosition || '',
+      facing: stepData?.facing || '',
+      view: stepData?.view || '',
+      propertyPosition: stepData?.propertyPosition || '',
      },
     reValidateMode: 'onChange',
   });

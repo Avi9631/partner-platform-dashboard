@@ -107,8 +107,11 @@ const DEFAULT_CATEGORIES = [
   "Other",
 ];
 
+const STEP_ID = 'media-upload';
+
 export default function MediaUploadStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   // Ensure all media items have IDs when loading from draft
   const normalizeMediaData = (mediaData) => {
@@ -120,7 +123,7 @@ export default function MediaUploadStepV2() {
   };
 
   // Unified media list (both images and videos)
-  const [mediaList, setMediaList] = useState(() => normalizeMediaData(formData?.mediaData));
+  const [mediaList, setMediaList] = useState(() => normalizeMediaData(stepData?.mediaData));
   const [uploadErrors, setUploadErrors] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -128,7 +131,7 @@ export default function MediaUploadStepV2() {
   // Track all categories (default + user-added)
   const [allCategories, setAllCategories] = useState(() => {
     // Extract unique categories from existing media
-    const existingCategories = (formData?.mediaData || [])
+    const existingCategories = (stepData?.mediaData || [])
       .map((item) => item.category)
       .filter(Boolean);
     const uniqueExisting = [...new Set(existingCategories)];
@@ -141,7 +144,7 @@ export default function MediaUploadStepV2() {
   const methods = useForm({
     mode: "onChange",
     defaultValues: {
-      mediaData: normalizeMediaData(formData?.mediaData),
+      mediaData: normalizeMediaData(stepData?.mediaData),
     },
   });
 

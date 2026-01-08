@@ -12,8 +12,11 @@ import locationSelectionSchema from '../../../schemas/locationDetailsPgSchema';
 import LocationPicker from '@/components/maps/LocationPicker';
 import { useEffect } from 'react';
 
+const STEP_ID = 'location-details';
+
 export default function LocationDetailsPgStep() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const stepData = getStepData(STEP_ID);
 
   // Initialize React Hook Form with Zod validation
   // Default values defined here, populated from context if previously saved
@@ -21,12 +24,12 @@ export default function LocationDetailsPgStep() {
     resolver: zodResolver(locationSelectionSchema),
     mode: 'onChange',
     defaultValues: {
-      coordinates: formData?.coordinates || null,
-      // showMapExact: formData?.showMapExact || false,
-      city: formData?.city || '',
-      locality: formData?.locality || '',
-      addressText: formData?.addressText || '',
-      landmark: formData?.landmark || '',
+      coordinates: stepData?.coordinates || null,
+      // showMapExact: stepData?.showMapExact || false,
+      city: stepData?.city || '',
+      locality: stepData?.locality || '',
+      addressText: stepData?.addressText || '',
+      landmark: stepData?.landmark || '',
     },
   });
 

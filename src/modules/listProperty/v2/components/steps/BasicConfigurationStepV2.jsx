@@ -22,24 +22,27 @@ import {
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import basicConfigurationSchema from '../../../schemas/basicConfigurationSchema';
 
+const STEP_ID = 'basic-configuration';
+
 export default function BasicConfigurationV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
   
   // Area configuration state (for additional/optional area types)
-  const [areaConfig, setAreaConfig] = useState(formData?.areaConfig || []);
+  const [areaConfig, setAreaConfig] = useState(stepData?.areaConfig || []);
   
   // Initialize React Hook Form with Zod validation
   const form = useForm({
     resolver: zodResolver(basicConfigurationSchema),
     mode: 'onChange',
     defaultValues: {
-      bedrooms: formData?.bedrooms || '',
-      bathrooms: formData?.bathrooms || '',
-      carpetArea: formData?.carpetArea || '',
-      superArea: formData?.superArea || '',
-      measurementMethod: formData?.measurementMethod || '',
-      areaConfig: formData?.areaConfig || [],
-      builtUpToCarpetRatio: formData?.builtUpToCarpetRatio || undefined,
+      bedrooms: stepData?.bedrooms || '',
+      bathrooms: stepData?.bathrooms || '',
+      carpetArea: stepData?.carpetArea || '',
+      superArea: stepData?.superArea || '',
+      measurementMethod: stepData?.measurementMethod || '',
+      areaConfig: stepData?.areaConfig || [],
+      builtUpToCarpetRatio: stepData?.builtUpToCarpetRatio || undefined,
      },
   });
 

@@ -54,7 +54,7 @@ export default function ListPropertyV2Page() {
       
       if (response.success && response.data?.draftId) {
         // Navigate to the form page
-        navigate(`/list-property/${response.data.draftId}`);
+        navigate(`/list-property/edit/${response.data.draftId}`);
       } else {
         toast({
           title: 'Error',
@@ -76,7 +76,7 @@ export default function ListPropertyV2Page() {
 
   const handleEditDraft = async (draftId) => {
     // Navigate to form page with draft ID
-    navigate(`/list-property/new?draftId=${draftId}`);
+    navigate(`/list-property/edit/${draftId}`);
   };
 
   const handleDeleteDraft = async (draftId) => {

@@ -24,8 +24,11 @@ import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import pricingInformationSchema from '../../../schemas/pricingInformationSchema';
 import { createStepLogger } from '../../../utils/validationLogger';
 
+const STEP_ID = 'pricing';
+
 export default function PricingStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, formDataWithType, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Pricing Information Step'), []);
@@ -35,9 +38,9 @@ export default function PricingStepV2() {
     resolver: zodResolver(pricingInformationSchema),
     mode: 'onChange',
     defaultValues: {
-      pricing: formData?.pricing || [{ type: 'asking_price', value: '', unit: 'total' }],
-      isPriceNegotiable: formData?.isPriceNegotiable || false,
-      availableFrom: formData?.availableFrom || '',
+      pricing: stepData?.pricing || [{ type: 'asking_price', value: '', unit: 'total' }],
+      isPriceNegotiable: stepData?.isPriceNegotiable || false,
+      availableFrom: stepData?.availableFrom || '',
     },
   });
 
@@ -47,8 +50,8 @@ export default function PricingStepV2() {
     name: 'pricing',
   });
 
-  // Get listing type from formData (set in Basic Details step)
-  const listingType = formData?.listingType || 'sale';
+  // Get listing type from formDataWithType (set in Basic Details step)
+  const listingType = formDataWithType?.listingType || 'sale';
 
   // Log validation errors when they change
   useEffect(() => {

@@ -23,8 +23,11 @@ import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import areaDetailsSchema from '../../../schemas/areaDetailsSchema';
 import { createStepLogger } from '../../../utils/validationLogger';
 
+const STEP_ID = 'area-details';
+
 export default function AreaDetailsV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
   
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Area Details Step'), []);
@@ -34,11 +37,11 @@ export default function AreaDetailsV2() {
     resolver: zodResolver(areaDetailsSchema),
     mode: 'onChange',
     defaultValues: {
-      carpetArea: formData?.carpetArea || '',
-      superArea: formData?.superArea || '',
-      measurementMethod: formData?.measurementMethod || '',
-      areaConfig: formData?.areaConfig || [],
-      builtUpToCarpetRatio: formData?.builtUpToCarpetRatio || undefined,
+      carpetArea: stepData?.carpetArea || '',
+      superArea: stepData?.superArea || '',
+      measurementMethod: stepData?.measurementMethod || '',
+      areaConfig: stepData?.areaConfig || [],
+      builtUpToCarpetRatio: stepData?.builtUpToCarpetRatio || undefined,
     },
   });
 
@@ -49,7 +52,7 @@ export default function AreaDetailsV2() {
   const superArea = watch('superArea');
 
   // Area configuration state (for additional/optional area types)
-  const [areaConfig, setAreaConfig] = useState(formData?.areaConfig || []);
+  const [areaConfig, setAreaConfig] = useState(stepData?.areaConfig || []);
 
   // Update form when area config changes
   useEffect(() => {

@@ -58,21 +58,24 @@ const soilTypes = [
   { value: 'loamy', label: 'Loamy Soil', icon: '🟢' },
 ];
 
+const STEP_ID = 'land-attributes';
+
 export default function LandAttributesStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   const form = useForm({
     mode: 'onChange',
     defaultValues: {
-      plotArea: formData?.plotArea || '',
-      areaUnit: formData?.areaUnit || 'sqft',
-      plotDimension: formData?.plotDimension || '',
-      landUse: formData?.landUse || '',
-      roadWidth: formData?.roadWidth || '',
-      terrainLevel: formData?.terrainLevel || '',
-      soilType: formData?.soilType || '',
-      fencing: formData?.fencing || false,
-      irrigationSource: formData?.irrigationSource || '',
+      plotArea: stepData?.plotArea || '',
+      areaUnit: stepData?.areaUnit || 'sqft',
+      plotDimension: stepData?.plotDimension || '',
+      landUse: stepData?.landUse || '',
+      roadWidth: stepData?.roadWidth || '',
+      terrainLevel: stepData?.terrainLevel || '',
+      soilType: stepData?.soilType || '',
+      fencing: stepData?.fencing || false,
+      irrigationSource: stepData?.irrigationSource || '',
     },
   });
 

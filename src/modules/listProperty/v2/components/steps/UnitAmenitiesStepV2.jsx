@@ -45,21 +45,24 @@ const flooringOptions = [
   'Mosaic',
 ];
 
+const STEP_ID = 'unit-amenities';
+
 export default function FurnishingStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   // Create local form with defaults from context
   const methods = useForm({
     resolver: zodResolver(unitAmenitiesSchema),
     mode: 'onChange',
     defaultValues: {
-      furnishingStatus: formData?.furnishingStatus || 'unfurnished',
-      furnishingDetails: formData?.furnishingDetails || {},
-      flooringTypes: formData?.flooringTypes || [],
-      amenities: formData?.amenities || [],
+      furnishingStatus: stepData?.furnishingStatus || 'unfurnished',
+      furnishingDetails: stepData?.furnishingDetails || {},
+      flooringTypes: stepData?.flooringTypes || [],
+      amenities: stepData?.amenities || [],
       // Phase 1 enhancements
-      smartHomeDevices: formData?.smartHomeDevices || [],
-      furnitureCondition: formData?.furnitureCondition || undefined,
+      smartHomeDevices: stepData?.smartHomeDevices || [],
+      furnitureCondition: stepData?.furnitureCondition || undefined,
     },
   });
 

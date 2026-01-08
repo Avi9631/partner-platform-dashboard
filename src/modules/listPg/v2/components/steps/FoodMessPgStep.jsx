@@ -50,8 +50,11 @@ import { createStepLogger } from '../../../../listProperty/utils/validationLogge
 const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner'];
 const FOOD_TYPE_OPTIONS = ['Veg', 'Non-veg', 'Veg & Non-veg'];
 
+const STEP_ID = 'food-mess';
+
 export default function FoodMessPgStep() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const stepData = getStepData(STEP_ID);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [selectedMeal, setSelectedMeal] = useState('breakfast');
@@ -67,11 +70,11 @@ export default function FoodMessPgStep() {
     mode: 'onChange',
     defaultValues: {
       foodMess: {
-        available: formData?.foodMess?.available || formData?.available || false,
-        meals: formData?.foodMess?.meals || [],
-        foodType: formData?.foodMess?.foodType || 'Veg & Non-veg',
-        cookingAllowed: formData?.foodMess?.cookingAllowed || false,
-        weeklyMenu: formData?.foodMess?.weeklyMenu || [],
+        available: stepData?.foodMess?.available || stepData?.available || false,
+        meals: stepData?.foodMess?.meals || [],
+        foodType: stepData?.foodMess?.foodType || 'Veg & Non-veg',
+        cookingAllowed: stepData?.foodMess?.cookingAllowed || false,
+        weeklyMenu: stepData?.foodMess?.weeklyMenu || [],
       },
 
     },

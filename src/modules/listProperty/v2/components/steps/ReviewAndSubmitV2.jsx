@@ -31,11 +31,14 @@ import { draftApi } from '@/services/draftService';
 import { useToast } from '@/components/hooks/use-toast';
 
 export default function ReviewAndSubmitV2() {
-  const { previousStep, propertyType, isBuildingType, formData, draftId, setCurrentStepIsValid } = usePropertyFormV2();
+  const { previousStep, propertyType, isBuildingType, formDataWithType, draftId, setCurrentStepIsValid } = usePropertyFormV2();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState(null);
   const { toast } = useToast();
+  
+  // Use formDataWithType for display (flattened for easy access)
+  const formData = formDataWithType;
 
   // Review step is always valid (user just needs to review and submit)
   useEffect(() => {

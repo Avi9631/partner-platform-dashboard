@@ -44,7 +44,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "list-pg-hostel/:draftId",
+        path: "list-pg-hostel/edit/:draftId",
         element: (
           <ProtectedRoute>
             <PgFormPageV2 />
@@ -68,7 +68,7 @@ const router = createBrowserRouter([
         ),
       },
             {
-        path: "list-property/:draftId",
+        path: "list-property/edit/:draftId",
         element: (
           <ProtectedRoute>
             <PropertyFormPageV2 />

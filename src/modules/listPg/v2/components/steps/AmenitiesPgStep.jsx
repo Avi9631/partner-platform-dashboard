@@ -43,8 +43,11 @@ const enhancedAmenitiesList = [
   { name: 'Meal Service', icon: '🍱', category: 'services' },
 ];
 
+const STEP_ID = 'amenities';
+
 export default function AmenitiesPgStep() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler } = usePgFormV2();
+  const stepData = getStepData(STEP_ID);
   
   const logger = useMemo(() => createStepLogger('Amenities PG Step V2'), []);
 
@@ -57,7 +60,7 @@ export default function AmenitiesPgStep() {
     resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
-      amenities: formData?.amenities || [],
+      amenities: stepData?.amenities || [],
     },
   });
 

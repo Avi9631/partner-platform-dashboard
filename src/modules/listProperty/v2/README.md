@@ -40,7 +40,7 @@ The form is available in **two variants**:
 
 ### 5. **Draft Management**
 - Auto-save drafts on each "Save & Continue"
-- Load drafts via URL params (`/list-property/:draftId`)
+- Load drafts via URL params (`/list-property/edit/:draftId`)
 - Load drafts via props (`editingDraft`)
 - Draft state persists across sessions
 
@@ -116,12 +116,12 @@ function MyComponent() {
 import { PropertyFormPageV2 } from '@/modules/listProperty/v2';
 
 // In your router configuration:
-<Route path="/list-property/new" element={<PropertyFormPageV2 />} />
-<Route path="/list-property/edit/:draftId" element={<PropertyFormPageV2 />} />
+<Route path="/list-property/edit/new" element={<PropertyFormPageV2 />} />
+<Route path="/list-property/edit/edit/:draftId" element={<PropertyFormPageV2 />} />
 
 // Usage:
-// Navigate to: /list-property/new (new property)
-// Navigate to: /list-property/edit/draft-123 (edit existing draft)
+// Navigate to: /list-property/edit/new (new property)
+// Navigate to: /list-property/edit/edit/draft-123 (edit existing draft)
 ```
 
 ### Using the Context

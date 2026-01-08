@@ -300,8 +300,8 @@ Both modules follow the same architecture pattern:
 import { PgFormPageV2 } from '@/modules/listPg/v2';
 
 // In your route configuration
-<Route path="/list-pg-hostel/new" element={<PgFormPageV2 />} />
-<Route path="/list-pg-hostel/edit/:draftId" element={<PgFormPageV2 />} />
+<Route path="/list-pg-hostel/edit/new" element={<PgFormPageV2 />} />
+<Route path="/list-pg-hostel/edit/edit/:draftId" element={<PgFormPageV2 />} />
 ```
 
 ### Sheet/Modal Usage

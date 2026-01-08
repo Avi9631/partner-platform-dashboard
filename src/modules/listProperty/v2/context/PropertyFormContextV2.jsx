@@ -8,96 +8,118 @@ const PropertyFormContextV2 = createContext(null);
 /**
  * Helper function to determine which steps have data
  * Returns a Set of step indices that have completed data
+ * Supports both nested (stepName: {fields}) and flat structure for backwards compatibility
  */
 const getCompletedStepsFromData = (formData) => {
   const completedSteps = new Set();
-  const visibleSteps = getVisibleSteps(formData);
+  
+  // Build propertyType-aware formData for getVisibleSteps
+  const formDataWithType = {
+    ...formData,
+    propertyType: formData['property-type']?.propertyType || formData.propertyType,
+  };
+  
+  const visibleSteps = getVisibleSteps(formDataWithType);
 
   visibleSteps.forEach((step, index) => {
     let hasData = false;
+    const stepData = formData[step.id] || {};
 
     switch (step.id) {
       case 'property-type':
-        hasData = !!formData.propertyType;
+        hasData = !!(stepData.propertyType || formData.propertyType);
         break;
         
       case 'location-selection':
         hasData = !!(
-          formData.address || 
-          formData.city ||
-          formData.state ||
-          formData.pincode ||
-          formData.latitude || 
-          formData.longitude
+          stepData.address || stepData.city || stepData.state || 
+          stepData.pincode || stepData.latitude || stepData.longitude ||
+          // Backwards compatibility
+          formData.address || formData.city || formData.state ||
+          formData.pincode || formData.latitude || formData.longitude
         );
         break;
         
       case 'basic-details':
         hasData = !!(
-          formData.propertyName ||
-          formData.listingType ||
-          formData.propertyAge ||
-          formData.description
+          stepData.propertyName || stepData.listingType || 
+          stepData.propertyAge || stepData.description ||
+          // Backwards compatibility
+          formData.propertyName || formData.listingType ||
+          formData.propertyAge || formData.description
         );
         break;
         
       case 'basic-configuration':
         hasData = !!(
-          formData.bedrooms !== undefined ||
-          formData.bathrooms !== undefined ||
-          formData.balconies !== undefined ||
-          formData.carpetArea ||
-          formData.builtUpArea ||
-          formData.superBuiltUpArea
+          stepData.bedrooms !== undefined || stepData.bathrooms !== undefined ||
+          stepData.balconies !== undefined || stepData.carpetArea ||
+          stepData.builtUpArea || stepData.superBuiltUpArea ||
+          // Backwards compatibility
+          formData.bedrooms !== undefined || formData.bathrooms !== undefined ||
+          formData.balconies !== undefined || formData.carpetArea ||
+          formData.builtUpArea || formData.superBuiltUpArea
         );
         break;
         
       case 'land-attributes':
         hasData = !!(
-          formData.plotArea ||
-          formData.plotLength ||
-          formData.plotWidth ||
-          formData.boundaryWall ||
-          formData.facingDirection
+          stepData.plotArea || stepData.plotLength || stepData.plotWidth ||
+          stepData.boundaryWall || stepData.facingDirection ||
+          // Backwards compatibility
+          formData.plotArea || formData.plotLength || formData.plotWidth ||
+          formData.boundaryWall || formData.facingDirection
         );
         break;
         
+      case 'unit-amenities':
       case 'furnishing':
         hasData = !!(
-          formData.furnishingStatus ||
-          formData.furnishingDetails ||
+          stepData.furnishingStatus || stepData.furnishingDetails ||
+          (stepData.furnishingItems && stepData.furnishingItems.length > 0) ||
+          // Backwards compatibility
+          formData.furnishingStatus || formData.furnishingDetails ||
           (formData.furnishingItems && formData.furnishingItems.length > 0)
         );
         break;
         
       case 'location-attributes':
         hasData = !!(
-          formData.nearbyPlaces ||
-          formData.locationAdvantages ||
+          stepData.nearbyPlaces || stepData.locationAdvantages ||
+          stepData.distanceFromMainRoad ||
+          // Backwards compatibility
+          formData.nearbyPlaces || formData.locationAdvantages ||
           formData.distanceFromMainRoad
         );
         break;
         
       case 'floor-details':
         hasData = !!(
-          formData.floorNumber !== undefined ||
-          formData.totalFloors !== undefined ||
+          stepData.floorNumber !== undefined || stepData.totalFloors !== undefined ||
+          stepData.floorType ||
+          // Backwards compatibility
+          formData.floorNumber !== undefined || formData.totalFloors !== undefined ||
           formData.floorType
         );
         break;
         
       case 'pricing':
         hasData = !!(
-          formData.price !== undefined ||
-          formData.expectedPrice ||
-          formData.rentAmount ||
-          formData.securityDeposit ||
+          stepData.price !== undefined || stepData.expectedPrice ||
+          stepData.rentAmount || stepData.securityDeposit ||
+          stepData.maintenanceCharges ||
+          // Backwards compatibility
+          formData.price !== undefined || formData.expectedPrice ||
+          formData.rentAmount || formData.securityDeposit ||
           formData.maintenanceCharges
         );
         break;
         
       case 'suitable-for':
         hasData = !!(
+          stepData.suitableFor ||
+          (stepData.preferredTenants && stepData.preferredTenants.length > 0) ||
+          // Backwards compatibility
           formData.suitableFor ||
           (formData.preferredTenants && formData.preferredTenants.length > 0)
         );
@@ -105,45 +127,58 @@ const getCompletedStepsFromData = (formData) => {
         
       case 'listing-info':
         hasData = !!(
-          formData.availableFrom ||
-          formData.possessionStatus ||
+          stepData.availableFrom || stepData.possessionStatus ||
+          stepData.ownershipType ||
+          // Backwards compatibility
+          formData.availableFrom || formData.possessionStatus ||
           formData.ownershipType
         );
         break;
         
+      case 'property-amenities':
       case 'amenities':
         hasData = !!(
-          formData.amenities && 
-          typeof formData.amenities === 'object' && 
-          Object.keys(formData.amenities).length > 0 &&
-          Object.values(formData.amenities).some(val => val === true || val === 'yes' || val)
+          (stepData.amenities && typeof stepData.amenities === 'object' &&
+            Object.keys(stepData.amenities).length > 0 &&
+            Object.values(stepData.amenities).some(val => val === true || val === 'yes' || val)) ||
+          // Check if stepData itself has amenity fields
+          (Object.keys(stepData).length > 0 &&
+            Object.values(stepData).some(val => val === true || val === 'yes' || val)) ||
+          // Backwards compatibility
+          (formData.amenities && typeof formData.amenities === 'object' &&
+            Object.keys(formData.amenities).length > 0 &&
+            Object.values(formData.amenities).some(val => val === true || val === 'yes' || val))
         );
         break;
         
       case 'media-upload':
         hasData = !!(
+          (stepData.mediaData && Array.isArray(stepData.mediaData) && stepData.mediaData.length > 0) ||
+          (stepData.images && Array.isArray(stepData.images) && stepData.images.length > 0) ||
+          // Backwards compatibility
           (formData.mediaData && Array.isArray(formData.mediaData) && formData.mediaData.length > 0)
         );
         break;
         
       case 'property-plan-upload':
         hasData = !!(
-          formData.floorPlans && 
-          Array.isArray(formData.floorPlans) && 
-          formData.floorPlans.length > 0
+          (stepData.floorPlans && Array.isArray(stepData.floorPlans) && stepData.floorPlans.length > 0) ||
+          // Backwards compatibility
+          (formData.floorPlans && Array.isArray(formData.floorPlans) && formData.floorPlans.length > 0)
         );
         break;
         
       case 'document-upload':
         hasData = !!(
-          formData.documents && 
-          Array.isArray(formData.documents) && 
-          formData.documents.length > 0
+          (stepData.documents && Array.isArray(stepData.documents) && stepData.documents.length > 0) ||
+          // Backwards compatibility
+          (formData.documents && Array.isArray(formData.documents) && formData.documents.length > 0)
         );
         break;
         
       default:
-        hasData = false;
+        // Check if step has any data
+        hasData = stepData && typeof stepData === 'object' && Object.keys(stepData).length > 0;
     }
 
     if (hasData) {
@@ -168,7 +203,7 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
   const [completedSteps, setCompletedSteps] = useState(new Set());
   const [draftId, setDraftId] = useState(initialDraftId || null);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({}); // Nested structure: { stepId: { field1: value1, ... } }
   const [currentStepSubmitHandler, setCurrentStepSubmitHandler] = useState(null);
   const [currentStepIsValid, setCurrentStepIsValid] = useState(true);
   const [areAllStepsValid, setAreAllStepsValid] = useState(false);
@@ -191,8 +226,10 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
 
         if (draftData) {
           setFormData(draftData);
-          if (draftData.propertyType) {
-            setPropertyType(draftData.propertyType);
+          // Extract propertyType from nested structure or flat structure (backwards compatibility)
+          const extractedPropertyType = draftData['property-type']?.propertyType || draftData.propertyType;
+          if (extractedPropertyType) {
+            setPropertyType(extractedPropertyType);
           }
           
           // Sync completed steps based on draft data
@@ -221,10 +258,31 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     }
   }, [formData, propertyType]);
 
-  const formDataWithType = useMemo(() => ({
-    ...formData,
-    propertyType,
-  }), [formData, propertyType]);
+  /**
+   * Helper to flatten nested formData for backwards compatibility with validation
+   * Converts { stepId: { field1: value1 } } to { field1: value1, field2: value2, ... }
+   */
+  const flattenFormData = useCallback((nestedData) => {
+    const flattened = {};
+    Object.entries(nestedData).forEach(([key, value]) => {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        // Merge step data into flattened object
+        Object.assign(flattened, value);
+      } else {
+        // Keep top-level primitives (backwards compatibility)
+        flattened[key] = value;
+      }
+    });
+    return flattened;
+  }, []);
+
+  const formDataWithType = useMemo(() => {
+    const flattened = flattenFormData(formData);
+    return {
+      ...flattened,
+      propertyType,
+    };
+  }, [formData, propertyType, flattenFormData]);
 
   // Validate all steps whenever formData or propertyType changes
   useEffect(() => {
@@ -243,8 +301,28 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     return getTotalVisibleSteps(formDataWithType);
   }, [formDataWithType]);
 
-  const updateFormData = useCallback((stepData) => {
-    setFormData(prev => ({ ...prev, ...stepData }));
+  /**
+   * Update form data for a specific step
+   * @param {string} stepId - The ID of the step (e.g., 'basic-details')
+   * @param {Object} stepData - The data for that step
+   */
+  const updateFormData = useCallback((stepId, stepData) => {
+    if (!stepId) {
+      console.warn('updateFormData called without stepId, using flat structure');
+      // Fallback to flat structure if no stepId provided (backwards compatibility)
+      setFormData(prev => ({ ...prev, ...stepData }));
+      return;
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      [stepId]: {
+        ...(prev[stepId] || {}),
+        ...stepData,
+      }
+    }));
+    
+    console.log(`📝 Updated form data for step: ${stepId}`, stepData);
   }, []);
 
   // Simplified draft save
@@ -273,9 +351,26 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     }
   }, [draftId, formData]);
 
-  const saveAndContinue = useCallback(async (stepData) => {
-    const updatedFormData = { ...formData, ...stepData };
-    updateFormData(stepData);
+  const saveAndContinue = useCallback(async (stepData, stepId) => {
+    // Get current step ID from visible steps
+    const visibleSteps = getVisibleSteps(formDataWithType);
+    const currentStepId = stepId || visibleSteps[currentStep]?.id;
+    
+    if (!currentStepId) {
+      console.error('Could not determine current step ID');
+      return;
+    }
+    
+    // Update form data with nested structure
+    const updatedFormData = {
+      ...formData,
+      [currentStepId]: {
+        ...(formData[currentStepId] || {}),
+        ...stepData,
+      }
+    };
+    
+    updateFormData(currentStepId, stepData);
     
     // Wait for draft to save before proceeding
     const result = await saveDraft(updatedFormData);
@@ -290,7 +385,7 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     if (currentStep < totalSteps - 1) {
       setCurrentStep(currentStep + 1);
     }
-  }, [currentStep, getTotalSteps, updateFormData, formData, saveDraft]);
+  }, [currentStep, getTotalSteps, updateFormData, formData, saveDraft, formDataWithType]);
 
   const previousStep = useCallback(() => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
@@ -313,6 +408,15 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     return totalSteps <= 1 ? 0 : Math.round((currentStep / (totalSteps - 1)) * 100);
   }, [currentStep, getTotalSteps]);
 
+  /**
+   * Get data for a specific step
+   * @param {string} stepId - The step ID
+   * @returns {Object} The step's data
+   */
+  const getStepData = useCallback((stepId) => {
+    return formData[stepId] || {};
+  }, [formData]);
+
   const value = {
     currentStep,
     setCurrentStep,
@@ -330,6 +434,7 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     formData,
     updateFormData,
     formDataWithType,
+    getStepData,
     draftId,
     setDraftId,
     saveDraft,

@@ -16,24 +16,27 @@ import {
 import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import parkingUtilitiesSchema from '../../../schemas/parkingUtilitiesSchema';
 
+const STEP_ID = 'parking';
+
 export default function ParkingStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   // Create local form with defaults from context
   const methods = useForm({
     resolver: zodResolver(parkingUtilitiesSchema),
     mode: 'onChange',
     defaultValues: {
-      coveredParking: formData?.coveredParking || '',
-      openParking: formData?.openParking || '',
-      powerBackup: formData?.powerBackup || 'none',
+      coveredParking: stepData?.coveredParking || '',
+      openParking: stepData?.openParking || '',
+      powerBackup: stepData?.powerBackup || 'none',
       // Phase 1 enhancements
-      evChargingType: formData?.evChargingType || 'none',
-      evChargingPoints: formData?.evChargingPoints || '',
-      hasVisitorParking: formData?.hasVisitorParking || false,
-      visitorParkingSpaces: formData?.visitorParkingSpaces || '',
-      parkingType: formData?.parkingType || '',
-      parkingSecurityType: formData?.parkingSecurityType || '',
+      evChargingType: stepData?.evChargingType || 'none',
+      evChargingPoints: stepData?.evChargingPoints || '',
+      hasVisitorParking: stepData?.hasVisitorParking || false,
+      visitorParkingSpaces: stepData?.visitorParkingSpaces || '',
+      parkingType: stepData?.parkingType || '',
+      parkingSecurityType: stepData?.parkingSecurityType || '',
     },
   });
 

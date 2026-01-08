@@ -14,15 +14,18 @@ const suitableForOptions = [
   { value: 'students', label: 'Students', icon: '📚' },
 ];
 
+const STEP_ID = 'suitable-for';
+
 export default function SuitableForStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, formDataWithType, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   const methods = useForm({
     resolver: zodResolver(suitableForSchema),
     mode: 'onChange',
     defaultValues: {
-      suitableFor: formData?.suitableFor || [],
-      listingType: formData?.listingType || 'sale',
+      suitableFor: stepData?.suitableFor || [],
+      listingType: formDataWithType?.listingType || 'sale',
     },
   });
 

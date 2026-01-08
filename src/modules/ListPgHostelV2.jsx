@@ -63,7 +63,7 @@ export default function ListPgHostelV2Page() {
             
             if (response.success && response.data?.draftId) {
  // Navigate to the form page
-      navigate(`/list-pg-hostel/${response.data.draftId}`);
+      navigate(`/list-pg-hostel/edit/${response.data.draftId}`);
             } else {
               toast({
                 title: 'Error',
@@ -87,7 +87,7 @@ export default function ListPgHostelV2Page() {
 
   const handleEditDraft = async (draftId) => {
     // Navigate to form page with draft ID
-    navigate(`/list-pg-hostel/new?draftId=${draftId}`);
+    navigate(`/list-pg-hostel/edit/${draftId}`);
   };
 
   const handleDeleteDraft = async (draftId) => {

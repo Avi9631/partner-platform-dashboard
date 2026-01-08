@@ -18,8 +18,11 @@ import { usePropertyFormV2 } from '../../context/PropertyFormContextV2';
 import floorDetailsSchema from '../../../schemas/floorDetailsSchema';
 import { createStepLogger } from '../../../utils/validationLogger';
 
+const STEP_ID = 'floor-details';
+
 export default function FloorDetailsStepV2() {
-  const { saveAndContinue, previousStep, formData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const { saveAndContinue, previousStep, getStepData, setCurrentStepSubmitHandler, setCurrentStepIsValid } = usePropertyFormV2();
+  const stepData = getStepData(STEP_ID);
 
   // Create logger instance (memoized to prevent recreation)
   const logger = useMemo(() => createStepLogger('Floor Details Step'), []);
@@ -28,11 +31,11 @@ export default function FloorDetailsStepV2() {
     resolver: zodResolver(floorDetailsSchema),
     mode: 'onChange',
     defaultValues: {
-      floorNumber: formData?.floorNumber || '',
-      totalFloors: formData?.totalFloors || '',
-      towerName: formData?.towerName || '',
-      unitNumber: formData?.unitNumber || '',
-      isUnitNumberPrivate: formData?.isUnitNumberPrivate || false,
+      floorNumber: stepData?.floorNumber || '',
+      totalFloors: stepData?.totalFloors || '',
+      towerName: stepData?.towerName || '',
+      unitNumber: stepData?.unitNumber || '',
+      isUnitNumberPrivate: stepData?.isUnitNumberPrivate || false,
      
     },
   });
