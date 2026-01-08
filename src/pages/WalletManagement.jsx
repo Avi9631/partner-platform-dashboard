@@ -312,7 +312,7 @@ export default function WalletManagement() {
       </div>
 
       {/* Filters Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8 mb-6">
         <Card className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -384,7 +384,7 @@ export default function WalletManagement() {
       </div>
 
       {/* Transactions Table */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <div className="  mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <Card className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700">
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-4">

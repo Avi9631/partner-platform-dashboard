@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Users } from "lucide-react";
 import {
   Sheet,
   SheetTrigger,
@@ -113,6 +113,17 @@ export default function Header() {
                   </Button>
                   
                   <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      window.location.href = '/leads-management';
+                    }}
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Leads Management
+                  </Button>
+                  
+                  <Button
                     onClick={logout}
                     variant="destructive"
                     className="w-full justify-start mt-4"
@@ -188,6 +199,17 @@ export default function Header() {
                       }}
                     >
                       Wallet Management
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        window.location.href = '/leads-management';
+                      }}
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      Leads Management
                     </Button>
                     
                     <Button

@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import "./App.css";
 import Header from "./modules/header/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, FolderKanban, Users, ArrowRight, Home } from "lucide-react";
+import { Building2, FolderKanban, Users, ArrowRight, Home, ClipboardList } from "lucide-react";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -40,6 +40,15 @@ function Dashboard() {
       description: "Add, edit, and manage PG and hostel listings",
       icon: Home,
       path: "/list-pg-hostel",
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+      hoverBg: "from-orange-500 to-orange-600",
+    },
+    {
+      title: "Leads Management",
+      description: "Track and manage all your property leads",
+      icon: ClipboardList,
+      path: "/leads-management",
       color: "text-orange-600",
       bgColor: "bg-orange-50",
       hoverBg: "from-orange-500 to-orange-600",
