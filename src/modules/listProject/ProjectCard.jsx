@@ -93,7 +93,7 @@ export default function ProjectCard({ project, index }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => navigate(`/list-project/${project.id}`)}>
+                <DropdownMenuItem onClick={() => navigate(`/list-project/manage/${project.id}`)}>
                   <Eye className="w-4 h-4 mr-2" />
                   View
                 </DropdownMenuItem>

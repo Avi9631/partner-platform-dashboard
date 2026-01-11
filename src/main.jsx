@@ -20,6 +20,9 @@ import MyBusiness from "./pages/MyBusiness.jsx";
 import EditBusiness from "./pages/EditBusiness.jsx";
 import WalletManagement from "./pages/WalletManagement.jsx";
 import LeadsManagement from "./pages/LeadsManagement.jsx";
+import PropertyManagement from "./pages/PropertyManagement.jsx";
+import PgManagement from "./pages/PgManagement.jsx";
+import ProjectManagement from "./pages/ProjectManagement.jsx";
 import ListDeveloperV2Page from "./modules/ListDeveloperV2.jsx";
 import BusinessProfileSetup from "./modules/BusinessProfileSetup/index.jsx";
 import { DeveloperFormPageV2 } from "./modules/listDeveloper/v2/index.js";
@@ -103,10 +106,22 @@ const router = createBrowserRouter([
           {
             path: "list-property",
             element: <ListPropertyV2 />,
+          },
+          {
+            path: "list-property/manage/:draftId",
+            element: <PropertyManagement />,
           }, 
           {
             path: "list-pg-hostel",
             element: <ListPgHostelV2 />,
+          },
+          {
+            path: "list-pg-hostel/manage/:draftId",
+            element: <PgManagement />,
+          },
+          {
+            path: "list-project/manage/:draftId",
+            element: <ProjectManagement />,
           },
           {
             path: "profile",

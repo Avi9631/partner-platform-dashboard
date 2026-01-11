@@ -189,27 +189,7 @@ export default function ListDeveloperV2Page() {
               >
                 All
               </Button>
-              <Button
-                variant={typeFilter === 'National Developer' ? 'default' : 'outline'}
-                onClick={() => setTypeFilter('National Developer')}
-                className={typeFilter === 'National Developer' ? 'bg-orange-500 hover:bg-orange-600' : ''}
-              >
-                National
-              </Button>
-              <Button
-                variant={typeFilter === 'Regional Developer' ? 'default' : 'outline'}
-                onClick={() => setTypeFilter('Regional Developer')}
-                className={typeFilter === 'Regional Developer' ? 'bg-orange-500 hover:bg-orange-600' : ''}
-              >
-                Regional
-              </Button>
-              <Button
-                variant={typeFilter === 'Local Builder' ? 'default' : 'outline'}
-                onClick={() => setTypeFilter('Local Builder')}
-                className={typeFilter === 'Local Builder' ? 'bg-orange-500 hover:bg-orange-600' : ''}
-              >
-                Local
-              </Button>
+   
             </div>
           </div>
         </div>

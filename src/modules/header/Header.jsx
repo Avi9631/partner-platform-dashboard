@@ -119,7 +119,7 @@ export default function Header() {
                       window.location.href = '/leads-management';
                     }}
                   >
-                    <Users className="mr-2 h-4 w-4" />
+                    {/* <Users className="mr-2 h-4 w-4" /> */}
                     Leads Management
                   </Button>
                   

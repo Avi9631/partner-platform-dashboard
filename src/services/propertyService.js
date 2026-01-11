@@ -66,4 +66,45 @@ export const propertyApi = {
       method: "GET",
     });
   },
+
+  // Get comprehensive analytics for a property
+  getPropertyAnalytics: async (draftId, timeRange = '7d') => {
+    return apiCall(`${backendUrl}/api/listing-analytics/comprehensive/property/${draftId}?timeRange=${timeRange}`, {
+      method: "GET",
+    });
+  },
+
+  // Get leads for a property with filters and pagination
+  getPropertyLeads: async (draftId, filters = {}) => {
+    const queryParams = new URLSearchParams({
+      listingType: 'PROPERTY',
+      listingId: draftId,
+      ...filters
+    });
+
+    const queryString = queryParams.toString();
+    const url = `${backendUrl}/api/leads?${queryString}`;
+
+    return apiCall(url, {
+      method: "GET",
+    });
+  },
+
+  // Get lead statistics for a property
+  getPropertyLeadStats: async (draftId) => {
+    return apiCall(`${backendUrl}/api/leads/stats?listingType=PROPERTY&listingId=${draftId}`, {
+      method: "GET",
+    });
+  },
+
+  // Update lead status
+  updateLeadStatus: async (leadId, status) => {
+    return apiCall(`${backendUrl}/api/leads/${leadId}/status`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    });
+  },
 };

@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -14,12 +20,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { motion } from "motion/react";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
   Building2,
@@ -44,197 +50,14 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { fetchLeads, fetchLeadsStats, updateLeadStatus } from "@/services/leadsService";
+import {
+  fetchLeads,
+  fetchLeadsStats,
+  updateLeadStatus,
+} from "@/services/leadsService";
 import { toast } from "sonner";
 
-// Dummy data for demonstration
-const DUMMY_LEADS = [
-  {
-    id: "lead_001",
-    type: "PROPERTY",
-    reason: "VIRTUAL_TOUR",
-    status: "NEW",
-    listingId: "PROP-12345",
-    listingTitle: "Luxurious 3BHK Apartment in Bandra West",
-    customerName: "Rahul Sharma",
-    customerEmail: "rahul.sharma@example.com",
-    customerPhone: "+91 98765 43210",
-    customerAvatar: null,
-    message: "I'm interested in scheduling a virtual tour this weekend. Please let me know your available time slots.",
-    location: "Mumbai, Maharashtra",
-    createdAt: "2026-01-08T10:30:00Z",
-    scheduledDate: "2026-01-11T15:00:00Z", // Saturday 3 PM
-    scheduledTimeSlot: "3:00 PM - 3:30 PM",
-    preferredTime: "Weekend afternoon",
-  },
-  {
-    id: "lead_002",
-    type: "PG_COLIVING",
-    reason: "CONNECT_AGENT",
-    status: "CONTACTED",
-    listingId: "PG-7890",
-    listingTitle: "Modern Co-living Space near IT Park",
-    customerName: "Priya Patel",
-    customerEmail: "priya.patel@example.com",
-    customerPhone: "+91 87654 32109",
-    customerAvatar: null,
-    message: "Looking for a single occupancy room. Would like to discuss amenities and rent details.",
-    location: "Pune, Maharashtra",
-    createdAt: "2026-01-07T15:45:00Z",
-    scheduledDate: null,
-    preferredContactTime: "10:00 AM - 6:00 PM on weekdays",
-  },
-  {
-    id: "lead_003",
-    type: "PROJECT",
-    reason: "CALLBACK_REQUEST",
-    status: "IN_PROGRESS",
-    listingId: "PROJ-5432",
-    listingTitle: "Green Valley Residency - Premium Villas",
-    customerName: "Amit Kumar",
-    customerEmail: "amit.k@example.com",
-    customerPhone: "+91 76543 21098",
-    customerAvatar: null,
-    message: "Interested in 4BHK villa. Please call me between 6-8 PM on weekdays.",
-    location: "Bangalore, Karnataka",
-    createdAt: "2026-01-07T09:20:00Z",
-    scheduledDate: "2026-01-08T18:00:00Z", // 6 PM today
-    requestedCallbackTime: "6:00 PM - 8:00 PM",
-    preferredDays: "Weekdays only",
-  },
-  {
-    id: "lead_004",
-    type: "PROPERTY",
-    reason: "CONNECT_AGENT",
-    status: "NEW",
-    listingId: "PROP-98765",
-    listingTitle: "Spacious 2BHK with Sea View",
-    customerName: "Sneha Reddy",
-    customerEmail: "sneha.reddy@example.com",
-    customerPhone: "+91 65432 10987",
-    customerAvatar: null,
-    message: "Would like to know more about the property and schedule a site visit.",
-    location: "Visakhapatnam, Andhra Pradesh",
-    createdAt: "2026-01-06T14:10:00Z",
-    scheduledDate: null,
-    preferredContactTime: "Anytime during business hours",
-  },
-  {
-    id: "lead_005",
-    type: "PG_COLIVING",
-    reason: "VIRTUAL_TOUR",
-    status: "COMPLETED",
-    listingId: "PG-4567",
-    listingTitle: "Girls Hostel near University Campus",
-    customerName: "Ananya Singh",
-    customerEmail: "ananya.singh@example.com",
-    customerPhone: "+91 54321 09876",
-    customerAvatar: null,
-    message: "Need accommodation for the upcoming semester. Want to see the rooms and facilities.",
-    location: "Delhi, NCR",
-    createdAt: "2026-01-05T11:30:00Z",
-    scheduledDate: "2026-01-06T14:00:00Z", // Completed yesterday
-    scheduledTimeSlot: "2:00 PM - 2:30 PM",
-    completedAt: "2026-01-06T14:25:00Z",
-  },
-  {
-    id: "lead_006",
-    type: "PROJECT",
-    reason: "VIRTUAL_TOUR",
-    status: "NEW",
-    listingId: "PROJ-2468",
-    listingTitle: "Skyline Towers - Smart City Living",
-    customerName: "Vikram Mehta",
-    customerEmail: "vikram.m@example.com",
-    customerPhone: "+91 43210 98765",
-    customerAvatar: null,
-    message: "Looking for investment opportunities. Want a virtual walkthrough of the show flat.",
-    location: "Gurgaon, Haryana",
-    createdAt: "2026-01-08T08:15:00Z",
-    scheduledDate: "2026-01-09T11:00:00Z", // Tomorrow 11 AM
-    scheduledTimeSlot: "11:00 AM - 11:45 AM",
-    preferredTime: "Morning hours",
-  },
-  {
-    id: "lead_007",
-    type: "PROPERTY",
-    reason: "CALLBACK_REQUEST",
-    status: "CONTACTED",
-    listingId: "PROP-13579",
-    listingTitle: "Cozy 1BHK in Koramangala",
-    customerName: "Deepak Joshi",
-    customerEmail: "deepak.joshi@example.com",
-    customerPhone: "+91 32109 87654",
-    customerAvatar: null,
-    message: "Working professional looking for a rental apartment. Please call back with details.",
-    location: "Bangalore, Karnataka",
-    createdAt: "2026-01-06T16:40:00Z",
-    scheduledDate: "2026-01-07T19:30:00Z", // Already contacted
-    requestedCallbackTime: "7:00 PM - 9:00 PM",
-    preferredDays: "After office hours",
-  },
-  {
-    id: "lead_008",
-    type: "PG_COLIVING",
-    reason: "CALLBACK_REQUEST",
-    status: "NEW",
-    listingId: "PG-9876",
-    listingTitle: "Executive PG for Working Professionals",
-    customerName: "Neha Kapoor",
-    customerEmail: "neha.kapoor@example.com",
-    customerPhone: "+91 21098 76543",
-    customerAvatar: null,
-    message: "Recently relocated to the city. Need a comfortable PG with good food facilities.",
-    location: "Hyderabad, Telangana",
-    createdAt: "2026-01-08T12:00:00Z",
-    scheduledDate: "2026-01-08T20:00:00Z", // Tonight 8 PM
-    requestedCallbackTime: "8:00 PM - 10:00 PM",
-    preferredDays: "Evening preferred",
-  },
-  {
-    id: "lead_009",
-    type: "PROJECT",
-    reason: "CONNECT_AGENT",
-    status: "IN_PROGRESS",
-    listingId: "PROJ-1357",
-    listingTitle: "Lakeside Apartments - Phase 2",
-    customerName: "Rajesh Gupta",
-    customerEmail: "rajesh.gupta@example.com",
-    customerPhone: "+91 10987 65432",
-    customerAvatar: null,
-    message: "Interested in pre-booking. Need complete project details and payment plans.",
-    location: "Pune, Maharashtra",
-    createdAt: "2026-01-05T13:25:00Z",
-    scheduledDate: null,
-    preferredContactTime: "9:00 AM - 5:00 PM",
-  },
-  {
-    id: "lead_010",
-    type: "PROPERTY",
-    reason: "VIRTUAL_TOUR",
-    status: "CLOSED",
-    listingId: "PROP-24680",
-    listingTitle: "Penthouse with Terrace Garden",
-    customerName: "Kavita Nair",
-    customerEmail: "kavita.nair@example.com",
-    customerPhone: "+91 09876 54321",
-    customerAvatar: null,
-    message: "Premium property buyer. Looking for luxury apartments with modern amenities.",
-    location: "Chennai, Tamil Nadu",
-    createdAt: "2026-01-04T10:00:00Z",
-    scheduledDate: "2026-01-05T16:00:00Z", // Tour was done
-    scheduledTimeSlot: "4:00 PM - 4:45 PM",
-    completedAt: "2026-01-05T16:40:00Z",
-    closedReason: "Customer not interested",
-  },
-];
 
-const DUMMY_STATS = {
-  total: 150,
-  new: 25,
-  inProgress: 40,
-  completed: 70,
-};
 
 // Lead reason configurations
 const LEAD_REASONS = {
@@ -322,7 +145,6 @@ export default function LeadsManagement() {
   const [leads, setLeads] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [useDummyData, setUseDummyData] = useState(true); // Toggle for dummy data
   const [filters, setFilters] = useState({
     type: searchParams.get("type") || "all",
     reason: searchParams.get("reason") || "all",
@@ -335,55 +157,30 @@ export default function LeadsManagement() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalLeads, setTotalLeads] = useState(0);
 
-  // Filter dummy data based on filters
-  const filterDummyData = (data, filters) => {
-    return data.filter((lead) => {
-      if (filters.type !== "all" && lead.type !== filters.type) return false;
-      if (filters.reason !== "all" && lead.reason !== filters.reason) return false;
-      if (filters.status !== "all" && lead.status !== filters.status) return false;
-      return true;
-    });
-  };
-
   // Fetch leads and stats
   const loadLeads = async (currentPage = 1, resetPage = false) => {
     try {
       setLoading(true);
-      
-      if (useDummyData) {
-        // Use dummy data
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
-        const filteredLeads = filterDummyData(DUMMY_LEADS, filters);
-        setTotalLeads(filteredLeads.length);
-        setTotalPages(Math.ceil(filteredLeads.length / pageSize));
-        
-        // Paginate dummy data
-        const startIdx = ((resetPage ? 1 : currentPage) - 1) * pageSize;
-        const endIdx = startIdx + pageSize;
-        setLeads(filteredLeads.slice(startIdx, endIdx));
-        setPage(resetPage ? 1 : currentPage);
-        setStats(DUMMY_STATS);
-      } else {
-        // Use real API
-        const filterParams = {
-          page: resetPage ? 1 : currentPage,
-          limit: pageSize,
-        };
-        if (filters.type !== "all") filterParams.type = filters.type;
-        if (filters.reason !== "all") filterParams.reason = filters.reason;
-        if (filters.status !== "all") filterParams.status = filters.status;
 
-        const [leadsData, statsData] = await Promise.all([
-          fetchLeads(filterParams),
-          fetchLeadsStats(),
-        ]);
+      // Use real API
+      const filterParams = {
+        page: resetPage ? 1 : currentPage,
+        limit: pageSize,
+      };
+      if (filters.type !== "all") filterParams.type = filters.type;
+      if (filters.reason !== "all") filterParams.reason = filters.reason;
+      if (filters.status !== "all") filterParams.status = filters.status;
 
-        setLeads(leadsData.leads || []);
-        setTotalLeads(leadsData.total || 0);
-        setTotalPages(leadsData.totalPages || 1);
-        setPage(resetPage ? 1 : currentPage);
-        setStats(statsData);
-      }
+      const [leadsData, statsData] = await Promise.all([
+        fetchLeads(filterParams),
+        fetchLeadsStats(),
+      ]);
+
+      setLeads(leadsData?.data?.leads || []);
+      setTotalLeads(leadsData?.data?.pagination?.total || 0);
+      setTotalPages(leadsData?.data?.pagination?.totalPages || 1);
+      setPage(resetPage ? 1 : currentPage);
+      setStats(statsData);
     } catch (error) {
       toast.error("Failed to load leads", {
         description: error.message,
@@ -396,7 +193,7 @@ export default function LeadsManagement() {
   useEffect(() => {
     loadLeads();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, useDummyData]);
+  }, [filters]);
 
   // Refetch when page size changes
   useEffect(() => {
@@ -421,20 +218,10 @@ export default function LeadsManagement() {
   // Handle status update
   const handleStatusUpdate = async (leadId, newStatus) => {
     try {
-      if (useDummyData) {
-        // Update dummy data
-        setLeads(prevLeads => 
-          prevLeads.map(lead => 
-            lead.id === leadId ? { ...lead, status: newStatus } : lead
-          )
-        );
-        toast.success("Lead status updated successfully");
-      } else {
-        // Update via API
-        await updateLeadStatus(leadId, newStatus);
-        toast.success("Lead status updated successfully");
-        loadLeads(page);
-      }
+      // Update via API
+      await updateLeadStatus(leadId, newStatus);
+      toast.success("Lead status updated successfully");
+      loadLeads(page);
     } catch (error) {
       toast.error("Failed to update lead status", {
         description: error.message,
@@ -475,7 +262,9 @@ export default function LeadsManagement() {
     const Icon = config.icon || Phone;
 
     return (
-      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${config.bgColor} ${config.borderColor} ${config.textColor}`}>
+      <div
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${config.bgColor} ${config.borderColor} ${config.textColor}`}
+      >
         <Icon className="h-3 w-3" />
         <span>{config.label}</span>
       </div>
@@ -522,21 +311,19 @@ export default function LeadsManagement() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold mb-2">Leads Management</h1>
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-2">
+                Leads Management
+              </h1>
               <p className="text-orange-100 text-sm md:text-base">
                 Manage and track all your property leads in one place
               </p>
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant={useDummyData ? "default" : "outline"} 
+              <Button
+                variant="outline"
                 size="sm"
-                onClick={() => setUseDummyData(!useDummyData)}
-                className={useDummyData ? "bg-white text-orange-600 hover:bg-orange-50" : "bg-orange-500 hover:bg-orange-600"}
+                className="bg-white text-orange-600 hover:bg-orange-50"
               >
-                {useDummyData ? "Using Dummy Data" : "Using API Data"}
-              </Button>
-              <Button variant="outline" size="sm" className="bg-white text-orange-600 hover:bg-orange-50">
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
@@ -574,31 +361,42 @@ export default function LeadsManagement() {
           />
         </div>
       </div>
+ 
 
-      {/* Filters Section */}
-      <div className=" mx-auto px-4 sm:px-6 lg:px-8 mb-6">
-        <Card className="bg-white shadow-sm border border-gray-200">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                Filters
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={resetFilters}>
-                Reset
-              </Button>
+      {/* Filters Section - Horizontal Scroll */}
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-5 w-5 text-orange-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetFilters}
+              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reset All
+            </Button>
+          </div>
+          
+          {/* Horizontal Scrollable Filters */}
+          <div className="overflow-x-auto pb-2 -mx-2 px-2">
+            <div className="flex gap-3 min-w-max">
               {/* Listing Type Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Listing Type</label>
+              <div className="flex-shrink-0 w-[200px]">
+                <label className="text-xs font-medium text-gray-700 mb-1.5 block">
+                  Listing Type
+                </label>
                 <Select
                   value={filters.type}
-                  onValueChange={(value) => setFilters({ ...filters, type: value })}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, type: value })
+                  }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -613,13 +411,17 @@ export default function LeadsManagement() {
               </div>
 
               {/* Reason Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Reason</label>
+              <div className="flex-shrink-0 w-[200px]">
+                <label className="text-xs font-medium text-gray-700 mb-1.5 block">
+                  Reason
+                </label>
                 <Select
                   value={filters.reason}
-                  onValueChange={(value) => setFilters({ ...filters, reason: value })}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, reason: value })
+                  }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -634,13 +436,17 @@ export default function LeadsManagement() {
               </div>
 
               {/* Status Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
+              <div className="flex-shrink-0 w-[200px]">
+                <label className="text-xs font-medium text-gray-700 mb-1.5 block">
+                  Status
+                </label>
                 <Select
                   value={filters.status}
-                  onValueChange={(value) => setFilters({ ...filters, status: value })}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, status: value })
+                  }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -654,38 +460,47 @@ export default function LeadsManagement() {
                 </Select>
               </div>
 
-              {/* Apply Button */}
-              <div className="space-y-2">
-                <label className="invisible text-sm">Apply</label>
-                <Button 
-                  onClick={applyFilters} 
-                  className="w-full bg-orange-600 hover:bg-orange-700"
+              {/* Action Buttons */}
+              <div className="flex-shrink-0 flex items-end gap-2">
+                <Button
+                  onClick={applyFilters}
+                  size="sm"
+                  className="h-9 bg-orange-600 hover:bg-orange-700 whitespace-nowrap"
                 >
-                  Apply Filters
+                  <Filter className="h-4 w-4 mr-2" />
+                  Apply
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Leads Table */}
-      <div className=" mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <div className="  mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <Card className="bg-white shadow-sm border border-gray-200">
-          <CardHeader>
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <CardTitle>Leads List</CardTitle>
-                <CardDescription>
-                  {totalLeads > 0 
-                    ? `Showing ${((page - 1) * pageSize) + 1}-${Math.min(page * pageSize, totalLeads)} of ${totalLeads} leads`
-                    : "No leads found"
-                  }
-                </CardDescription>
-              </div>
+          <CardHeader className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Select value={pageSize.toString()} onValueChange={(val) => setPageSize(parseInt(val))}>
-                  <SelectTrigger className="w-[120px]">
+                <div className="h-10 w-1 bg-orange-600 rounded-full"></div>
+                <div>
+                  <CardTitle className="text-xl">All Leads</CardTitle>
+                  <CardDescription className="mt-1">
+                    {totalLeads > 0
+                      ? `Showing ${(page - 1) * pageSize + 1}-${Math.min(
+                          page * pageSize,
+                          totalLeads
+                        )} of ${totalLeads} leads`
+                      : "No leads found"}
+                  </CardDescription>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Select
+                  value={pageSize.toString()}
+                  onValueChange={(val) => setPageSize(parseInt(val))}
+                >
+                  <SelectTrigger className="w-[130px] h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -698,10 +513,11 @@ export default function LeadsManagement() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="h-9"
                   onClick={() => loadLeads(page)}
                 >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
+                  <RefreshCw className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
               </div>
             </div>
@@ -724,76 +540,85 @@ export default function LeadsManagement() {
                   No leads found
                 </h3>
                 <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                  {filters.type !== "all" || filters.reason !== "all" || filters.status !== "all"
+                  {filters.type !== "all" ||
+                  filters.reason !== "all" ||
+                  filters.status !== "all"
                     ? "Try adjusting your filters to find what you're looking for."
                     : "No leads available at the moment."}
                 </p>
               </motion.div>
             ) : (
               <>
-                <div className="rounded-md border overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[180px]">Request Raised</TableHead>
-                        <TableHead className="w-[100px]">Type</TableHead>
-                        <TableHead className="min-w-[220px]">Listing Details</TableHead>
-                        <TableHead className="w-[140px]">Reason</TableHead>
-                        <TableHead className="w-[180px]">Scheduled For</TableHead>
-                        <TableHead className="min-w-[180px]">Customer</TableHead>
-                        <TableHead className="w-[140px]">Status</TableHead>
-                        <TableHead className="w-[100px]">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {leads.map((lead) => {
-                        const statusConfig = LEAD_STATUS[lead.status] || {};
-                        const StatusIcon = statusConfig.icon || AlertCircle;
-                        
-                        return (
-                          <TableRow key={lead.id}>
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                <div className="text-sm">
-                                  <div>{formatDate(lead.createdAt)}</div>
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50">
+                          <TableHead className="min-w-[250px] font-semibold">
+                            Listing Details
+                          </TableHead>
+                          <TableHead className="min-w-[150px] font-semibold">Reason</TableHead>
+                          <TableHead className="min-w-[180px] font-semibold">
+                            Scheduled For
+                          </TableHead>
+                          <TableHead className="min-w-[180px] font-semibold">
+                            Customer
+                          </TableHead>
+                          <TableHead className="min-w-[160px] font-semibold">Status</TableHead>
+                          <TableHead className="min-w-[100px] font-semibold text-center">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {leads.map((lead, index) => {
+                          const statusConfig = LEAD_STATUS[lead.status] || {};
+                          const StatusIcon = statusConfig.icon || AlertCircle;
+
+                          return (
+                            <TableRow 
+                              key={lead.id}
+                              className="hover:bg-orange-50/50 transition-colors"
+                            >
+                            <TableCell className="py-4">
+                              <div className="flex items-start gap-3">
+                                <Avatar className="h-10 w-10 flex-shrink-0 shadow-md border-2 border-orange-100">
+                                  <AvatarImage src={lead.customerAvatar} />
+                                  <AvatarFallback className="text-xs text-white font-bold bg-gradient-to-br from-orange-500 to-orange-600">
+                                    {lead.type === "PROPERTY" ? "PR" : lead.type === "PG_COLIVING" ? "PG" : "PJ"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="space-y-1.5 flex-1 min-w-0">
+                                  <div className="font-semibold text-sm text-gray-900 line-clamp-1">
+                                    {lead.listingTitle || "Untitled Listing"}
+                                  </div>
+                                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                    {lead.location && (
+                                      <div className="flex items-center gap-1">
+                                        <MapPin className="h-3 w-3 text-orange-500" />
+                                        <span className="line-clamp-1">{lead.location}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <Clock className="h-3 w-3" />
+                                    {formatDate(lead.createdAt)}
+                                  </div>
                                 </div>
                               </div>
                             </TableCell>
-                            
-                            <TableCell>
-                              <TypeIcon type={lead.type} />
-                            </TableCell>
-                            
-                            <TableCell>
-                              <div className="space-y-1">
-                                <div className="font-medium text-sm">
-                                  {lead.listingTitle || "Untitled Listing"}
-                                </div>
-                                <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                  <span>ID: {lead.listingId}</span>
-                                  {lead.location && (
-                                    <>
-                                      <span>•</span>
-                                      <MapPin className="h-3 w-3 inline" />
-                                      <span>{lead.location}</span>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            </TableCell>
-                            
-                            <TableCell>
+
+                            <TableCell className="py-4">
                               <ReasonBadge reason={lead.reason} />
                             </TableCell>
-                            
-                            <TableCell>
-                              <div className="space-y-1">
+
+                            <TableCell className="py-4">
+                              <div className="space-y-1.5">
                                 {lead.scheduledDate ? (
                                   <>
-                                    <div className="flex items-center gap-1.5 text-sm font-medium">
-                                      <Calendar className="h-3.5 w-3.5 text-orange-600" />
-                                      <span>{formatDate(lead.scheduledDate)}</span>
+                                    <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-900">
+                                      <Calendar className="h-4 w-4 text-orange-600" />
+                                      <span>
+                                        {formatDate(lead.scheduledDate)}
+                                      </span>
                                     </div>
                                     {lead.scheduledTimeSlot && (
                                       <div className="text-xs text-muted-foreground pl-5">
@@ -808,151 +633,284 @@ export default function LeadsManagement() {
                                   </>
                                 ) : (
                                   <div className="text-xs text-muted-foreground">
-                                    {lead.preferredContactTime || lead.preferredTime || "Not scheduled"}
+                                    {lead.preferredContactTime ||
+                                      lead.preferredTime ||
+                                      "Not scheduled"}
                                   </div>
                                 )}
                               </div>
                             </TableCell>
-                            
-                            <TableCell>
-                              <div className="flex items-start gap-2">
-                                <Avatar className="h-8 w-8 flex-shrink-0">
+
+                            <TableCell className="py-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-9 w-9 flex-shrink-0 shadow-md border-2 border-orange-100">
                                   <AvatarImage src={lead.customerAvatar} />
-                                  <AvatarFallback className="text-xs">
-                                    {lead.customerName?.[0]?.toUpperCase() || "U"}
+                                  <AvatarFallback className="text-xs text-white font-bold bg-gradient-to-br from-blue-500 to-blue-600">
+                                    {lead.customerName?.[0]?.toUpperCase() ||
+                                      "U"}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
-                                  <div className="text-sm font-medium truncate">
+                                  <div className="text-sm font-semibold text-gray-900 truncate">
                                     {lead.customerName || "Unknown"}
                                   </div>
                                   {lead.customerPhone && (
-                                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                       <Phone className="h-3 w-3" />
-                                      <span>{lead.customerPhone}</span>
+                                      <span className="truncate">{lead.customerPhone}</span>
                                     </div>
                                   )}
                                 </div>
                               </div>
                             </TableCell>
-                            
-                            <TableCell>
+
+                            <TableCell className="py-4">
                               <Select
                                 value={lead.status}
-                                onValueChange={(value) => handleStatusUpdate(lead.id, value)}
+                                onValueChange={(value) =>
+                                  handleStatusUpdate(lead.id, value)
+                                }
                               >
-                                <SelectTrigger className="w-full">
+                                <SelectTrigger className="w-full min-w-[140px]">
                                   <SelectValue>
                                     <div className="flex items-center gap-2">
-                                      <StatusIcon className={`h-3 w-3 ${statusConfig.color}`} />
-                                      <span className="text-xs">{statusConfig.label}</span>
+                                      <StatusIcon
+                                        className={`h-3.5 w-3.5 ${statusConfig.color}`}
+                                      />
+                                      <span className="text-xs font-medium">
+                                        {statusConfig.label}
+                                      </span>
                                     </div>
                                   </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {Object.entries(LEAD_STATUS).map(([key, config]) => {
-                                    const Icon = config.icon;
-                                    return (
-                                      <SelectItem key={key} value={key}>
-                                        <div className="flex items-center gap-2">
-                                          <Icon className={`h-3 w-3 ${config.color}`} />
-                                          <span>{config.label}</span>
-                                        </div>
-                                      </SelectItem>
-                                    );
-                                  })}
+                                  {Object.entries(LEAD_STATUS).map(
+                                    ([key, config]) => {
+                                      const Icon = config.icon;
+                                      return (
+                                        <SelectItem key={key} value={key}>
+                                          <div className="flex items-center gap-2">
+                                            <Icon
+                                              className={`h-3.5 w-3.5 ${config.color}`}
+                                            />
+                                            <span className="font-medium">{config.label}</span>
+                                          </div>
+                                        </SelectItem>
+                                      );
+                                    }
+                                  )}
                                 </SelectContent>
                               </Select>
                             </TableCell>
-                            
-                            <TableCell>
-                              <div className="flex gap-1">
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+
+                            <TableCell className="py-4">
+                              <div className="flex gap-1 justify-center">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-9 w-9 p-0 hover:bg-green-50 hover:text-green-600"
+                                  title="Call Customer"
+                                >
                                   <Phone className="h-4 w-4" />
                                 </Button>
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-9 w-9 p-0 hover:bg-orange-50 hover:text-orange-600"
+                                  title="View Details"
+                                >
                                   <Eye className="h-4 w-4" />
                                 </Button>
                               </div>
                             </TableCell>
                           </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-6 flex-wrap gap-4">
-                    <div className="text-sm text-muted-foreground">
-                      Page {page} of {totalPages}
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => loadLeads(1)}
-                        disabled={page === 1}
-                      >
-                        <ChevronsLeft className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => loadLeads(page - 1)}
-                        disabled={page === 1}
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Previous
-                      </Button>
-                      
-                      {/* Page Numbers */}
-                      <div className="flex items-center gap-1">
-                        {[...Array(Math.min(5, totalPages))].map((_, idx) => {
-                          let pageNum;
-                          if (totalPages <= 5) {
-                            pageNum = idx + 1;
-                          } else if (page <= 3) {
-                            pageNum = idx + 1;
-                          } else if (page >= totalPages - 2) {
-                            pageNum = totalPages - 4 + idx;
-                          } else {
-                            pageNum = page - 2 + idx;
-                          }
-                          
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={page === pageNum ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => loadLeads(pageNum)}
-                              className={page === pageNum ? "bg-orange-600 hover:bg-orange-700" : ""}
-                            >
-                              {pageNum}
-                            </Button>
                           );
                         })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                {/* Enhanced Pagination */}
+                {totalLeads > 0 && (
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+                      {/* Pagination Info */}
+                      <div className="text-sm text-gray-700 font-medium">
+                        Showing{" "}
+                        <span className="font-bold text-orange-600">
+                          {(page - 1) * pageSize + 1}
+                        </span>
+                        {" "}-{" "}
+                        <span className="font-bold text-orange-600">
+                          {Math.min(page * pageSize, totalLeads)}
+                        </span>
+                        {" "}of{" "}
+                        <span className="font-bold text-orange-600">
+                          {totalLeads}
+                        </span>
+                        {" "}leads
                       </div>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => loadLeads(page + 1)}
-                        disabled={page === totalPages}
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => loadLeads(totalPages)}
-                        disabled={page === totalPages}
-                      >
-                        <ChevronsRight className="h-4 w-4" />
-                      </Button>
+
+                      {/* Pagination Controls */}
+                      <div className="flex items-center gap-2">
+                        {/* First Page Button */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => loadLeads(1)}
+                          disabled={page === 1 || loading}
+                          className="h-9 w-9 p-0 disabled:opacity-50"
+                          title="First Page"
+                        >
+                          <ChevronsLeft className="h-4 w-4" />
+                        </Button>
+
+                        {/* Previous Button */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => loadLeads(page - 1)}
+                          disabled={page === 1 || loading}
+                          className="h-9 px-4 disabled:opacity-50 font-medium"
+                        >
+                          <ChevronLeft className="h-4 w-4 mr-1" />
+                          Previous
+                        </Button>
+
+                        {/* Page Number Buttons */}
+                        <div className="hidden md:flex items-center gap-1">
+                          {totalPages <= 7 ? (
+                            // Show all pages if 7 or less
+                            [...Array(totalPages)].map((_, idx) => {
+                              const pageNum = idx + 1;
+                              return (
+                                <Button
+                                  key={pageNum}
+                                  variant={page === pageNum ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => loadLeads(pageNum)}
+                                  disabled={loading}
+                                  className={
+                                    page === pageNum
+                                      ? "h-9 w-9 p-0 bg-orange-600 hover:bg-orange-700 text-white font-bold"
+                                      : "h-9 w-9 p-0 hover:bg-orange-50"
+                                  }
+                                >
+                                  {pageNum}
+                                </Button>
+                              );
+                            })
+                          ) : (
+                            // Show smart pagination for more than 7 pages
+                            <>
+                              {/* First page */}
+                              <Button
+                                variant={page === 1 ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => loadLeads(1)}
+                                disabled={loading}
+                                className={
+                                  page === 1
+                                    ? "h-9 w-9 p-0 bg-orange-600 hover:bg-orange-700 text-white font-bold"
+                                    : "h-9 w-9 p-0 hover:bg-orange-50"
+                                }
+                              >
+                                1
+                              </Button>
+
+                              {/* Left ellipsis */}
+                              {page > 3 && (
+                                <span className="px-2 text-gray-500">...</span>
+                              )}
+
+                              {/* Middle pages */}
+                              {[...Array(5)].map((_, idx) => {
+                                let pageNum;
+                                if (page <= 3) {
+                                  pageNum = idx + 2;
+                                } else if (page >= totalPages - 2) {
+                                  pageNum = totalPages - 5 + idx;
+                                } else {
+                                  pageNum = page - 2 + idx;
+                                }
+
+                                if (pageNum <= 1 || pageNum >= totalPages) {
+                                  return null;
+                                }
+
+                                return (
+                                  <Button
+                                    key={pageNum}
+                                    variant={page === pageNum ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => loadLeads(pageNum)}
+                                    disabled={loading}
+                                    className={
+                                      page === pageNum
+                                        ? "h-9 w-9 p-0 bg-orange-600 hover:bg-orange-700 text-white font-bold"
+                                        : "h-9 w-9 p-0 hover:bg-orange-50"
+                                    }
+                                  >
+                                    {pageNum}
+                                  </Button>
+                                );
+                              })}
+
+                              {/* Right ellipsis */}
+                              {page < totalPages - 2 && (
+                                <span className="px-2 text-gray-500">...</span>
+                              )}
+
+                              {/* Last page */}
+                              <Button
+                                variant={page === totalPages ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => loadLeads(totalPages)}
+                                disabled={loading}
+                                className={
+                                  page === totalPages
+                                    ? "h-9 w-9 p-0 bg-orange-600 hover:bg-orange-700 text-white font-bold"
+                                    : "h-9 w-9 p-0 hover:bg-orange-50"
+                                }
+                              >
+                                {totalPages}
+                              </Button>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Mobile page indicator */}
+                        <div className="md:hidden px-3 py-1 bg-gray-100 rounded-md">
+                          <span className="text-sm font-semibold text-gray-700">
+                            {page} / {totalPages}
+                          </span>
+                        </div>
+
+                        {/* Next Button */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => loadLeads(page + 1)}
+                          disabled={page === totalPages || loading}
+                          className="h-9 px-4 disabled:opacity-50 font-medium"
+                        >
+                          Next
+                          <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+
+                        {/* Last Page Button */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => loadLeads(totalPages)}
+                          disabled={page === totalPages || loading}
+                          className="h-9 w-9 p-0 disabled:opacity-50"
+                          title="Last Page"
+                        >
+                          <ChevronsRight className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}

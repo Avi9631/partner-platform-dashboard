@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { 
   MapPin, Building2, Calendar, 
   Edit2, Trash2, Eye, MoreVertical, Clock, CheckCircle, XCircle,
-  Home
+  Home, Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -13,8 +13,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useNavigate } from 'react-router-dom';
 
 export default function PropertyCard({ listing, index, onEdit, onDelete }) {
+  const navigate = useNavigate();
   const statusConfig = {
     published: { 
       color: 'green', 
@@ -54,6 +56,10 @@ export default function PropertyCard({ listing, index, onEdit, onDelete }) {
   const config = statusConfig[status] || statusConfig.draft;
   const StatusIcon = config.icon;
 
+  const handleManageClick = () => {
+    navigate(`/list-property/manage/${draftId}`);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -88,35 +94,8 @@ export default function PropertyCard({ listing, index, onEdit, onDelete }) {
 
           {/* Actions Menu - Smaller */}
           <div className="absolute top-2 left-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="h-7 w-7 bg-white/90 hover:bg-white shadow-md"
-                >
-                  <MoreVertical className="w-3.5 h-3.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem>
-                  <Eye className="w-4 h-4 mr-2" />
-                  View
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(draftId)}>
-                  <Edit2 className="w-4 h-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="text-red-600"
-                  onClick={() => onDelete(draftId)}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+ 
+          </div> 
         </div>
 
         {/* Content Section - Compact */}
@@ -152,6 +131,15 @@ export default function PropertyCard({ listing, index, onEdit, onDelete }) {
             <Calendar className="w-3 h-3 mr-1" />
             <span>{createdAt}</span>
           </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleManageClick}
+            className="h-7 text-xs gap-1 hover:text-orange-600 dark:hover:text-orange-400"
+          >
+            <Settings className="w-3 h-3" />
+            Manage
+          </Button>
         </CardFooter>
       </Card>
     </motion.div>

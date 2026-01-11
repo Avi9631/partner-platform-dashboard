@@ -58,6 +58,27 @@ export const pgHostelApi = {
     const params = new URLSearchParams(filters);
     return apiCall(`${backendUrl}/api/pg-hostel/list?${params.toString()}`);
   },
+
+  /**
+   * Get leads for a specific PG/Hostel listing
+   */
+  getPgLeads: async (draftId, params = {}) => {
+    const queryParams = new URLSearchParams(params);
+    return apiCall(`${backendUrl}/api/listing-views/draft/${draftId}?${queryParams.toString()}`);
+  },
+
+  /**
+   * Update lead status
+   */
+  updateLeadStatus: async (leadId, status) => {
+    return apiCall(`${backendUrl}/api/listing-views/${leadId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status }),
+    });
+  },
 };
 
 export default pgHostelApi;

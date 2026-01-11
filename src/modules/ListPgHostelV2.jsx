@@ -338,7 +338,7 @@ function PgCard({ listing, index, onEdit, onDelete }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.location.href = `/list-pg-hostel/manage/${listing.id}`}>
                   <Eye className="w-4 h-4 mr-2" />
                   View
                 </DropdownMenuItem>
