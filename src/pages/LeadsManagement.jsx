@@ -180,7 +180,7 @@ export default function LeadsManagement() {
       setTotalLeads(leadsData?.data?.pagination?.total || 0);
       setTotalPages(leadsData?.data?.pagination?.totalPages || 1);
       setPage(resetPage ? 1 : currentPage);
-      setStats(statsData);
+      setStats(statsData?.data);
     } catch (error) {
       toast.error("Failed to load leads", {
         description: error.message,
