@@ -49,10 +49,10 @@ const StepIndicator = ({ currentStep, totalSteps }) => {
                   `}
                 >
                   {step === 1 && 'Personal'}
-                  {step === 2 && 'OTP Verify'}
-                  {step === 3 && 'Location'}
-                  {step === 4 && 'Video'}
-                  {step === 5 && 'Review'}
+                  {/* {step === 2 && 'OTP Verify'} */}
+                  {step === 2 && 'Location'}
+                  {step === 3 && 'Video'}
+                  {/* {step === 5 && 'Review'} */}
                 </span>
               </div>
 

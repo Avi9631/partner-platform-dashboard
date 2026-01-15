@@ -15,7 +15,6 @@ import { Loader2, FileCheck } from "lucide-react";
 // Import step components
 import StepIndicator from "./components/StepIndicator";
 import Step1PersonalInfo from "./components/Step1PersonalInfo";
-import Step2PhoneVerification from "./components/Step2PhoneVerification";
 import Step3Location from "./components/Step3Location";
 import Step4ProfileImage from "./components/Step4ProfileImage";
 import SubmissionSuccess from "./components/SubmissionSuccess";
@@ -56,7 +55,7 @@ const ProfileSetup = () => {
   const [errors, setErrors] = useState({});
 
   const backendUrl = import.meta.env.VITE_API_URL || "https://partner-platform-backend.onrender.com";
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   // Custom hooks
   const camera = useCamera(toast);
@@ -78,18 +77,13 @@ const ProfileSetup = () => {
       } else if (!/^[+]?[\d\s\-()]+$/.test(formData.phone)) {
         newErrors.phone = "Invalid phone number format";
       }
-    }
-
-    // Phone Verification Step
-    const phoneVerificationStep = 2;
-    if (step === phoneVerificationStep) {
       if (!formData.phoneVerified) {
-        newErrors.otp = "Please verify your phone number";
+        newErrors.phone = "Please verify your phone number";
       }
     }
 
     // Location Step
-    const locationStep = 3;
+    const locationStep = 2;
     if (step === locationStep) {
       if (!formData.location.latitude || !formData.location.longitude) {
         newErrors.location = "Please capture your current location";
@@ -97,7 +91,7 @@ const ProfileSetup = () => {
     }
 
     // Profile Video Step
-    const profileVideoStep = 4;
+    const profileVideoStep = 3;
     if (step === profileVideoStep) {
       if (!formData.profileVideo) {
         newErrors.profileVideo = "Please record a verification video";
@@ -128,7 +122,7 @@ const ProfileSetup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateStep(4)) {
+    if (!validateStep(3)) {
       return;
     }
 
@@ -264,12 +258,10 @@ const ProfileSetup = () => {
   const getStepTitle = () => {
     switch (currentStep) {
       case 1:
-        return "Personal Information";
+        return "Personal Information & Phone Verification";
       case 2:
-        return "Phone Verification";
-      case 3:
         return "Location";
-      case 4:
+      case 3:
         return "Profile Image";
       default:
         return "";
@@ -284,22 +276,14 @@ const ProfileSetup = () => {
             formData={formData}
             errors={errors}
             handleChange={handleChange}
-          />
-        );
-      case 2:
-        return (
-          <Step2PhoneVerification
-            formData={formData}
-            errors={errors}
             otpSent={phoneVerification.otpSent}
             otpLoading={phoneVerification.otpLoading}
-            handleChange={handleChange}
             sendOtp={handleSendOtp}
             verifyOtp={handleVerifyOtp}
             resendOtp={handleResendOtp}
           />
         );
-      case 3:
+      case 2:
         return (
           <Step3Location
             formData={formData}
@@ -308,7 +292,7 @@ const ProfileSetup = () => {
             captureLocation={handleCaptureLocation}
           />
         );
-      case 4:
+      case 3:
         return (
           <Step4ProfileImage
             formData={formData}

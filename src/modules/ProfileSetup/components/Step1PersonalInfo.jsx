@@ -1,5 +1,6 @@
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
+import { Button } from "../../../components/ui/button";
 import {
   Select,
   SelectContent,
@@ -8,9 +9,18 @@ import {
   SelectValue,
 } from "../../../components/ui/select";
 import { Badge } from "../../../components/ui/badge";
-import { User, Phone, CheckCircle2, AlertCircle, UserCircle } from "lucide-react";
+import { User, Phone, CheckCircle2, AlertCircle, UserCircle, Loader2, RefreshCw } from "lucide-react";
 
-const Step1PersonalInfo = ({ formData, errors, handleChange }) => {
+const Step1PersonalInfo = ({ 
+  formData, 
+  errors, 
+  handleChange,
+  otpSent,
+  otpLoading,
+  sendOtp,
+  verifyOtp,
+  resendOtp
+}) => {
   // Validation helpers
   const isFirstNameValid = formData.firstName && !errors.firstName;
   const isLastNameValid = formData.lastName && !errors.lastName;
@@ -145,32 +155,58 @@ const Step1PersonalInfo = ({ formData, errors, handleChange }) => {
           Phone Number 
           <span className="text-red-500">*</span>
         </Label>
-        <div className="relative">
-          <Input
-            id="phone"
-            type="tel"
-            placeholder="+1 (555) 123-4567"
-            value={formData.phone}
-            onChange={(e) => handleChange("phone", e.target.value)}
-            className={`
-              pl-3 pr-10 transition-all duration-200
-              ${errors.phone 
-                ? "border-red-500 focus:ring-red-200 bg-red-50/50" 
-                : isPhoneValid
-                ? "border-green-500 focus:ring-green-200 bg-green-50/20"
-                : "focus:ring-orange-200"
-              }
-            `}
-          />
-          {/* Validation Icon */}
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            {errors.phone && (
-              <AlertCircle className="w-5 h-5 text-red-500 animate-in fade-in duration-200" />
-            )}
-            {isPhoneValid && (
-              <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in duration-200" />
-            )}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="+1 (555) 123-4567"
+              value={formData.phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
+              className={`
+                pl-3 pr-10 transition-all duration-200
+                ${errors.phone 
+                  ? "border-red-500 focus:ring-red-200 bg-red-50/50" 
+                  : isPhoneValid
+                  ? "border-green-500 focus:ring-green-200 bg-green-50/20"
+                  : "focus:ring-orange-200"
+                }
+              `}
+            />
+            {/* Validation Icon */}
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              {errors.phone && (
+                <AlertCircle className="w-5 h-5 text-red-500 animate-in fade-in duration-200" />
+              )}
+              {isPhoneValid && (
+                <CheckCircle2 className="w-5 h-5 text-green-500 animate-in fade-in duration-200" />
+              )}
+            </div>
           </div>
+          {/* Send/Resend Button - toggles based on otpSent state */}
+          {isPhoneValid && !formData.phoneVerified && (
+            <Button
+              type="button"
+              onClick={otpSent ? resendOtp : sendOtp}
+              disabled={otpLoading}
+              variant={otpSent ? "outline" : "default"}
+              className="whitespace-nowrap"
+            >
+              {otpLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : otpSent ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Resend
+                </>
+              ) : (
+                "Send Code"
+              )}
+            </Button>
+          )}
         </div>
         {errors.phone && (
           <div className="flex items-center gap-2 animate-in slide-in-from-top-1 duration-200">
@@ -178,10 +214,10 @@ const Step1PersonalInfo = ({ formData, errors, handleChange }) => {
             <p className="text-sm text-red-600">{errors.phone}</p>
           </div>
         )}
-        {isPhoneValid && (
+        {isPhoneValid && !formData.phoneVerified && !otpSent && (
           <p className="text-xs text-green-600 flex items-center gap-1 animate-in fade-in duration-200">
             <CheckCircle2 className="w-3 h-3" />
-            We'll send a verification code to this number
+            Click Send Code to receive a verification code
           </p>
         )}
         {!errors.phone && !isPhoneValid && (
@@ -190,6 +226,46 @@ const Step1PersonalInfo = ({ formData, errors, handleChange }) => {
           </p>
         )}
       </div>
+
+      {/* OTP Input Field - appears when OTP is sent */}
+      {otpSent && !formData.phoneVerified && (
+        <div className="space-y-2">
+          <Label htmlFor="otp">Enter Verification Code</Label>
+          <div className="flex gap-2">
+            <Input
+              id="otp"
+              type="text"
+              placeholder="Enter 6-digit code"
+              maxLength={6}
+              value={formData.otp}
+              onChange={(e) => handleChange("otp", e.target.value.replace(/\D/g, ""))}
+              className={errors.otp ? "border-red-500" : ""}
+            />
+            <Button 
+              type="button" 
+              onClick={verifyOtp}
+              className="whitespace-nowrap"
+            >
+              Verify
+            </Button>
+          </div>
+          {errors.otp && (
+            <p className="text-sm text-red-500">{errors.otp}</p>
+          )}
+        </div>
+      )}
+
+      {/* Phone Verified Success Message */}
+      {formData.phoneVerified && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold">✓</span>
+            </div>
+            <p className="font-medium text-green-900">Phone Number Verified</p>
+          </div>
+        </div>
+      )}
 
       {/* Info Card */}
       <div className="mt-6 bg-orange-50 border border-orange-200 rounded-lg p-4">

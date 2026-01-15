@@ -38,14 +38,14 @@ const Step4ProfileImage = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left side: Camera/Video */}
         <div className="flex-1">
           {formData.profileVideoPreview ? (
             // Show recorded video preview
             <div className="relative group">
-              <div className="w-64 h-64 rounded-2xl overflow-hidden border-3 border-green-400 bg-gray-900 shadow-xl transition-transform hover:scale-105 duration-300">
+              <div className="w-full h-64 rounded-2xl overflow-hidden border-3 border-green-400 bg-gray-900 shadow-xl transition-transform hover:scale-105 duration-300">
                 <video
                   src={formData.profileVideoPreview}
                   className="w-full h-full object-cover"
@@ -76,14 +76,14 @@ const Step4ProfileImage = ({
                 </div>
               )}
 
-              {!isRecording && (
+              {cameraLoading && (
                 <div className="mt-3 text-center">
                   <div className="bg-orange-50 border border-orange-200 rounded-lg py-1.5 px-3 inline-block">
                     <p className="text-sm text-orange-600 flex items-center gap-2">
                       <Camera className="w-4 h-4" />
-                      {cameraLoading
-                        ? "Loading camera..."
-                        : "Position yourself in the frame"}
+                  
+                       Loading camera... 
+                       
                     </p>
                   </div>
                 </div>
@@ -101,13 +101,13 @@ const Step4ProfileImage = ({
             </div>
           )}
 
-          <Alert className="mt-4 " variant="destructive">
+          {/* <Alert className="mt-4 " variant="destructive">
             <Shield />
             <AlertTitle  className="text-sm">Privacy & Security</AlertTitle>
             <AlertDescription className="text-xs">
               Used only for verification. Stored securely with encryption.
             </AlertDescription>
-          </Alert>
+          </Alert> */}
         </div>
 
         {/* Right side: Demo Video */}
@@ -138,15 +138,15 @@ const Step4ProfileImage = ({
                 */}
               </div>
             </div>
-
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 shadow-lg">
+ {/* Instructions */}
+          {/*<div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 shadow-lg">
         
          
 
-            {/* Instructions */}
+           
            
 
-            <div className="space-y-2">
+             <div className="space-y-2">
               <p className="text-xs font-bold text-gray-900 mb-2">
                 Requirements:
               </p>
@@ -168,14 +168,14 @@ const Step4ProfileImage = ({
                   <span>Video duration: 5-10 seconds</span>
                 </li>
               </ul>
-            </div>
-          </div>
+            </div> 
+          </div>*/}
         </div>
       </div>
 
       {/* Errors Section */}
       {(cameraError || errors.profileVideo) && (
-        <div className="space-y-3">
+        <div className=" ">
           {cameraError && (
             <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 w-full animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="flex items-center gap-3">
@@ -204,11 +204,21 @@ const Step4ProfileImage = ({
 
       {/* Action Buttons */}
       <div className="space-y-2 pt-1">
-        {!formData.profileVideoPreview && !isCameraActive && (
+        {!formData.profileVideoPreview && !isRecording && (
           <Button
             type="button"
-            onClick={startCamera}
-            className="w-full h-10 text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200"
+            onClick={async () => {
+              if (!isCameraActive) {
+                await startCamera();
+                // Small delay to ensure camera is ready before starting recording
+                setTimeout(() => {
+                  if (!cameraError) startRecording();
+                }, 500);
+              } else {
+                startRecording();
+              }
+            }}
+            className="w-full h-10 text-sm font-medium bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all duration-200"
             disabled={cameraLoading}
           >
             {cameraLoading ? (
@@ -218,41 +228,18 @@ const Step4ProfileImage = ({
               </>
             ) : (
               <>
-                <Camera className="mr-2 h-4 w-4" />
-                Start Camera
+                <Video className="mr-2 h-4 w-4" />
+                Start Recording
               </>
             )}
           </Button>
-        )}
-
-        {isCameraActive && !isRecording && !formData.profileVideoPreview && (
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onClick={startRecording}
-              className="w-full h-10 text-sm font-medium bg-red-600 hover:bg-red-700 shadow-md hover:shadow-lg transition-all duration-200"
-              disabled={cameraLoading}
-            >
-              <Video className="mr-2 h-4 w-4" />
-              Start Recording
-            </Button>
-            <Button
-              type="button"
-              onClick={stopCamera}
-              variant="outline"
-              className="w-full h-10 text-sm font-medium"
-            >
-              <VideoOff className="mr-2 h-4 w-4" />
-              Cancel
-            </Button>
-          </div>
         )}
 
         {isRecording && (
           <Button
             type="button"
             onClick={stopRecording}
-            className="w-full h-10 text-sm font-medium bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all duration-200 animate-pulse"
+            className="w-full h-10 text-sm font-medium bg-red-600 hover:bg-red-700 shadow-md hover:shadow-lg transition-all duration-200"
           >
             <CheckCircle2 className="mr-2 h-4 w-4" />
             Stop Recording
