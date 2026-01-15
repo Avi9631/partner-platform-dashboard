@@ -36,7 +36,6 @@ export const pricingInformationSchema = z.object({
       message: 'Primary price (asking price, monthly rent, or lease amount) is required',
     }),
   isPriceNegotiable: z.boolean().optional(),
-  availableFrom: z.string().optional(),
   
   // NEW: Phase 1 enhancements
   pricePerSqft: z.number().optional(), // Auto-calculated

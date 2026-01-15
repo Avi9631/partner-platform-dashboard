@@ -14,9 +14,6 @@ export const landAttributesSchema = z.object({
     errorMap: () => ({ message: 'Please select an area unit' }),
   }),
   plotDimension: z.string().optional(),
-  landUse: z.enum(['residential', 'commercial', 'agricultural', 'industrial'], {
-    errorMap: () => ({ message: 'Please select land use type' }),
-  }),
   roadWidth: z.string()
     .optional()
     .refine((val) => !val || (!isNaN(Number(val)) && Number(val) > 0), {

@@ -14,15 +14,16 @@ const propertyTypes = [
       { value: 'duplex', label: 'Duplex', icon: Home, description: 'Two-floor unit' },
       { value: 'independent_house', label: 'Independent House', icon: Home, description: 'Standalone house' },
       { value: 'penthouse', label: 'Penthouse', icon: Building2, description: 'Top-floor luxury' },
-      { value: 'studio', label: 'Studio Apartment', icon: Building2, description: 'Single room unit' },
       { value: 'independent_floor', label: 'Independent Floor', icon: Building2, description: 'Single floor' },
     ],
   },
   {
     category: 'Land',
     types: [
-      { value: 'plot', label: 'Residential Plot', icon: LandPlot, description: 'Vacant land' },
-      { value: 'farmhouse', label: 'Farmhouse', icon: TreePine, description: 'Farm property' },
+      { value: 'residential_plot', label: 'Residential Plot', icon: LandPlot, description: 'Land for residential use' },
+      { value: 'commercial_plot', label: 'Commercial Plot', icon: LandPlot, description: 'Land for commercial use' },
+      { value: 'industrial_plot', label: 'Industrial Plot', icon: LandPlot, description: 'Land for industrial use' },
+      { value: 'farmhouse', label: 'Farmhouse', icon: TreePine, description: 'Farm property with structure' },
       { value: 'agricultural_land', label: 'Agricultural Land', icon: TreePine, description: 'Farming land' },
     ],
   },
@@ -34,7 +35,6 @@ export default function PropertyTypeStepV2() {
   const { setPropertyType, saveAndContinue, getStepData, saveDraft, setCurrentStepIsValid } = usePropertyFormV2();
   const stepData = getStepData(STEP_ID);
   const [selectedType, setSelectedType] = useState(stepData?.propertyType || null);
-  const [hasUserSelected, setHasUserSelected] = useState(false);
 
   // PropertyType step is always valid once a type is selected
   useEffect(() => {
@@ -44,7 +44,6 @@ export default function PropertyTypeStepV2() {
   const handleSelectType = async (type) => {
     setSelectedType(type);
     setPropertyType(type);
-    setHasUserSelected(true);
     
     // Auto-save the property type selection with nested structure
     await saveDraft({ [STEP_ID]: { propertyType: type } });
@@ -56,17 +55,6 @@ export default function PropertyTypeStepV2() {
       saveAndContinue({ propertyType: selectedType });
     }
   }, [selectedType, saveAndContinue]);
-
-  // Auto-advance only when user actively selects a type (not when returning to this step)
-  useEffect(() => {
-    if (selectedType && hasUserSelected) {
-      // Auto-advance to next step after selection
-      const timer = setTimeout(() => {
-        handleContinue();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedType, hasUserSelected]);
 
   return (
     <div className="w-full max-w-7xl mx-auto">
@@ -182,23 +170,7 @@ export default function PropertyTypeStepV2() {
         ))}
       </div>
 
-      {/* Navigation Button */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="mt-8 flex justify-end"
-      >
-        <Button
-          onClick={handleContinue}
-          disabled={!selectedType}
-          size="lg"
-          className="gap-2 shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-        >
-          Continue
-          <ChevronRight className="w-5 h-5" />
-        </Button>
-      </motion.div>
+    
     </div>
   );
 }

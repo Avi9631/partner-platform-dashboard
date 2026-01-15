@@ -1,7 +1,7 @@
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Ruler, Fence, Droplets, Map, Mountain } from 'lucide-react';
+import { Ruler, Fence, Droplets, Mountain } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Field,
@@ -26,13 +26,6 @@ const areaUnits = [
   { value: 'bigha', label: 'Bigha' },
   { value: 'kanal', label: 'Kanal' },
   { value: 'gaj', label: 'Gaj' },
-];
-
-const landUseOptions = [
-  { value: 'residential', label: 'Residential', icon: '🏡' },
-  { value: 'commercial', label: 'Commercial', icon: '🏢' },
-  { value: 'agricultural', label: 'Agricultural', icon: '🌾' },
-  { value: 'industrial', label: 'Industrial', icon: '🏭' },
 ];
 
 const irrigationSources = [
@@ -70,7 +63,6 @@ export default function LandAttributesStepV2() {
       plotArea: stepData?.plotArea || '',
       areaUnit: stepData?.areaUnit || 'sqft',
       plotDimension: stepData?.plotDimension || '',
-      landUse: stepData?.landUse || '',
       roadWidth: stepData?.roadWidth || '',
       terrainLevel: stepData?.terrainLevel || '',
       soilType: stepData?.soilType || '',
@@ -221,48 +213,11 @@ export default function LandAttributesStepV2() {
               />
             </motion.div>
 
-            {/* Land Use */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <Controller
-                name="landUse"
-                control={control}
-                render={({ field }) => (
-                  <Field>
-                    <FieldLabel className="flex items-center gap-2">
-                      <Map className="w-4 h-4 text-orange-600" />
-                      Land Use Type
-                    </FieldLabel>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {landUseOptions.map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => field.onChange(option.value)}
-                          className={`p-4 rounded-lg border-2 transition-all hover:scale-105 ${
-                            field.value === option.value
-                              ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-md'
-                              : 'border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-700'
-                          }`}
-                        >
-                          <div className="text-2xl mb-1">{option.icon}</div>
-                          <div className="text-sm font-medium">{option.label}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </Field>
-                )}
-              />
-            </motion.div>
-
             {/* Road Width */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.4 }}
             >
               <Controller
                 name="roadWidth"
@@ -288,7 +243,7 @@ export default function LandAttributesStepV2() {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.5 }}
             >
               <Controller
                 name="terrainLevel"
@@ -325,7 +280,7 @@ export default function LandAttributesStepV2() {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7 }}
+              transition={{ delay: 0.6 }}
             >
               <Controller
                 name="soilType"
@@ -361,7 +316,7 @@ export default function LandAttributesStepV2() {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.7 }}
             >
               <div className="flex items-center justify-between p-4 rounded-lg border-2 border-orange-100 dark:border-orange-900 bg-orange-50/50 dark:bg-orange-950/20">
                 <div>
@@ -388,7 +343,7 @@ export default function LandAttributesStepV2() {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.9 }}
+              transition={{ delay: 0.8 }}
             >
               <Controller
                 name="irrigationSource"

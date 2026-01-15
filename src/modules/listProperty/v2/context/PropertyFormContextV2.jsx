@@ -1,14 +1,14 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { getTotalVisibleSteps, getVisibleSteps } from '../config/stepConfiguration';
 import { draftApi } from '@/services/draftService';
-import { validateAllSteps } from '../utils/schemaMapping';
+import { validateAllSteps, validateStep } from '../utils/schemaMapping';
 
 const PropertyFormContextV2 = createContext(null);
 
 /**
- * Helper function to determine which steps have data
- * Returns a Set of step indices that have completed data
- * Supports both nested (stepName: {fields}) and flat structure for backwards compatibility
+ * Helper function to determine which steps are valid
+ * Returns a Set of step indices that have valid data according to their Zod schemas
+ * Uses Zod validation directly - no manual field checking needed
  */
 const getCompletedStepsFromData = (formData) => {
   const completedSteps = new Set();
@@ -20,169 +20,29 @@ const getCompletedStepsFromData = (formData) => {
   };
   
   const visibleSteps = getVisibleSteps(formDataWithType);
-
-  visibleSteps.forEach((step, index) => {
-    let hasData = false;
-    const stepData = formData[step.id] || {};
-
-    switch (step.id) {
-      case 'property-type':
-        hasData = !!(stepData.propertyType || formData.propertyType);
-        break;
-        
-      case 'location-selection':
-        hasData = !!(
-          stepData.address || stepData.city || stepData.state || 
-          stepData.pincode || stepData.latitude || stepData.longitude ||
-          // Backwards compatibility
-          formData.address || formData.city || formData.state ||
-          formData.pincode || formData.latitude || formData.longitude
-        );
-        break;
-        
-      case 'basic-details':
-        hasData = !!(
-          stepData.propertyName || stepData.listingType || 
-          stepData.propertyAge || stepData.description ||
-          // Backwards compatibility
-          formData.propertyName || formData.listingType ||
-          formData.propertyAge || formData.description
-        );
-        break;
-        
-      case 'basic-configuration':
-        hasData = !!(
-          stepData.bedrooms !== undefined || stepData.bathrooms !== undefined ||
-          stepData.balconies !== undefined || stepData.carpetArea ||
-          stepData.builtUpArea || stepData.superBuiltUpArea ||
-          // Backwards compatibility
-          formData.bedrooms !== undefined || formData.bathrooms !== undefined ||
-          formData.balconies !== undefined || formData.carpetArea ||
-          formData.builtUpArea || formData.superBuiltUpArea
-        );
-        break;
-        
-      case 'land-attributes':
-        hasData = !!(
-          stepData.plotArea || stepData.plotLength || stepData.plotWidth ||
-          stepData.boundaryWall || stepData.facingDirection ||
-          // Backwards compatibility
-          formData.plotArea || formData.plotLength || formData.plotWidth ||
-          formData.boundaryWall || formData.facingDirection
-        );
-        break;
-        
-      case 'unit-amenities':
-      case 'furnishing':
-        hasData = !!(
-          stepData.furnishingStatus || stepData.furnishingDetails ||
-          (stepData.furnishingItems && stepData.furnishingItems.length > 0) ||
-          // Backwards compatibility
-          formData.furnishingStatus || formData.furnishingDetails ||
-          (formData.furnishingItems && formData.furnishingItems.length > 0)
-        );
-        break;
-        
-      case 'location-attributes':
-        hasData = !!(
-          stepData.nearbyPlaces || stepData.locationAdvantages ||
-          stepData.distanceFromMainRoad ||
-          // Backwards compatibility
-          formData.nearbyPlaces || formData.locationAdvantages ||
-          formData.distanceFromMainRoad
-        );
-        break;
-        
-      case 'floor-details':
-        hasData = !!(
-          stepData.floorNumber !== undefined || stepData.totalFloors !== undefined ||
-          stepData.floorType ||
-          // Backwards compatibility
-          formData.floorNumber !== undefined || formData.totalFloors !== undefined ||
-          formData.floorType
-        );
-        break;
-        
-      case 'pricing':
-        hasData = !!(
-          stepData.price !== undefined || stepData.expectedPrice ||
-          stepData.rentAmount || stepData.securityDeposit ||
-          stepData.maintenanceCharges ||
-          // Backwards compatibility
-          formData.price !== undefined || formData.expectedPrice ||
-          formData.rentAmount || formData.securityDeposit ||
-          formData.maintenanceCharges
-        );
-        break;
-        
-      case 'suitable-for':
-        hasData = !!(
-          stepData.suitableFor ||
-          (stepData.preferredTenants && stepData.preferredTenants.length > 0) ||
-          // Backwards compatibility
-          formData.suitableFor ||
-          (formData.preferredTenants && formData.preferredTenants.length > 0)
-        );
-        break;
-        
-      case 'listing-info':
-        hasData = !!(
-          stepData.availableFrom || stepData.possessionStatus ||
-          stepData.ownershipType ||
-          // Backwards compatibility
-          formData.availableFrom || formData.possessionStatus ||
-          formData.ownershipType
-        );
-        break;
-        
-      case 'property-amenities':
-      case 'amenities':
-        hasData = !!(
-          (stepData.amenities && typeof stepData.amenities === 'object' &&
-            Object.keys(stepData.amenities).length > 0 &&
-            Object.values(stepData.amenities).some(val => val === true || val === 'yes' || val)) ||
-          // Check if stepData itself has amenity fields
-          (Object.keys(stepData).length > 0 &&
-            Object.values(stepData).some(val => val === true || val === 'yes' || val)) ||
-          // Backwards compatibility
-          (formData.amenities && typeof formData.amenities === 'object' &&
-            Object.keys(formData.amenities).length > 0 &&
-            Object.values(formData.amenities).some(val => val === true || val === 'yes' || val))
-        );
-        break;
-        
-      case 'media-upload':
-        hasData = !!(
-          (stepData.mediaData && Array.isArray(stepData.mediaData) && stepData.mediaData.length > 0) ||
-          (stepData.images && Array.isArray(stepData.images) && stepData.images.length > 0) ||
-          // Backwards compatibility
-          (formData.mediaData && Array.isArray(formData.mediaData) && formData.mediaData.length > 0)
-        );
-        break;
-        
-      case 'property-plan-upload':
-        hasData = !!(
-          (stepData.floorPlans && Array.isArray(stepData.floorPlans) && stepData.floorPlans.length > 0) ||
-          // Backwards compatibility
-          (formData.floorPlans && Array.isArray(formData.floorPlans) && formData.floorPlans.length > 0)
-        );
-        break;
-        
-      case 'document-upload':
-        hasData = !!(
-          (stepData.documents && Array.isArray(stepData.documents) && stepData.documents.length > 0) ||
-          // Backwards compatibility
-          (formData.documents && Array.isArray(formData.documents) && formData.documents.length > 0)
-        );
-        break;
-        
-      default:
-        // Check if step has any data
-        hasData = stepData && typeof stepData === 'object' && Object.keys(stepData).length > 0;
+  
+  // Flatten nested structure for validation
+  const flattenedData = {};
+  Object.entries(formData).forEach(([key, value]) => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(flattenedData, value);
+    } else {
+      flattenedData[key] = value;
     }
+  });
+  
+  // Merge with formDataWithType
+  const dataForValidation = { ...flattenedData, propertyType: formDataWithType.propertyType };
 
-    if (hasData) {
+  // Simply validate each step using its Zod schema
+  visibleSteps.forEach((step, index) => {
+    const validationResult = validateStep(step.id, dataForValidation);
+    
+    if (validationResult.success) {
       completedSteps.add(index);
+      console.log(`✅ Step ${step.id} is valid`);
+    } else {
+      console.log(`⚠️ Step ${step.id} validation failed:`, validationResult.errors);
     }
   });
 

@@ -40,7 +40,6 @@ export default function PricingStepV2() {
     defaultValues: {
       pricing: stepData?.pricing || [{ type: 'asking_price', value: '', unit: 'total' }],
       isPriceNegotiable: stepData?.isPriceNegotiable || false,
-      availableFrom: stepData?.availableFrom || '',
     },
   });
 
@@ -341,34 +340,6 @@ export default function PricingStepV2() {
                     onCheckedChange={field.onChange}
                   />
                 </div>
-              )}
-            />
-          </motion.div>
-
-          {/* Available From */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.45 }}
-          >
-            <Controller
-              name="availableFrom"
-              control={control}
-              render={({ field }) => (
-                <Field>
-                  <FieldLabel className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-orange-600" />
-                    Available From
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    type="date"
-                    className="h-11 text-sm border-2 focus:border-orange-500 transition-all"
-                  />
-                  <FieldDescription>
-                    When will this property be available for occupancy?
-                  </FieldDescription>
-                </Field>
               )}
             />
           </motion.div>

@@ -59,6 +59,7 @@ export default function BasicDetailsStepV2() {
       ageOfProperty: stepData?.ageOfProperty || '',
       possessionStatus: stepData?.possessionStatus || 'ready',
       possessionDate: stepData?.possessionDate || '',
+      availableFrom: stepData?.availableFrom || '',
     },
   });
 
@@ -640,6 +641,39 @@ export default function BasicDetailsStepV2() {
                 />
               </motion.div>
             )}
+
+            {/* Available From */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              <Controller
+                name="availableFrom"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-orange-600" />
+                      Available From
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      type="date"
+                      className={`h-10 text-sm border-2 focus:border-orange-500 transition-all ${
+                        fieldState.invalid ? 'border-red-500' : ''
+                      }`}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      When will this property be available for occupancy?
+                    </p>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </motion.div>
           </FieldGroup>
 
         </form>
