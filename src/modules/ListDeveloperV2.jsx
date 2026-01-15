@@ -139,7 +139,7 @@ export default function ListDeveloperV2Page() {
       </div>
 
       {/* Stats Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
+      {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatsCard
             icon={<Building2 className="w-6 h-6" />}
@@ -166,10 +166,10 @@ export default function ListDeveloperV2Page() {
             color="orange"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Filters Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-6">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
