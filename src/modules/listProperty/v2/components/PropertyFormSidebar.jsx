@@ -57,37 +57,7 @@ export default function PropertyFormSidebar() {
 
   return (
     <aside className="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-screen sticky top-0">
-      {/* Header */}
-      {/* <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-        <h2 className="text-xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent mb-2">
-          List Your Property
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Complete all sections to publish
-        </p>
-      </div> */}
-
-      {/* Property Type Badge */}
-      {/* {propertyType && (
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-gray-900">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Property Type</p>
-              <p className="text-sm font-semibold text-orange-600 dark:text-orange-400 capitalize">
-                {propertyType.replace(/_/g, ' ')}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleChangePropertyType}
-              className="text-xs hover:bg-orange-100 dark:hover:bg-orange-900/30"
-            >
-              Change
-            </Button>
-          </div>
-        </div>
-      )} */}
+   
 
       {/* Progress */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">

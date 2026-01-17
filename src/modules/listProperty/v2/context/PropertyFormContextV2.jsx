@@ -13,8 +13,8 @@ const PropertyFormContextV2 = createContext(null);
 const getCompletedStepsFromData = (formData) => {
   const completedSteps = new Set();
   
-  // Extract propertyType for visible steps determination
-  const propertyType = formData['property-type']?.propertyType || formData.propertyType;
+  // Extract propertyType from nested structure
+  const propertyType = formData['property-type']?.propertyType;
   const formDataWithType = { ...formData, propertyType };
   
   const visibleSteps = getVisibleSteps(formDataWithType);
@@ -71,8 +71,8 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
 
         if (draftData) {
           setFormData(draftData);
-          // Extract propertyType from nested structure or flat structure (backwards compatibility)
-          const extractedPropertyType = draftData['property-type']?.propertyType || draftData.propertyType;
+          // Extract propertyType from nested structure
+          const extractedPropertyType = draftData['property-type']?.propertyType;
           if (extractedPropertyType) {
             setPropertyType(extractedPropertyType);
           }
@@ -103,31 +103,12 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     }
   }, [formData, propertyType]);
 
-  /**
-   * Helper to flatten nested formData for backwards compatibility with validation
-   * Converts { stepId: { field1: value1 } } to { field1: value1, field2: value2, ... }
-   */
-  const flattenFormData = useCallback((nestedData) => {
-    const flattened = {};
-    Object.entries(nestedData).forEach(([key, value]) => {
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
-        // Merge step data into flattened object
-        Object.assign(flattened, value);
-      } else {
-        // Keep top-level primitives (backwards compatibility)
-        flattened[key] = value;
-      }
-    });
-    return flattened;
-  }, []);
-
   const formDataWithType = useMemo(() => {
-    const flattened = flattenFormData(formData);
     return {
-      ...flattened,
+      ...formData,
       propertyType,
     };
-  }, [formData, propertyType, flattenFormData]);
+  }, [formData, propertyType]);
 
   // Validate all steps whenever formData or propertyType changes
   useEffect(() => {
@@ -152,13 +133,6 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
    * @param {Object} stepData - The data for that step
    */
   const updateFormData = useCallback((stepId, stepData) => {
-    if (!stepId) {
-      console.warn('updateFormData called without stepId, using flat structure');
-      // Fallback to flat structure if no stepId provided (backwards compatibility)
-      setFormData(prev => ({ ...prev, ...stepData }));
-      return;
-    }
-    
     setFormData(prev => ({
       ...prev,
       [stepId]: {
