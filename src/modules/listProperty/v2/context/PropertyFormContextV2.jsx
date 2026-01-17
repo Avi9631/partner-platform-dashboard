@@ -8,35 +8,20 @@ const PropertyFormContextV2 = createContext(null);
 /**
  * Helper function to determine which steps are valid
  * Returns a Set of step indices that have valid data according to their Zod schemas
- * Uses Zod validation directly - no manual field checking needed
+ * Uses pure Zod validation - schemas handle data structure internally
  */
 const getCompletedStepsFromData = (formData) => {
   const completedSteps = new Set();
   
-  // Build propertyType-aware formData for getVisibleSteps
-  const formDataWithType = {
-    ...formData,
-    propertyType: formData['property-type']?.propertyType || formData.propertyType,
-  };
+  // Extract propertyType for visible steps determination
+  const propertyType = formData['property-type']?.propertyType || formData.propertyType;
+  const formDataWithType = { ...formData, propertyType };
   
   const visibleSteps = getVisibleSteps(formDataWithType);
-  
-  // Flatten nested structure for validation
-  const flattenedData = {};
-  Object.entries(formData).forEach(([key, value]) => {
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      Object.assign(flattenedData, value);
-    } else {
-      flattenedData[key] = value;
-    }
-  });
-  
-  // Merge with formDataWithType
-  const dataForValidation = { ...flattenedData, propertyType: formDataWithType.propertyType };
 
-  // Simply validate each step using its Zod schema
+  // Let Zod schemas handle validation directly
   visibleSteps.forEach((step, index) => {
-    const validationResult = validateStep(step.id, dataForValidation);
+    const validationResult = validateStep(step.id, formDataWithType);
     
     if (validationResult.success) {
       completedSteps.add(index);
@@ -216,6 +201,10 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
     const visibleSteps = getVisibleSteps(formDataWithType);
     const currentStepId = stepId || visibleSteps[currentStep]?.id;
     
+    console.log('💾 saveAndContinue called');
+    console.log('  Step ID:', currentStepId);
+    console.log('  Step data:', stepData);
+    
     if (!currentStepId) {
       console.error('Could not determine current step ID');
       return;
@@ -229,6 +218,9 @@ export const PropertyFormProviderV2 = ({ children, onClose, initialDraftId, edit
         ...stepData,
       }
     };
+    
+    console.log('  Updated form data:', updatedFormData);
+    console.log('  Nested step data:', updatedFormData[currentStepId]);
     
     updateFormData(currentStepId, stepData);
     

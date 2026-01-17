@@ -107,6 +107,7 @@ export const SAMPLE_RULES = [
 
 /**
  * Schema for Rules and Restrictions
+ * Note: Form components wrap this in z.object({ rules: rulesRestrictionsPgSchema })
  */
 const rulesRestrictionsPgSchema = z.array(ruleItemSchema)
   .max(20, 'Maximum 20 rules allowed')

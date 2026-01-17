@@ -37,6 +37,7 @@ export const STEP_SCHEMA_MAP = {
 
 /**
  * Validate form data against a specific step's schema
+ * Handles both nested (stepId: {fields}) and flat structures
  * @param {string} stepId - The step ID
  * @param {Object} formData - The form data to validate
  * @returns {{ success: boolean, errors?: Object }} Validation result
@@ -49,10 +50,36 @@ export const validateStep = (stepId, formData) => {
     return { success: true };
   }
   
+  // Flatten nested structure: merge step-specific data with top-level data
+  const stepData = formData[stepId] || {};
+  const flattenedData = {};
+  
+  // First, add all top-level primitives and arrays
+  Object.entries(formData).forEach(([key, value]) => {
+    if (typeof value !== 'object' || Array.isArray(value) || value === null) {
+      flattenedData[key] = value;
+    }
+  });
+  
+  // Then, merge in any nested step data (overwrites top-level if duplicate)
+  Object.assign(flattenedData, stepData);
+  
+  // Debug logging for location-selection step
+  if (stepId === 'location-selection') {
+    console.log('🔍 Validating location-selection step');
+    console.log('  Step data:', stepData);
+    console.log('  Flattened data:', flattenedData);
+    console.log('  Coordinates:', flattenedData.coordinates);
+  }
+  
   try {
-    schema.parse(formData);
+    schema.parse(flattenedData);
     return { success: true };
   } catch (error) {
+    // Additional debug for location-selection validation failures
+    if (stepId === 'location-selection') {
+      console.error('❌ Location validation failed:', error.errors || error.issues);
+    }
     return { 
       success: false, 
       errors: error.errors || error.issues || []

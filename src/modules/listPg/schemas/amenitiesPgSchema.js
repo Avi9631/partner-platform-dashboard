@@ -11,6 +11,7 @@ const amenitySchema = z.object({
 
 /**
  * Enhanced Schema for Common and Room Amenities matching JSON structure
+ * Note: Form components wrap this in z.object({ amenities: amenitiesPgSchema })
  */
 const amenitiesPgSchema = z.array(amenitySchema).default([]);
 

@@ -9,7 +9,7 @@ const mediaItemSchema = z.object({
   title: z.string().optional(),
   category: z.string().optional(),
   description: z.string().optional(),
-  docType: z.enum(['pg', 'hostel']).optional(),
+  docType: z.union([z.enum(['pg', 'hostel']), z.literal('')]).optional(),
   fileSize: z.number().optional(),
 });
 

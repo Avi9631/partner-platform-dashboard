@@ -123,6 +123,7 @@ const roomTypeSchema = z
 
 /**
  * Enhanced Schema for Room Types array matching JSON structure
+ * Note: Form components wrap this in z.object({ roomTypes: roomTypesPgSchema })
  */
 const roomTypesPgSchema = z
   .array(roomTypeSchema)
@@ -136,7 +137,7 @@ const roomTypesPgSchema = z
     {
       message: "Room type names must be unique",
     }
-  ) 
+  );
 
 export default roomTypesPgSchema;
 export { roomTypeSchema };

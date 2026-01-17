@@ -36,6 +36,8 @@ export default function LocationSelectionStepV2() {
 
   // Handle form submission - update context only on save & continue
   const onSubmit = useCallback((data) => {
+    console.log('📤 LocationSelectionStepV2 - Submitting data:', data);
+    console.log('  Coordinates:', data.coordinates);
     // Pass step data to context to update formData JSON
     saveAndContinue(data);
   }, [saveAndContinue]);
@@ -104,8 +106,15 @@ export default function LocationSelectionStepV2() {
                         locality: form.watch('locality'),
                       } : null}
                       onChange={(locationData) => {
+                        console.log('🗺️ LocationPicker onChange called with:', locationData);
                         if (locationData) {
+                          // Set coordinates with proper validation
                           field.onChange(locationData.coordinates);
+                          form.setValue('coordinates', locationData.coordinates, { 
+                            shouldValidate: true, 
+                            shouldDirty: true,
+                            shouldTouch: true 
+                          });
                           
                           // Auto-populate address fields from map selection
                           if (locationData.city) {
@@ -120,8 +129,15 @@ export default function LocationSelectionStepV2() {
                           if (locationData.landmark) {
                             form.setValue('landmark', locationData.landmark, { shouldValidate: true, shouldDirty: true });
                           }
+                          
+                          // Manually trigger form validation to update formState
+                          form.trigger();
+                          
+                          console.log('✅ Coordinates set:', locationData.coordinates);
+                          console.log('📋 Form values after update:', form.getValues());
                         } else {
                           field.onChange(null);
+                          form.setValue('coordinates', null, { shouldValidate: true, shouldDirty: true });
                         }
                       }}
                       height="400px"

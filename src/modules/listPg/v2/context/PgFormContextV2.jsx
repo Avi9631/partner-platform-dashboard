@@ -6,189 +6,29 @@ import { toast } from 'sonner';
 
 const PgFormContextV2 = createContext(null);
 
+import { validateStep } from '../utils/schemaMapping';
+
 /**
- * Helper function to determine which steps have data
- * Returns a Set of step indices that have completed data
- * Supports both nested (stepName: {fields}) and flat structure for backwards compatibility
+ * Helper function to determine which steps are valid
+ * Returns a Set of step indices that have valid data according to their Zod schemas
+ * Uses pure Zod validation - schemas handle data structure internally
  */
 const getCompletedStepsFromData = (formData) => {
   const completedSteps = new Set();
   const visibleSteps = getVisibleSteps(formData);
 
-  // Helper to check if a value is meaningful (not null, undefined, empty string, or empty array)
-  const hasValue = (val) => {
-    if (val === null || val === undefined || val === '') return false;
-    if (Array.isArray(val)) return val.length > 0;
-    if (typeof val === 'object') return Object.keys(val).length > 0;
-    return true;
-  };
-
+  // Let Zod schemas handle validation directly
   visibleSteps.forEach((step, index) => {
-    let hasData = false;
-
-    switch (step.id) {
-      case 'basic-details': {
-        const stepData = formData['basic-details'] || {};
-        // Check if any basic detail field is filled
-        hasData = !!(
-          hasValue(stepData.pgHostelName) || hasValue(formData.pgHostelName) ||
-          hasValue(stepData.propertyFor) || hasValue(formData.propertyFor) ||
-          hasValue(stepData.pgHostelType) || hasValue(formData.pgHostelType) ||
-          hasValue(stepData.description) || hasValue(formData.description) ||
-          hasValue(stepData.establishedYear) || hasValue(formData.establishedYear) ||
-          hasValue(stepData.totalFloors) || hasValue(formData.totalFloors) ||
-          hasValue(stepData.ownerName) || hasValue(formData.ownerName) ||
-          hasValue(stepData.ownerContact) || hasValue(formData.ownerContact)
-        );
-        break;
-      }
-        
-      case 'location-details': {
-        const stepData = formData['location-details'] || {};
-        // Check if location details are provided (address or coordinates)
-        hasData = !!(
-          hasValue(stepData.address) || hasValue(formData.address) ||
-          hasValue(stepData.city) || hasValue(formData.city) ||
-          hasValue(stepData.state) || hasValue(formData.state) ||
-          hasValue(stepData.pincode) || hasValue(formData.pincode) ||
-          hasValue(stepData.latitude) || hasValue(formData.latitude) ||
-          hasValue(stepData.longitude) || hasValue(formData.longitude) ||
-          hasValue(stepData.locationDetails) || hasValue(formData.locationDetails) ||
-          hasValue(stepData.landmark) || hasValue(formData.landmark) ||
-          hasValue(stepData.locality) || hasValue(formData.locality)
-        );
-        break;
-      }
-        
-      case 'room-types': {
-        const stepData = formData['room-types'] || {};
-        const roomTypes = stepData.roomTypes || formData.roomTypes;
-        // Check if room types are defined with valid data
-        console.log('🔍 Checking room-types:', {
-          hasRoomTypes: !!roomTypes,
-          isArray: Array.isArray(roomTypes),
-          length: roomTypes?.length,
-          roomTypes: roomTypes
-        });
-        hasData = !!(
-          roomTypes && 
-          Array.isArray(roomTypes) && 
-          roomTypes.length > 0 &&
-          roomTypes.some(room => 
-            hasValue(room.name) || 
-            hasValue(room.category) || 
-            hasValue(room.roomSize) ||
-            (room.pricing && Array.isArray(room.pricing) && room.pricing.length > 0) ||
-            (room.amenities && Array.isArray(room.amenities) && room.amenities.length > 0) ||
-            hasValue(room.refundPolicy) ||
-            (room.images && Array.isArray(room.images) && room.images.length > 0)
-          )
-        );
-        console.log('🔍 room-types hasData:', hasData);
-        break;
-      }
-        
-      case 'amenities': {
-        const stepData = formData['amenities'] || {};
-        // Check if any amenity is selected (using commonAmenities field)
-        hasData = !!(
-          (stepData.commonAmenities && Array.isArray(stepData.commonAmenities) && stepData.commonAmenities.length > 0) ||
-          (formData.commonAmenities && Array.isArray(formData.commonAmenities) && formData.commonAmenities.length > 0) ||
-          (stepData.commonAmenitiesLegacy && Array.isArray(stepData.commonAmenitiesLegacy) && stepData.commonAmenitiesLegacy.length > 0) ||
-          (formData.commonAmenitiesLegacy && Array.isArray(formData.commonAmenitiesLegacy) && formData.commonAmenitiesLegacy.length > 0) ||
-          (stepData.amenities && typeof stepData.amenities === 'object' && Object.keys(stepData.amenities).length > 0) ||
-          (formData.amenities && typeof formData.amenities === 'object' && Object.keys(formData.amenities).length > 0)
-        );
-        break;
-      }
-        
-      case 'food-mess': {
-        const stepData = formData['food-mess'] || {};
-        // Check if food/mess options are defined (using foodMess field)
-        hasData = !!(
-          (stepData.foodMess && typeof stepData.foodMess === 'object' && Object.keys(stepData.foodMess).length > 0) ||
-          (formData.foodMess && typeof formData.foodMess === 'object' && Object.keys(formData.foodMess).length > 0) ||
-          stepData.foodAvailable !== undefined || formData.foodAvailable !== undefined ||
-          stepData.messAvailable !== undefined || formData.messAvailable !== undefined ||
-          hasValue(stepData.foodType) || hasValue(formData.foodType) ||
-          hasValue(stepData.messCharges) || hasValue(formData.messCharges) ||
-          hasValue(stepData.mealsIncluded) || hasValue(formData.mealsIncluded) ||
-          hasValue(stepData.foodTimings) || hasValue(formData.foodTimings) ||
-          stepData.breakfastIncluded !== undefined || formData.breakfastIncluded !== undefined ||
-          stepData.lunchIncluded !== undefined || formData.lunchIncluded !== undefined ||
-          stepData.dinnerIncluded !== undefined || formData.dinnerIncluded !== undefined
-        );
-        break;
-      }
-        
-      case 'rules-restrictions': {
-        const stepData = formData['rules-restrictions'] || {};
-        // Rules are optional - mark as complete if rules array exists (even if empty)
-        // or if it has at least one valid rule
-        hasData = !!(
-          (stepData.rules !== undefined && Array.isArray(stepData.rules)) ||
-          (formData.rules !== undefined && Array.isArray(formData.rules))
-        );
-        break;
-      }
-        
-      case 'media-upload': {
-        const stepData = formData['media-upload'] || {};
-        // Check if any media files are uploaded (using mediaData field)
-        hasData = !!(
-          (stepData.mediaData && Array.isArray(stepData.mediaData) && stepData.mediaData.length > 0) ||
-          (formData.mediaData && Array.isArray(formData.mediaData) && formData.mediaData.length > 0) ||
-          (stepData.images && Array.isArray(stepData.images) && stepData.images.length > 0) ||
-          (formData.images && Array.isArray(formData.images) && formData.images.length > 0) ||
-          (stepData.videos && Array.isArray(stepData.videos) && stepData.videos.length > 0) ||
-          (formData.videos && Array.isArray(formData.videos) && formData.videos.length > 0) ||
-          hasValue(stepData.virtualTourUrl) || hasValue(formData.virtualTourUrl) ||
-          hasValue(stepData.coverImage) || hasValue(formData.coverImage)
-        );
-        break;
-      }
-        
-      case 'availability':
-        // Check if availability information is provided
-        hasData = !!(
-          hasValue(formData.availableFrom) ||
-          formData.vacantBeds !== undefined ||
-          formData.totalBeds !== undefined ||
-          formData.immediateAvailability !== undefined
-        );
-        break;
-        
-      case 'safety-compliance':
-        // Check if safety/compliance info is provided
-        hasData = !!(
-          formData.hasFireSafety !== undefined ||
-          formData.hasCCTV !== undefined ||
-          formData.hasSecurityGuard !== undefined ||
-          hasValue(formData.safetyFeatures) ||
-          hasValue(formData.fireSafetyEquipment) ||
-          formData.hasEmergencyExit !== undefined
-        );
-        break;
-
-      case 'review-submit':
-        // Review step is always accessible, but mark as complete only if previous steps are done
-        // This will be handled separately - don't auto-complete
-        hasData = false;
-        break;
-        
-      default:
-        hasData = false;
-    }
-
-    if (hasData) {
+    const validationResult = validateStep(step.id, formData);
+    
+    if (validationResult.success) {
       completedSteps.add(index);
-      console.log(`✅ Step ${index} (${step.id}) marked as completed`);
+      console.log(`✅ Step ${step.id} is valid`);
     } else {
-      console.log(`❌ Step ${index} (${step.id}) has no data`);
+      console.log(`⚠️ Step ${step.id} validation failed:`, validationResult.errors);
     }
   });
 
-  console.log('📊 Total completed steps:', completedSteps.size, 'out of', visibleSteps.length);
   return completedSteps;
 };
 
